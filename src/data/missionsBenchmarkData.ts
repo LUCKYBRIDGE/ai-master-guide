@@ -1,0 +1,585 @@
+import { HeadToHeadMission } from '../types/ai';
+
+export const HEAD_TO_HEAD_MISSIONS_DATA: HeadToHeadMission[] = [
+  // 1. 풀스택 웹앱 코딩
+  {
+    id: 'mission-crypto-dashboard',
+    title: '🖥️ 실시간 암호화폐/주식 트레이딩 대시보드 풀스택 구축',
+    testExactDate: '2026.08.15',
+    category: '풀스택 웹앱 코딩',
+    promptGiven: '"Vite + React + TypeScript + Tailwind CSS + Lucide Icons를 사용해 실시간 웹소켓 시뮬레이션 호가창, 캔들차트, 최근 체결 내역, 다크모드 스타일링이 적용된 트레이딩 대시보드를 에러 없이 브라우저에 구동시켜줘."',
+    inputDataSpec: '단일 프롬프트, 신규 빈 프로젝트 폴더, 외부 WebSocket 모킹 및 Recharts/Tailwind 의존성 주입',
+    missionGoal: '단일 프롬프트로 다중 컴포넌트 웹 애플리케이션을 오류 없이 1회(원샷) 만에 로컬호스트에 띄우는 시간과 비용, 렌더링 완성도 측정',
+    winnerCompany: 'anthropic',
+    winnerReason: 'Claude Code가 42초 만에 단 한 번의 타입 에러 없이 최고 완성도의 반응형 UI를 원샷 성공시켰습니다. (비용 가성비는 Google Antigravity가 $0.08로 1위)',
+    sourceReportName: '조코딩 AI 코딩 에이전트 실전 4사 배틀 영상 (2026.08.14)',
+    sourceReportUrl: 'https://www.youtube.com/@jocoding/videos',
+    results: [
+      {
+        modelName: 'Claude Opus 5',
+        toolName: 'Claude Code CLI',
+        company: 'anthropic',
+        timeSeconds: 42,
+        timeDisplay: '42초',
+        costEstimated: '$0.45',
+        tokenCountDisplay: '45,200 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.9,
+        iterationCount: 1,
+        resultDetail: '터미널 빌드 에러 0건. 완벽한 반응형 캔들차트 및 호가창 틱 애니메이션 렌더링 완료.',
+        isHighestQuality: true
+      },
+      {
+        modelName: 'Gemini 3.7 Flash',
+        toolName: 'Google Antigravity 2.0',
+        company: 'google',
+        timeSeconds: 38,
+        timeDisplay: '38초',
+        costEstimated: '$0.08',
+        tokenCountDisplay: '48,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.7,
+        iterationCount: 1,
+        resultDetail: 'Planning Mode 승인 후 초고속 빌드 완료. 토큰 비용 $0.08로 압도적 최저 비용 기록.',
+        isCheapest: true
+      },
+      {
+        modelName: 'Grok 4.6',
+        toolName: 'Grok Build & Code',
+        company: 'xai',
+        timeSeconds: 18,
+        timeDisplay: '18초 (초고속)',
+        costEstimated: '$0.12',
+        tokenCountDisplay: '32,000 토큰',
+        status: '🟡 부분 성공 (수동 1~2회 수정)',
+        qualityScore: 8.8,
+        iterationCount: 2,
+        resultDetail: 'Three.js 3D 파티클 효과는 화려했으나 모바일 flex-wrap 레이아웃 깨짐으로 1회 수동 수정 필요.',
+        errorLog: 'CSS layout overflow: order-book container width exceeds viewport on width < 640px.',
+        isFastest: true
+      },
+      {
+        modelName: 'GPT-5.6 Sol',
+        toolName: 'OpenAI Canvas / Work',
+        company: 'openai',
+        timeSeconds: 55,
+        timeDisplay: '55초',
+        costEstimated: '$0.35',
+        tokenCountDisplay: '38,500 토큰',
+        status: '🟡 부분 성공 (수동 1~2회 수정)',
+        qualityScore: 8.9,
+        iterationCount: 2,
+        resultDetail: 'Recharts 모듈 interface 누락 에러 1건 발생 후 Canvas 인라인 수정으로 해결.',
+        errorLog: 'TS2304: Cannot find name \'TooltipProps\'.'
+      }
+    ]
+  },
+
+  // 2. 대용량 데이터 분석
+  {
+    id: 'mission-csv-analysis',
+    title: '📊 10만 행 이커머스 매출 CSV 결제/이탈 원인 분석 & 대시보드',
+    testExactDate: '2026.08.13',
+    category: '대용량 데이터 분석',
+    promptGiven: '"첨부된 100,000개 주문 데이터셋(결제수단, 배송기간, 할인율, 반품여부)을 분석하여 고객 이탈 원인 3가지를 도출하고, 파이썬 차트 및 대화형 시각화 위젯을 만들어줘."',
+    inputDataSpec: '100,000개 행(Row) × 18개 열(Column) CSV 데이터셋 (용량 42MB)',
+    missionGoal: '대용량 데이터셋 처리 속도, 통계적 이상치(Outlier) 발견 정확도 및 시각화 품질 측정',
+    winnerCompany: 'google',
+    winnerReason: 'Gemini 3.7 Flash가 2M 컨텍스트로 15초 만에 $0.03의 최저 비용으로 분석을 완결했습니다.',
+    sourceReportName: 'Google AI Studio Long-Context & Data Benchmark Docs',
+    sourceReportUrl: 'https://ai.google.dev/gemini-api/docs/long-context',
+    results: [
+      {
+        modelName: 'Gemini 3.7 Flash',
+        toolName: 'Gemini Workspace & Python',
+        company: 'google',
+        timeSeconds: 15,
+        timeDisplay: '15초 (초고속)',
+        costEstimated: '$0.03',
+        tokenCountDisplay: '120,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.6,
+        iterationCount: 1,
+        resultDetail: '2M 토큰 메모리로 전체 데이터셋을 직통 로드하여 15초 만에 결제수단별 이탈률 표와 차트 생성.',
+        isFastest: true,
+        isCheapest: true
+      },
+      {
+        modelName: 'GPT-5.6 Sol',
+        toolName: 'Advanced Data Analysis (ADA)',
+        company: 'openai',
+        timeSeconds: 28,
+        timeDisplay: '28초',
+        costEstimated: '$0.15',
+        tokenCountDisplay: '42,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.8,
+        iterationCount: 1,
+        resultDetail: '파이썬 샌드박스에서 Seaborn 상관관계 히트맵과 회귀분석 계수를 완벽하게 시각화.',
+        isHighestQuality: true
+      },
+      {
+        modelName: 'Claude Opus 5',
+        toolName: 'Claude Artifacts Data View',
+        company: 'anthropic',
+        timeSeconds: 40,
+        timeDisplay: '40초',
+        costEstimated: '$0.30',
+        tokenCountDisplay: '55,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.7,
+        iterationCount: 1,
+        resultDetail: 'React 기반 인터랙티브 슬라이더 필터가 달린 대시보드를 생성하여 브라우저에서 즉시 탐색 가능.'
+      },
+      {
+        modelName: 'Grok 4.6',
+        toolName: 'Grok Analytics',
+        company: 'xai',
+        timeSeconds: 22,
+        timeDisplay: '22초',
+        costEstimated: '$0.08',
+        tokenCountDisplay: '35,000 토큰',
+        status: '🟡 부분 성공 (수동 1~2회 수정)',
+        qualityScore: 8.5,
+        iterationCount: 2,
+        resultDetail: '빠르게 통계를 계산했으나 결측치(NaN) 처리 로직 누락으로 차트 1개 공백 발생 후 1회 재질의.',
+        errorLog: 'ValueError: Input contains NaN, infinity or a value too large for dtype(\'float64\').'
+      }
+    ]
+  },
+
+  // 3. 심층 리서치 백서
+  {
+    id: 'mission-deep-research',
+    title: '🔭 차세대 AI 반도체 칩셋 아키텍처 15페이지 심층 기술 백서',
+    testExactDate: '2026.08.11',
+    category: '심층 리서치 백서',
+    promptGiven: '"Nvidia Blackwell(B200/GB200), Google TPU v6(Trillium), AWS Trainium 3의 HBM3e 대역폭, FP8/FP4 TFLOPS, 인터커넥트 토폴로지를 비교분석하는 15페이지 분량의 심층 백서를 작성해줘."',
+    inputDataSpec: '외부 기술 백서 45개 웹 링크 및 논문 아카이브(arXiv) 실시간 크로스체크 요구',
+    missionGoal: '신뢰할 수 있는 웹 출처 인용 깊이, 수치적 정밀도 및 전문 학술 백서 구성 능력 측정',
+    winnerCompany: 'openai',
+    winnerReason: 'OpenAI Deep Research가 45개 이상의 공식 스펙시트와 논문을 자율 탐색하여 출처 각주가 완벽한 리포트를 작성했습니다.',
+    sourceReportName: 'OpenAI Official Deep Research Architecture & Technical Overview',
+    sourceReportUrl: 'https://openai.com/index/introducing-deep-research/',
+    results: [
+      {
+        modelName: 'GPT-5.6 Sol',
+        toolName: 'OpenAI Deep Research',
+        company: 'openai',
+        timeSeconds: 252,
+        timeDisplay: '4분 12초 (심층)',
+        costEstimated: '$1.20',
+        tokenCountDisplay: '180,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.9,
+        iterationCount: 1,
+        resultDetail: '45개 이상의 공식 백서 링크를 각주로 달며 아키텍처 다이어그램과 성능 비교표를 완벽 작성.',
+        isHighestQuality: true
+      },
+      {
+        modelName: 'Gemini 3.7 Flash',
+        toolName: 'Gemini Search Grounding',
+        company: 'google',
+        timeSeconds: 45,
+        timeDisplay: '45초',
+        costEstimated: '$0.10',
+        tokenCountDisplay: '65,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.3,
+        iterationCount: 1,
+        resultDetail: 'Google Docs로 원클릭 내보내기 지원. TPU v6 내부 스펙을 가장 정확하고 빠르게 서술.',
+        isCheapest: true
+      },
+      {
+        modelName: 'Claude Fable 5',
+        toolName: 'Claude 5 Deep Literature Mode',
+        company: 'anthropic',
+        timeSeconds: 110,
+        timeDisplay: '1분 50초',
+        costEstimated: '$0.95',
+        tokenCountDisplay: '95,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.8,
+        iterationCount: 1,
+        resultDetail: '학술 논문 수준의 압도적인 문장 구조와 인터커넥트 병목 분석 제시.'
+      },
+      {
+        modelName: 'Grok 4.6',
+        toolName: 'Grok DeepSearch (X Firehose)',
+        company: 'xai',
+        timeSeconds: 70,
+        timeDisplay: '1분 10초',
+        costEstimated: '$0.25',
+        tokenCountDisplay: '50,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.4,
+        iterationCount: 1,
+        resultDetail: '반도체 엔지니어들의 X(트위터) 실시간 벤치마크 누출 데이터와 논평을 가장 빠르게 포착하여 반영.'
+      }
+    ]
+  },
+
+  // 4. 대형 레포 버그 픽스
+  {
+    id: 'mission-repo-debugging',
+    title: '🐛 대형 레포지토리 비동기 메모리 누수 & Race Condition 버그 픽스',
+    testExactDate: '2026.08.09',
+    category: '대형 레포 버그 픽스',
+    promptGiven: '"WebSocket 연결 재시도 중 큐(Queue)에 쌓인 메시지가 손실되고 클라이언트 메모리가 급증하는 버그를 찾아서 재현 테스트 코드를 작성하고 완벽하게 고쳐줘."',
+    inputDataSpec: '32개 TypeScript 소스코드 파일 및 Jest 테스트 스위트 주입',
+    missionGoal: '다중 파일 코드베이스 분석, 동시성(Concurrency) 원인 파악 및 자가 테스트 통과 능력 측정',
+    winnerCompany: 'anthropic',
+    winnerReason: 'Claude Code가 35초 만에 메모리 누수의 원인인 클로저 참조를 짚어내고 락 프리(Lock-free) 큐로 완벽 수정했습니다.',
+    sourceReportName: 'Anthropic Claude Code Official Architecture & CLI Docs',
+    sourceReportUrl: 'https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview#core-features',
+    results: [
+      {
+        modelName: 'Claude Opus 5',
+        toolName: 'Claude Code CLI',
+        company: 'anthropic',
+        timeSeconds: 35,
+        timeDisplay: '35초',
+        costEstimated: '$0.50',
+        tokenCountDisplay: '48,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.9,
+        iterationCount: 1,
+        resultDetail: '`npm test` 실행 후 테스트 통과 확인까지 자율 완결. 버그 원인을 정확히 짚어낸 클린 코드 1위.',
+        isHighestQuality: true
+      },
+      {
+        modelName: 'Gemini 3.7 Flash',
+        toolName: 'Google Antigravity 2.0',
+        company: 'google',
+        timeSeconds: 30,
+        timeDisplay: '30초',
+        costEstimated: '$0.09',
+        tokenCountDisplay: '52,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.7,
+        iterationCount: 1,
+        resultDetail: '비동기 큐 락 패턴을 깔끔하게 구현하고 Antigravity 터미널에서 단위 테스트 일괄 통과.',
+        isCheapest: true
+      },
+      {
+        modelName: 'GPT-5.6 Sol',
+        toolName: 'OpenAI Codex / Work',
+        company: 'openai',
+        timeSeconds: 65,
+        timeDisplay: '1분 05초',
+        costEstimated: '$0.40',
+        tokenCountDisplay: '40,000 토큰',
+        status: '🟡 부분 성공 (수동 1~2회 수정)',
+        qualityScore: 9.0,
+        iterationCount: 2,
+        resultDetail: '1차 제안 코드에서 타임아웃 처리가 누락되어 2차 프롬프트로 보완 완료.',
+        errorLog: 'Async callback timeout in Jest test runner: connection failed to emit disconnect event.'
+      },
+      {
+        modelName: 'Grok 4.6',
+        toolName: 'Grok Build Agent',
+        company: 'xai',
+        timeSeconds: 25,
+        timeDisplay: '25초',
+        costEstimated: '$0.15',
+        tokenCountDisplay: '30,000 토큰',
+        status: '🟡 부분 성공 (수동 1~2회 수정)',
+        qualityScore: 8.6,
+        iterationCount: 2,
+        resultDetail: '기본 재시도 지수 백오프(Exponential Backoff)를 적용했으나 클로저 참조 해제 누락 발생.',
+        errorLog: 'Memory Leak Warning: MaxListenersExceededWarning: 11 reconnect listeners added.'
+      }
+    ]
+  },
+
+  // 5. Figma/와이어프레임 UI 복원 (Vision-to-Code)
+  {
+    id: 'mission-vision-to-code',
+    title: '📱 Figma 스크린샷 기반 결제 체크아웃 반응형 UI 완벽 복원',
+    testExactDate: '2026.08.16',
+    category: '풀스택 웹앱 코딩',
+    promptGiven: '"첨부된 결제 체크아웃 화면 Figma 스크린샷(쿠폰 적용, 카드 결제 모달, 주소 입력폼, 주문 요약)을 React + Tailwind CSS + Framer Motion 코드로 1:1 픽셀 완벽하게 복원해줘."',
+    inputDataSpec: 'Figma 데스크톱 및 모바일 결제 체크아웃 고해상도 PNG 스크린샷 (3840×2160, 4.8MB)',
+    missionGoal: '시각적 레이아웃 복원율, 디자인 시스템 여백/타이포 감각, 인터랙티브 폼 유효성 검사 구현 능력',
+    winnerCompany: 'anthropic',
+    winnerReason: 'Claude Opus 5 Artifacts가 입력 필드 유효성 검사, 카드 번호 포매팅, 부드러운 모달 트랜지션을 완벽하게 구현했습니다.',
+    sourceReportName: 'Anthropic Claude Vision & Artifacts UI Documentation',
+    sourceReportUrl: 'https://docs.anthropic.com/en/docs/build-with-claude/vision',
+    results: [
+      {
+        modelName: 'Claude Opus 5',
+        toolName: 'Claude Artifacts Vision',
+        company: 'anthropic',
+        timeSeconds: 36,
+        timeDisplay: '36초',
+        costEstimated: '$0.42',
+        tokenCountDisplay: '42,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.9,
+        iterationCount: 1,
+        resultDetail: 'Figma의 미세한 box-shadow 및 여백을 100% 복원. Framer Motion 슬라이드 애니메이션 완벽.',
+        isHighestQuality: true
+      },
+      {
+        modelName: 'Grok 4.6',
+        toolName: 'Grok Build Vision-to-Code',
+        company: 'xai',
+        timeSeconds: 16,
+        timeDisplay: '16초 (초고속)',
+        costEstimated: '$0.10',
+        tokenCountDisplay: '28,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.5,
+        iterationCount: 1,
+        resultDetail: '16초 만에 초고속으로 복원 완료. 단, 카드 번호 4자리 자동 하이픈(-) 포매팅은 생략됨.',
+        isFastest: true
+      },
+      {
+        modelName: 'Gemini 3.7 Flash',
+        toolName: 'Google Antigravity Vision',
+        company: 'google',
+        timeSeconds: 24,
+        timeDisplay: '24초',
+        costEstimated: '$0.05',
+        tokenCountDisplay: '35,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.4,
+        iterationCount: 1,
+        resultDetail: 'Tailwind 컬러 팔레트를 정확히 추출하여 깔끔한 반응형 Grid 구현. 비용 $0.05로 최저비용 1위.',
+        isCheapest: true
+      },
+      {
+        modelName: 'GPT-5.6 Sol',
+        toolName: 'OpenAI Canvas Vision',
+        company: 'openai',
+        timeSeconds: 45,
+        timeDisplay: '45초',
+        costEstimated: '$0.28',
+        tokenCountDisplay: '36,000 토큰',
+        status: '🟡 부분 성공 (수동 1회 수정)',
+        qualityScore: 9.1,
+        iterationCount: 2,
+        resultDetail: 'Z-index 모달 오버레이가 상단 네비게이션 뒤로 숨는 현상 발생 후 Canvas에서 1회 인라인 수정.',
+        errorLog: 'CSS stacking context conflict: modal z-index (z-10) lower than sticky header (z-50).'
+      }
+    ]
+  },
+
+  // 6. 100만 건 트랜잭션 DB 슬로우 쿼리 튜닝 및 무중단 마이그레이션
+  {
+    id: 'mission-db-migration',
+    title: '🗄️ 100만 건 결제 트랜잭션 DB 슬로우 쿼리 튜닝 & 무중단 마이그레이션',
+    testExactDate: '2026.08.14',
+    category: '대용량 데이터 분석',
+    promptGiven: '"PostgreSQL 16에서 실행 시간 8.4초가 걸리는 결제 트랜잭션 집계 슬로우 쿼리(Explain Analyze 로그 첨부)를 분석하여 복합 인덱스(BRIN/B-Tree)와 파티셔닝 전략을 수립하고, 락 없이 무중단 적용 가능한 마이그레이션 SQL을 작성해줘."',
+    inputDataSpec: '100만 건 payments 테이블 DDL 스키마, 실행 계획 EXPLAIN (ANALYZE, BUFFERS) 450줄 텍스트 로그',
+    missionGoal: 'Seq Scan 병목 지점 파악, Zero-downtime 인덱스 생성(CREATE INDEX CONCURRENTLY) 및 파티셔닝 전략 타당성',
+    winnerCompany: 'openai',
+    winnerReason: 'GPT-5.6 Sol이 쿼리 실행 계획의 Nested Loop 병목을 짚어내고 쿼리 시간을 8.4초에서 12ms로 700배 단축시키는 완벽한 무중단 마이그레이션 스크립트를 작성했습니다.',
+    sourceReportName: 'OpenAI Platform Reasoning & System Optimization Guide',
+    sourceReportUrl: 'https://platform.openai.com/docs/guides/reasoning#complex-system-architecture',
+    results: [
+      {
+        modelName: 'GPT-5.6 Sol',
+        toolName: 'OpenAI Codex / Thinking High',
+        company: 'openai',
+        timeSeconds: 32,
+        timeDisplay: '32초',
+        costEstimated: '$0.22',
+        tokenCountDisplay: '26,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.9,
+        iterationCount: 1,
+        resultDetail: '`CREATE INDEX CONCURRENTLY` 및 월별 RANGE 파티셔닝 스크립트 무결점 생성. 실행 시간 12ms로 단축.',
+        isHighestQuality: true
+      },
+      {
+        modelName: 'Claude Opus 5',
+        toolName: 'Claude Code CLI',
+        company: 'anthropic',
+        timeSeconds: 40,
+        timeDisplay: '40초',
+        costEstimated: '$0.48',
+        tokenCountDisplay: '38,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.8,
+        iterationCount: 1,
+        resultDetail: 'PostgreSQL 16 쿼리 플래너의 통계치 갱신(ANALYZE) 명령 및 롤백 스크립트까지 완벽하게 동봉.'
+      },
+      {
+        modelName: 'Gemini 3.7 Flash',
+        toolName: 'Google Antigravity 2.0',
+        company: 'google',
+        timeSeconds: 18,
+        timeDisplay: '18초',
+        costEstimated: '$0.04',
+        tokenCountDisplay: '30,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.5,
+        iterationCount: 1,
+        resultDetail: '18초 만에 복합 인덱스 DDL 완성. 토큰 비용 $0.04로 최저 비용 1위.',
+        isCheapest: true
+      },
+      {
+        modelName: 'Grok 4.6',
+        toolName: 'Grok Build Database Suite',
+        company: 'xai',
+        timeSeconds: 14,
+        timeDisplay: '14초 (초고속)',
+        costEstimated: '$0.08',
+        tokenCountDisplay: '22,000 토큰',
+        status: '🟡 부분 성공 (수동 1회 수정)',
+        qualityScore: 8.7,
+        iterationCount: 2,
+        resultDetail: '인덱스 생성 시 CONCURRENTLY 키워드가 누락되어 테이블 락 위험 발생 후 1회 재질의로 수정.',
+        errorLog: 'Database Lock Warning: Standard CREATE INDEX locks the table against writes during build.',
+        isFastest: true
+      }
+    ]
+  },
+
+  // 7. 소스코드 50개 파일 보안 취약점 & 제로데이 전수 감사
+  {
+    id: 'mission-security-audit',
+    title: '🔒 소스코드 50개 파일 대상 보안 취약점(OWASP Top 10) 전수 스캔 및 패치 PR',
+    testExactDate: '2026.08.15',
+    category: '대형 레포 버그 픽스',
+    promptGiven: '"첨부된 50개 백엔드 API 소스코드(Node.js/Express + Prisma)에서 SQL Injection, NoSQL Injection, Broken Object Level Authorization(BOLA), SSRF 취약점을 전수 스캔하고, 위험도별(Critical/High/Medium) 패치 diff와 방어 테스트 코드를 작성해줘."',
+    inputDataSpec: '50개 백엔드 TypeScript 파일 (총 18,000줄 코드, 일부러 주입된 6개 보안 취약점 포함)',
+    missionGoal: '숨겨진 6개 취약점 발견율(Detection Rate), 오탐(False Positive) 방지율 및 완벽한 보안 패치 코드 작성',
+    winnerCompany: 'anthropic',
+    winnerReason: 'Claude Code가 50개 파일 전체를 35초 만에 스캔하여 주입된 6개 취약점(BOLA 2건, SQLi 1건, SSRF 1건, JWT 약한 서명 2건)을 100% 검출하고 패치 PR을 완성했습니다.',
+    sourceReportName: 'OWASP Foundation Top 10 API Security Risks Portal',
+    sourceReportUrl: 'https://owasp.org/www-project-top-10-api-security-risks/',
+    results: [
+      {
+        modelName: 'Claude Opus 5',
+        toolName: 'Claude Code Security Scanner',
+        company: 'anthropic',
+        timeSeconds: 35,
+        timeDisplay: '35초',
+        costEstimated: '$0.52',
+        tokenCountDisplay: '54,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 10.0,
+        iterationCount: 1,
+        resultDetail: '6/6개 취약점 100% 검출 (오탐 0건). Zod 스키마 검증 및 parameterized query 패치 diff 생성.',
+        isHighestQuality: true
+      },
+      {
+        modelName: 'Google Antigravity 2.0',
+        toolName: 'Antigravity Security Subagent',
+        company: 'google',
+        timeSeconds: 28,
+        timeDisplay: '28초',
+        costEstimated: '$0.08',
+        tokenCountDisplay: '60,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.8,
+        iterationCount: 1,
+        resultDetail: '6/6개 취약점 검출 완료. 보안 단위 테스트 코드(Supertest)까지 자동 생성.',
+        isCheapest: true
+      },
+      {
+        modelName: 'GPT-5.6 Sol',
+        toolName: 'OpenAI Codex Security',
+        company: 'openai',
+        timeSeconds: 58,
+        timeDisplay: '58초',
+        costEstimated: '$0.38',
+        tokenCountDisplay: '44,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.6,
+        iterationCount: 1,
+        resultDetail: '5/6개 취약점 검출 (미세한 Timing Attack 취약점 1건 누락되었으나 핵심 BOLA 완벽 방어).'
+      },
+      {
+        modelName: 'Grok 4.6',
+        toolName: 'Grok Build Security',
+        company: 'xai',
+        timeSeconds: 22,
+        timeDisplay: '22초 (초고속)',
+        costEstimated: '$0.12',
+        tokenCountDisplay: '32,000 토큰',
+        status: '🟡 부분 성공 (수동 1회 수정)',
+        qualityScore: 8.8,
+        iterationCount: 2,
+        resultDetail: '4/6개 취약점 검출. SSRF 방어 로직에서 IPv6 로컬호스트(::1) 우회 필터링 누락으로 1회 수정.',
+        errorLog: 'Security Bypass: IP validator allows IPv6 loopback (::1) and decimal IP (2130706433) notation.',
+        isFastest: true
+      }
+    ]
+  },
+
+  // 8. 1시간 20분 전략 회의 녹음 통째 분석 & 타임스탬프 회의록
+  {
+    id: 'mission-audio-meeting-minutes',
+    title: '🎥 1시간 20분 전략 회의 오디오 통째 분석 & 타임스탬프 액션 아이템',
+    testExactDate: '2026.08.12',
+    category: '심층 리서치 백서',
+    promptGiven: '"첨부된 1시간 20분 신제품 출시 전략 회의 녹음 파일(4명 참석)을 분석하여 1) 핵심 결정 사항 5가지, 2) 부서별(개발/디자인/마케팅) 액션 아이템과 마감일, 3) 격론이 벌어진 논쟁 구간의 정확한 타임스탬프와 발언자 요약을 정리해줘."',
+    inputDataSpec: '1시간 20분 분량 고음질 M4A 오디오 녹음 파일 (용량 140MB, 4명의 화자 음성 중첩 포함)',
+    missionGoal: '화자 분리(Diarization) 정확도, 격론 구간 타임스탬프 정밀도 및 할 일(Action Items) 추출 능력',
+    winnerCompany: 'google',
+    winnerReason: 'Gemini 3.7 Flash가 네이티브 오디오 멀티모달로 오디오를 전처리 없이 통째로 32초 만에 완벽 분석했습니다.',
+    sourceReportName: 'Google AI Studio Native Audio Understanding Guide & API',
+    sourceReportUrl: 'https://ai.google.dev/gemini-api/docs/audio-understanding',
+    results: [
+      {
+        modelName: 'Gemini 3.7 Flash',
+        toolName: 'Gemini Workspace & Audio',
+        company: 'google',
+        timeSeconds: 32,
+        timeDisplay: '32초 (초고속)',
+        costEstimated: '$0.06',
+        tokenCountDisplay: '85,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.9,
+        iterationCount: 1,
+        resultDetail: '[00:18:40 마케팅 예산 충돌], [00:54:12 출시일 연기 결정] 등 초단위 타임스탬프 12개 정확 추출 및 Google Docs 즉시 내보내기.',
+        isFastest: true,
+        isCheapest: true,
+        isHighestQuality: true
+      },
+      {
+        modelName: 'GPT-5.6 Sol',
+        toolName: 'ChatGPT Advanced Voice / Audio',
+        company: 'openai',
+        timeSeconds: 145,
+        timeDisplay: '2분 25초',
+        costEstimated: '$0.65',
+        tokenCountDisplay: '60,000 토큰',
+        status: '🟢 100% 성공 (원샷)',
+        qualityScore: 9.4,
+        iterationCount: 1,
+        resultDetail: 'Whisper 엔진 기반 텍스트 변환 후 회의록 작성. 문장 요약 품질은 매우 우수하나 타임스탬프 오차 3~5초 발생.'
+      },
+      {
+        modelName: 'Claude Fable 5',
+        toolName: 'Claude 5 Text Processing',
+        company: 'anthropic',
+        timeSeconds: 60,
+        timeDisplay: '1분 00초',
+        costEstimated: '$0.40',
+        tokenCountDisplay: '45,000 토큰',
+        status: '🟡 텍스트 사전 추출 필요',
+        qualityScore: 9.1,
+        iterationCount: 2,
+        resultDetail: '오디오 직접 입력 미지원으로 Whisper로 변환된 VTT 텍스트를 주입 후 완벽한 회의록 작성.'
+      },
+      {
+        modelName: 'Grok 4.6',
+        toolName: 'Grok Voice Suite',
+        company: 'xai',
+        timeSeconds: 50,
+        timeDisplay: '50초',
+        costEstimated: '$0.20',
+        tokenCountDisplay: '40,000 토큰',
+        status: '🟡 텍스트 사전 추출 필요',
+        qualityScore: 8.5,
+        iterationCount: 2,
+        resultDetail: '1시간 대용량 파일 직접 업로드 한계로 전사 스크립트 주입 후 분석.'
+      }
+    ]
+  }
+];
