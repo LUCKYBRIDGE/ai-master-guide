@@ -759,7 +759,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
   ➔ 개인 공통 취향 1회 설정 ("모든 답변은 한국어로", "친절한 어조")
                          │
                          ▼ (자동 상속)
-[ 📦 각 프로젝트 폴더 (C:\\ai_dev\\apps\\STUDY\\) - 100% 완전 독립체 ]
+[ 📦 각 프로젝트 폴더 (C:\\ai_dev\\projects\\STUDY\\) - 100% 완전 독립체 ]
   ├── 📄 AGENTS.md        (프로젝트 단일 진실 공급원 헌법)
   ├── 🟣 CLAUDE.md        (@AGENTS.md 임포트 포인터)
   ├── 🎨 DESIGN.md        (디자인 토큰: 색상, 폰트, 여백)
