@@ -9,7 +9,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   root: __dirname,
   plugins: [react()],
-  base: './',
+  base: '/ai-master-guide/',
   server: {
     port: 3000,
     host: true,
