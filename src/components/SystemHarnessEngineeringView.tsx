@@ -47,11 +47,37 @@ import {
   HelpCircle,
   Compass,
   GraduationCap,
-  Scale
+  Scale,
+  Folder,
+  FileText,
+  Eye,
+  AlertTriangle,
+  ArrowRight,
+  Info
 } from 'lucide-react';
 
 interface SystemHarnessEngineeringViewProps {
   onCopy?: (text: string, title: string) => void;
+}
+
+// Visual Folder Hierarchy Role Definition
+interface FolderRoleDefinition {
+  id: string;
+  folderPath: string;
+  folderName: string;
+  badge: string;
+  badgeColor: string;
+  targetEngines: string;
+  whyNeeded: string;
+  files: {
+    filename: string;
+    path: string;
+    icon: string;
+    roleSummary: string;
+    targetConsumers: string[];
+    riskIfMissing: string;
+    isDynamic: boolean;
+  }[];
 }
 
 export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringViewProps> = ({ onCopy }) => {
@@ -67,6 +93,7 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
 
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedFileKey, setSelectedFileKey] = useState<string>('AGENTS.md');
+  const [activeFolderTab, setActiveFolderTab] = useState<string>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isZipping, setIsZipping] = useState<boolean>(false);
 
@@ -357,6 +384,12 @@ Follow the shared project instructions in \`AGENTS.md\`.
       envVars.push('');
     }
 
+    if (activeModules.some(m => m.id === 'mod-payment-idempotency')) {
+      envVars.push('# [결제 연동 API 키]');
+      envVars.push('TOSS_SECRET_KEY="test_sk_xxxxxxxxxxxx"');
+      envVars.push('');
+    }
+
     return envVars.join('\n');
   }, [activeModules]);
 
@@ -443,6 +476,206 @@ Follow the shared project instructions in \`AGENTS.md\`.
     return dynamicFilesList.find(f => f.key === selectedFileKey) || dynamicFilesList[0];
   }, [dynamicFilesList, selectedFileKey]);
 
+  // Visual Folder Hierarchy Role Definitions for Inspector
+  const folderRoleDefinitions: FolderRoleDefinition[] = useMemo(() => {
+    return [
+      {
+        id: 'zone-root',
+        folderPath: '/',
+        folderName: '루트 최상위 (Project Root)',
+        badge: '단일 진실 공급원 헌법 구역',
+        badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+        targetEngines: 'Codex · Claude Code · Antigravity 전체 공용',
+        whyNeeded: '모든 AI 도구가 프로젝트 진입 시 1순위로 읽어 들이는 최상위 헌법이자 빌드/테스트 규칙의 기준점입니다.',
+        files: [
+          {
+            filename: 'AGENTS.md',
+            path: 'AGENTS.md',
+            icon: '📄',
+            roleSummary: '프로젝트 단일 진실 공급원(헌법): 빌드/테스트 명령어, 코딩 표준, 완료 판정(Definition of Done) 명시',
+            targetConsumers: ['OpenAI Codex', 'Google Antigravity', 'Claude Code'],
+            riskIfMissing: 'AI들이 서로 다른 코딩 스타일로 작성하여 충돌하거나, 빌드 검증 없이 작업을 끝냈다고 거짓 보고함',
+            isDynamic: true
+          },
+          {
+            filename: 'CLAUDE.md',
+            path: 'CLAUDE.md',
+            icon: '🟣',
+            roleSummary: '@AGENTS.md를 임포트하는 클로드 코드 전용 3줄 포인터 (규칙 복사-붙여넣기 중복 원천 차단)',
+            targetConsumers: ['Claude Code CLI'],
+            riskIfMissing: 'Claude Code가 공통 헌법을 인식하지 못하고 독자적인 스타일로 코드를 파괴할 수 있음',
+            isDynamic: true
+          },
+          {
+            filename: 'DESIGN.md',
+            path: 'DESIGN.md',
+            icon: '🎨',
+            roleSummary: '디자인 시스템 토큰: 브랜드 메인/서브 컬러(#3182F6), 폰트, 버튼 곡률(12px), 4px 여백 그리드 강제',
+            targetConsumers: ['프론트엔드 에이전트 전체'],
+            riskIfMissing: '페이지마다 조잡한 무지개색 인라인 스타일이나 들쭉날쭉한 여백이 마구잡이로 생성됨',
+            isDynamic: true
+          },
+          {
+            filename: 'mcp.json',
+            path: 'mcp.json',
+            icon: '🔌',
+            roleSummary: '외부 도구 연결 명세서: 브라우저(Puppeteer), PostgreSQL DB, GitHub PR 자동화 MCP 서버 등록',
+            targetConsumers: ['Google Antigravity', 'Claude Desktop'],
+            riskIfMissing: 'AI가 외부 DB를 직접 확인하거나 브라우저 화면 캡처 검사를 수행하지 못함',
+            isDynamic: true
+          },
+          {
+            filename: '.env.example',
+            path: '.env.example',
+            icon: '🔑',
+            roleSummary: '환경변수 보안 템플릿: GitHub 토큰, DB 접속 URL, JWT 비밀키 형식 가이드 (Git 커밋 금지)',
+            targetConsumers: ['개발자 & 시스템 런타임'],
+            riskIfMissing: '소스코드 안에 비밀키(API Key)를 하드코딩하여 깃허브로 유출되는 치명적 사고 발생',
+            isDynamic: true
+          }
+        ]
+      },
+      {
+        id: 'zone-agents',
+        folderPath: '.agents/',
+        folderName: '.agents/ (Antigravity & Codex 공용)',
+        badge: '공용 스킬 & 정책 구역',
+        badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+        targetEngines: 'Antigravity · Codex 공용',
+        whyNeeded: '반복 가능한 작업 절차(SOP)와 전용 안전 정책을 저장하여 Codex와 Antigravity가 100% 공유하도록 만듭니다.',
+        files: [
+          {
+            filename: '.agents/skills/plan-feature/SKILL.md',
+            path: '.agents/skills/plan-feature/SKILL.md',
+            icon: '📋',
+            roleSummary: '사전 기획 스킬: 대형 작업 전 기존 코드와 docs/를 먼저 분석하여 위험 요소와 최소 변경 계획서 작성',
+            targetConsumers: ['Antigravity', 'Codex'],
+            riskIfMissing: '코드를 무작정 수정하다가 기존에 잘 돌아가던 핵심 기능을 망가뜨림',
+            isDynamic: true
+          },
+          {
+            filename: '.agents/skills/implement-feature/SKILL.md',
+            path: '.agents/skills/implement-feature/SKILL.md',
+            icon: '⚡',
+            roleSummary: '안전 구현 스킬: 기존 패턴을 재사용하여 가장 작고 응집력 있는 코드 작성 및 npm run build 검증',
+            targetConsumers: ['Antigravity', 'Codex'],
+            riskIfMissing: '과도한 리팩토링으로 불필요한 코드 변경량이 급증하고 빌드 에러 유발',
+            isDynamic: true
+          },
+          {
+            filename: '.agents/skills/debug/SKILL.md',
+            path: '.agents/skills/debug/SKILL.md',
+            icon: '🔍',
+            roleSummary: '디버깅 스킬: 증상만 덮지 않고 Root Cause를 추적하여 최소 안전 패치 및 회귀 방지 테스트 수행',
+            targetConsumers: ['Antigravity', 'Codex'],
+            riskIfMissing: '에러 하나 고치려다 다른 페이지 3개가 터지는 연쇄 장애 발생',
+            isDynamic: true
+          },
+          {
+            filename: '.agents/skills/code-review/SKILL.md',
+            path: '.agents/skills/code-review/SKILL.md',
+            icon: '🛡️',
+            roleSummary: '10단계 정밀 리뷰 스킬: 기능/보안/타입/회귀/테스트/문서 등 10개 관점에서 변경점 전수 검사',
+            targetConsumers: ['Antigravity', 'Codex'],
+            riskIfMissing: '보안 취약점이나 타입 에러가 포함된 불량 코드가 그대로 프로덕션에 배포됨',
+            isDynamic: true
+          },
+          {
+            filename: '.agents/skills/student-record-writer/SKILL.md',
+            path: '.agents/skills/student-record-writer/SKILL.md',
+            icon: '🎓',
+            roleSummary: '교사 특화 스킬: 나이스 1,500Byte 규격 및 교육부 기재 금지어를 100% 필터링한 생기부 문구 생성',
+            targetConsumers: ['Antigravity', 'Codex'],
+            riskIfMissing: '나이스에 금지어(외부 수상, 부모 직업)가 포함되어 감사 지적을 받거나 바이트 수가 넘침',
+            isDynamic: true
+          },
+          {
+            filename: '.agents/rules/tool-selection.md',
+            path: '.agents/rules/tool-selection.md',
+            icon: '📜',
+            roleSummary: '도구 선택 정책: 사용자 의도에 따라 최소 비용/최소 스텝의 스킬을 우선 선택하도록 강제',
+            targetConsumers: ['Antigravity'],
+            riskIfMissing: '단순한 글자 수정에도 무거운 외부 MCP를 호출하여 속도가 느려지고 토큰 낭비 발생',
+            isDynamic: true
+          }
+        ]
+      },
+      {
+        id: 'zone-claude',
+        folderPath: '.claude/',
+        folderName: '.claude/ (Claude Code 전용)',
+        badge: '클로드 CLI 특화 구역',
+        badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+        targetEngines: 'Claude Code CLI 전용',
+        whyNeeded: 'Claude Code CLI 환경에만 필요한 전용 규칙이나 터미널 프롬프트 행동 양식을 격리 보관합니다.',
+        files: [
+          {
+            filename: '.claude/rules/frontend.md',
+            path: '.claude/rules/frontend.md',
+            icon: '🟣',
+            roleSummary: '클로드 프론트엔드 규칙: Tailwind 클래스 우선 적용 및 JSX 태그 닫힘 검증 오버라이드',
+            targetConsumers: ['Claude Code'],
+            riskIfMissing: '클로드가 터미널에서 컴포넌트를 작성할 때 인라인 CSS 스타일을 생성할 위험',
+            isDynamic: false
+          }
+        ]
+      },
+      {
+        id: 'zone-docs',
+        folderPath: 'docs/',
+        folderName: 'docs/ (영구 지식 보관소)',
+        badge: '영구 아키텍처 & ADR 구역',
+        badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/30',
+        targetEngines: '모든 AI 도구 및 인간 개발자/교육자',
+        whyNeeded: 'AI 컨텍스트 윈도우를 낭비하지 않고, 장기적으로 유지해야 할 시스템 구조와 설계 결정을 영구 보관합니다.',
+        files: [
+          {
+            filename: 'docs/architecture/overview.md',
+            path: 'docs/architecture/overview.md',
+            icon: '🏛️',
+            roleSummary: '현재 시스템의 모듈 간 관계, 데이터 흐름도, 폴더별 책임을 도식화하여 설명',
+            targetConsumers: ['전체 AI 도구 & 개발자'],
+            riskIfMissing: '새로운 기능을 추가할 때 기존 시스템 구조를 이해하지 못해 엉뚱한 폴더에 파일 생성',
+            isDynamic: false
+          },
+          {
+            filename: 'docs/plans/',
+            path: 'docs/plans/',
+            icon: '📑',
+            roleSummary: '대형 기능 개발 시 작성된 단계별 구현 계획서(Implementation Plans) 보관소',
+            targetConsumers: ['전체 AI 도구'],
+            riskIfMissing: '복잡한 기능 개발 중간에 맥락이 끊겨 작업이 중구난방으로 진행됨',
+            isDynamic: false
+          },
+          {
+            filename: 'docs/decisions/ (ADRs)',
+            path: 'docs/decisions/',
+            icon: '⚖️',
+            roleSummary: '아키텍처 결정 기록: 왜 Next.js가 아닌 Vite+React를 선택했는지 등의 기술적 근거 기록',
+            targetConsumers: ['전체 AI 도구 & 개발자'],
+            riskIfMissing: '이유를 모르고 다른 AI가 핵심 라이브러리를 임의로 교체해버리는 사고 발생',
+            isDynamic: false
+          },
+          {
+            filename: 'docs/reference/neis_record_guideline.md',
+            path: 'docs/reference/neis_record_guideline.md',
+            icon: '📚',
+            roleSummary: '교육부 학생생활기록부 기재 요령 및 교내 평가 규정 공식 레퍼런스',
+            targetConsumers: ['student-record-writer 스킬'],
+            riskIfMissing: '생기부 작성 시 최신 교육부 지침과 어긋나는 표현이 생성될 위험',
+            isDynamic: true
+          }
+        ]
+      }
+    ];
+  }, []);
+
+  // Filtered folder zones for inspector
+  const displayedFolderZones = useMemo(() => {
+    if (activeFolderTab === 'all') return folderRoleDefinitions;
+    return folderRoleDefinitions.filter(z => z.id === activeFolderTab);
+  }, [activeFolderTab, folderRoleDefinitions]);
+
   // Copy handler
   const handleCopy = (id: string, text: string, title: string) => {
     if (onCopy) onCopy(text, title);
@@ -471,7 +704,7 @@ Follow the shared project instructions in \`AGENTS.md\`.
 
 ---
 
-## 📂 압축 해제 후 표준 폴더 구조
+## 📂 압축 해제 후 표준 폴더 구조 및 역할
 ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
 
 ---
@@ -563,6 +796,173 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
           <span className="px-3 py-1 rounded-full bg-slate-950/80 border border-slate-700 text-slate-300">
             생성될 파일: <strong className="text-amber-400">{dynamicFilesList.length}개</strong>
           </span>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 🌟 NEW: 시각적 파일 구조 & 폴더별 파일 역할 가시화 인스펙터 */}
+      {/* ========================================================================= */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-slate-950 border border-cyan-500/30 space-y-6 shadow-2xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                <FolderTree className="w-5 h-5" />
+              </span>
+              <h3 className="text-lg sm:text-xl font-extrabold text-white">
+                📂 시각적 프로젝트 폴더 구조 & 파일 역할 가시화 인스펙터
+              </h3>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-4xl">
+              어떤 폴더가 왜 존재하고, 그 아래의 파일들이 <strong>어떤 AI에게 무엇을 지시하며, 미작성 시 어떤 치명적 사고(위험)가 발생하는지</strong> 한눈에 파악할 수 있는 시각적 지도입니다.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar self-start md:self-auto text-xs">
+            <button
+              onClick={() => setActiveFolderTab('all')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all border whitespace-nowrap ${
+                activeFolderTab === 'all'
+                  ? 'bg-cyan-600 text-white border-cyan-400 shadow-md'
+                  : 'bg-slate-900 text-slate-400 hover:text-white border-slate-800'
+              }`}
+            >
+              전체 폴더 맵
+            </button>
+            <button
+              onClick={() => setActiveFolderTab('zone-root')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all border whitespace-nowrap ${
+                activeFolderTab === 'zone-root'
+                  ? 'bg-emerald-600 text-white border-emerald-400 shadow-md'
+                  : 'bg-slate-900 text-slate-400 hover:text-white border-slate-800'
+              }`}
+            >
+              📁 루트 (/)
+            </button>
+            <button
+              onClick={() => setActiveFolderTab('zone-agents')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all border whitespace-nowrap ${
+                activeFolderTab === 'zone-agents'
+                  ? 'bg-indigo-600 text-white border-indigo-400 shadow-md'
+                  : 'bg-slate-900 text-slate-400 hover:text-white border-slate-800'
+              }`}
+            >
+              📁 .agents/
+            </button>
+            <button
+              onClick={() => setActiveFolderTab('zone-claude')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all border whitespace-nowrap ${
+                activeFolderTab === 'zone-claude'
+                  ? 'bg-purple-600 text-white border-purple-400 shadow-md'
+                  : 'bg-slate-900 text-slate-400 hover:text-white border-slate-800'
+              }`}
+            >
+              📁 .claude/
+            </button>
+            <button
+              onClick={() => setActiveFolderTab('zone-docs')}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all border whitespace-nowrap ${
+                activeFolderTab === 'zone-docs'
+                  ? 'bg-teal-600 text-white border-teal-400 shadow-md'
+                  : 'bg-slate-900 text-slate-400 hover:text-white border-slate-800'
+              }`}
+            >
+              📁 docs/
+            </button>
+          </div>
+        </div>
+
+        {/* Visual Folder Zones Grid */}
+        <div className="space-y-6">
+          {displayedFolderZones.map((zone) => (
+            <div
+              key={zone.id}
+              className="p-5 sm:p-6 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-xl"
+            >
+              {/* Folder Zone Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-slate-950 border border-slate-700 text-cyan-400 font-mono text-sm font-bold flex items-center gap-1.5">
+                    <Folder className="w-4 h-4 text-cyan-400" />
+                    <span>{zone.folderPath}</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm sm:text-base font-extrabold text-white">
+                      {zone.folderName}
+                    </h4>
+                    <p className="text-[11px] text-slate-400">
+                      <strong>존재 이유:</strong> {zone.whyNeeded}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${zone.badgeColor}`}>
+                    {zone.badge}
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                    🎯 {zone.targetEngines}
+                  </span>
+                </div>
+              </div>
+
+              {/* Files in this Folder (Grid Cards) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+                {zone.files.map((file, fIdx) => {
+                  const isCurrentlySelectedForPreview = selectedFileKey === file.path;
+                  return (
+                    <div
+                      key={fIdx}
+                      onClick={() => setSelectedFileKey(file.path)}
+                      className={`p-4 rounded-2xl cursor-pointer transition-all border select-none space-y-3 flex flex-col justify-between ${
+                        isCurrentlySelectedForPreview
+                          ? 'bg-gradient-to-br from-cyan-950/80 via-slate-900 to-slate-950 border-cyan-400 shadow-lg ring-2 ring-cyan-500/20 scale-101'
+                          : 'bg-slate-950/80 text-slate-300 hover:bg-slate-850 hover:border-slate-700 border-slate-800/90'
+                      }`}
+                    >
+                      <div className="space-y-2">
+                        {/* File Header */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">{file.icon}</span>
+                            <span className="font-mono text-xs font-bold text-white tracking-tight">
+                              {file.filename}
+                            </span>
+                          </div>
+                          {file.isDynamic && (
+                            <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                              자동 조립
+                            </span>
+                          )}
+                        </div>
+
+                        {/* File Core Role */}
+                        <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                          {file.roleSummary}
+                        </p>
+                      </div>
+
+                      <div className="space-y-2 pt-2 border-t border-slate-800/80 text-[11px]">
+                        {/* Consumers */}
+                        <div className="flex items-center gap-1.5 text-indigo-300 font-mono text-[10px]">
+                          <span>🤖 적용:</span>
+                          <span className="truncate">{file.targetConsumers.join(', ')}</span>
+                        </div>
+
+                        {/* Risk if missing */}
+                        <div className="p-2 rounded-xl bg-rose-950/30 border border-rose-500/20 text-rose-300 text-[10px] space-y-0.5">
+                          <span className="font-bold flex items-center gap-1 text-rose-400">
+                            <AlertTriangle className="w-3 h-3 text-rose-400" /> 미작성 시 위험:
+                          </span>
+                          <p className="leading-snug text-rose-200/90">{file.riskIfMissing}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
