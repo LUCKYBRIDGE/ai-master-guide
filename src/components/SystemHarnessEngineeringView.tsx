@@ -89,7 +89,7 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
     );
   };
 
-  // Task Quick Scenarios
+  // Task Quick Scenarios (비전공자/개발자 모두 이해하기 쉬운 실무 프리셋)
   const applyScenarioFullstack = () => {
     setSelectedModuleIds([
       'mod-react-ui', 
@@ -122,7 +122,7 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
   const applyScenarioData = () => {
     setSelectedModuleIds([
       'mod-data-pipeline', 
-      'mod-postgres-db', 
+      'mod-chart-dashboard',
       'mod-git-pr-skill'
     ]);
   };
@@ -147,6 +147,22 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
       'mod-chart-dashboard',
       'mod-data-pipeline',
       'mod-react-ui'
+    ]);
+  };
+
+  const applyScenarioGame = () => {
+    setSelectedModuleIds([
+      'mod-mini-game',
+      'mod-react-ui',
+      'mod-responsive-browser'
+    ]);
+  };
+
+  const applyScenarioAiChat = () => {
+    setSelectedModuleIds([
+      'mod-ai-chatbot',
+      'mod-react-ui',
+      'mod-responsive-browser'
     ]);
   };
 
@@ -617,11 +633,11 @@ ${dynamicFilesList.map(f => `- ${f.path}: ${f.description}`).join('\n')}
                 STEP 02
               </span>
               <h4 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <CheckSquare className="w-5 h-5 text-emerald-400" /> 처리할 실무 작업을 체크하세요 (중복 선택 가능)
+                <CheckSquare className="w-5 h-5 text-emerald-400" /> 내가 만들 서비스에 필요한 실무 기능을 체크하세요 (중복 선택 가능)
               </h4>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              선택한 작업에 따라 지침 규칙, mcp.json 커넥터, skills/ 교본, rules/ 정책 파일이 실시간 조립됩니다.
+              체크하신 기능에 맞춰 AI가 엉뚱한 코드를 짜지 않도록 맞춤 지침서(AGENTS.md), 외부 연결 도구(mcp.json), 자동화 매뉴얼(skills/)이 실시간 조립됩니다.
             </p>
           </div>
 
@@ -631,55 +647,67 @@ ${dynamicFilesList.map(f => `- ${f.path}: ${f.description}`).join('\n')}
               onClick={applyScenarioFullstack}
               className="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 font-bold transition-all"
             >
-              🚀 1인 풀스택
+              🚀 1인 풀스택 (홈페이지+서버+DB)
             </button>
             <button
               onClick={applyScenarioFrontend}
               className="px-2.5 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 font-bold transition-all"
             >
-              🎨 프론트엔드
+              🎨 화면 디자인 (버튼·UI+모바일)
             </button>
             <button
               onClick={applyScenarioEdu}
               className="px-2.5 py-1 rounded-lg bg-yellow-600/20 hover:bg-yellow-600/30 text-yellow-300 border border-yellow-500/40 font-bold transition-all"
             >
-              📚 교육용 앱
-            </button>
-            <button
-              onClick={applyScenarioDocs}
-              className="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 font-bold transition-all"
-            >
-              📄 기획·문서화
+              📚 교육용 앱 (단어장+퀴즈)
             </button>
             <button
               onClick={applyScenarioDashboard}
               className="px-2.5 py-1 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 font-bold transition-all"
             >
-              📈 데이터 차트
+              📈 차트·대시보드 (엑셀 시각화)
+            </button>
+            <button
+              onClick={applyScenarioDocs}
+              className="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 font-bold transition-all"
+            >
+              📄 기획·문서화 (사업제안서+기획서)
+            </button>
+            <button
+              onClick={applyScenarioGame}
+              className="px-2.5 py-1 rounded-lg bg-orange-600/20 hover:bg-orange-600/30 text-orange-300 border border-orange-500/40 font-bold transition-all"
+            >
+              🎮 미니게임 (퍼즐·웹게임)
+            </button>
+            <button
+              onClick={applyScenarioAiChat}
+              className="px-2.5 py-1 rounded-lg bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/40 font-bold transition-all"
+            >
+              🤖 AI 챗봇 (카톡형 AI 대화)
             </button>
             <button
               onClick={applyScenarioBackend}
               className="px-2.5 py-1 rounded-lg bg-teal-600/20 hover:bg-teal-600/30 text-teal-300 border border-teal-500/40 font-bold transition-all"
             >
-              ⚙️ 백엔드/결제
+              ⚙️ 회원가입·결제 (간편로그인+카드결제)
             </button>
             <button
               onClick={applyScenarioData}
               className="px-2.5 py-1 rounded-lg bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/40 font-bold transition-all"
             >
-              📊 데이터분석
+              📊 데이터 분석 (엑셀 자동 정리)
             </button>
             <button
               onClick={selectAllTasks}
               className="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800"
             >
-              전체
+              전체 선택
             </button>
             <button
               onClick={clearAllTasks}
               className="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800"
             >
-              해제
+              전체 해제
             </button>
           </div>
         </div>
@@ -687,7 +715,7 @@ ${dynamicFilesList.map(f => `- ${f.path}: ${f.description}`).join('\n')}
         {/* Category Filter Tabs & Live Counter */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            {['ALL', '프론트엔드/UI', '교육/학습용', '비즈니스/문서', '데이터/시각화', '백엔드/DB', '보안/결제', '협업/DevOps'].map(cat => (
+            {['ALL', '프론트엔드/UI', '교육/학습용', '데이터/시각화', '비즈니스/문서', '게임/시뮬레이션', 'AI챗봇/어시스턴트', '백엔드/DB', '보안/결제', '협업/DevOps', '데이터/자동화'].map(cat => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
@@ -706,9 +734,9 @@ ${dynamicFilesList.map(f => `- ${f.path}: ${f.description}`).join('\n')}
             <span>실시간 구성:</span>
             <span className="text-indigo-300 font-bold">도구 {activeTools.length}개</span>
             <span>•</span>
-            <span className="text-emerald-300 font-bold">규칙 {activeModules.length}개</span>
+            <span className="text-emerald-300 font-bold">기능 {activeModules.length}개</span>
             <span>•</span>
-            <span className="text-teal-300 font-bold">MCP {counts.mcps}개 (무설정 {counts.zeroConfigMcps} / 키필요 {counts.authRequiredMcps})</span>
+            <span className="text-teal-300 font-bold">외부 도구(MCP) {counts.mcps}개 (무설정 {counts.zeroConfigMcps} / 키필요 {counts.authRequiredMcps})</span>
           </div>
         </div>
 
@@ -752,7 +780,7 @@ ${dynamicFilesList.map(f => `- ${f.path}: ${f.description}`).join('\n')}
                   </div>
                   {module.detailedImpact.mcpServerName && (
                     <div className="flex items-center justify-between text-teal-300">
-                      <span>🔌 MCP: {module.detailedImpact.mcpServerName}</span>
+                      <span>🔌 도구: {module.detailedImpact.mcpServerName}</span>
                       <span className={`text-[9px] px-1.5 py-0.2 rounded ${
                         module.detailedImpact.mcpType === 'zero-config' 
                           ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
@@ -764,8 +792,14 @@ ${dynamicFilesList.map(f => `- ${f.path}: ${f.description}`).join('\n')}
                   )}
                   {module.detailedImpact.skillPath && (
                     <div className="flex items-center gap-1 text-amber-300">
-                      <span>📜 스킬:</span>
-                      <span>{module.detailedImpact.skillPath}</span>
+                      <span>📖 매뉴얼:</span>
+                      <span className="truncate">{module.detailedImpact.skillPath}</span>
+                    </div>
+                  )}
+                  {module.detailedImpact.policyPath && (
+                    <div className="flex items-center gap-1 text-rose-300">
+                      <span>📜 안전규칙:</span>
+                      <span className="truncate">{module.detailedImpact.policyPath}</span>
                     </div>
                   )}
                 </div>

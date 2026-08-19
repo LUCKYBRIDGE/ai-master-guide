@@ -27,7 +27,7 @@ export interface AiToolItem {
 export interface TaskFeatureModule {
   id: string;
   name: string;
-  category: '프론트엔드/UI' | '백엔드/DB' | '보안/결제' | '협업/DevOps' | '데이터/자동화' | '교육/학습용' | '비즈니스/문서' | '데이터/시각화';
+  category: '프론트엔드/UI' | '교육/학습용' | '비즈니스/문서' | '데이터/시각화' | '백엔드/DB' | '보안/결제' | '협업/DevOps' | '데이터/자동화' | '게임/시뮬레이션' | 'AI챗봇/어시스턴트';
   badge: string;
   badgeColor: string;
   shortDesc: string;
@@ -98,7 +98,7 @@ export const MCP_SKILL_AGENT_CONCEPTS: McpSkillAgentSummary[] = [
     role: '두뇌이자 자율 실행자 (Agent)',
     metaphor: '👨‍🍳 전문 셰프: 목표를 전달하면 스스로 계획을 세우고, 재료를 준비해 완성된 요리를 만들어내는 주체',
     description: '단순히 질문에 답하는 챗봇이 아니라, 목표를 주면 파일 생성, 코드 작성, 터미널 명령어 실행, 에러 자동 수정까지 스스로 수행하는 자율 코딩 AI입니다.',
-    practicalExample: '"로그인 기능 만들어줘"라고 요청하면 [기획 검토 ➔ 컴포넌트 개발 ➔ 빌드 테스트 ➔ 버그 수정 ➔ 완료 보고]를 알아서 진행',
+    practicalExample: '"로그인 기능 만들어줘"라고 요청하면 [기획 검토 ➔ 화면 제작 ➔ 빌드 테스트 ➔ 버그 수정 ➔ 완료 보고]를 알아서 진행',
     keyBenefits: [
       '개발자가 코드를 일일이 타이핑할 필요 없이 핵심 목표만 지시',
       '여러 파일을 동시에 수정하고 빌드 에러를 스스로 테스트하며 해결',
@@ -112,7 +112,7 @@ export const MCP_SKILL_AGENT_CONCEPTS: McpSkillAgentSummary[] = [
     englishName: 'Standard Tool & Data Connector',
     role: '외부 시스템 연결 도구 (Connectors)',
     metaphor: '🔌 외부 연결선: AI에게 데이터베이스, 웹 브라우저, GitHub를 안전하게 연결해주는 표준 규격',
-    description: 'AI가 회사 데이터베이스(PostgreSQL), GitHub 저장소, 로컬 파일, 웹 브라우저 등 외부 시스템과 안전하게 통신할 수 있도록 만든 오픈소스 표준 프로토콜입니다.',
+    description: 'AI가 회사 데이터베이스(PostgreSQL), GitHub 저장소, 내 컴퓨터 파일, 웹 브라우저 등 외부 시스템과 안전하게 통신할 수 있도록 만든 오픈소스 표준 프로토콜입니다.',
     practicalExample: 'AI가 내 로컬 DB에 직접 쿼리를 날려 테이블 구조를 확인하거나, 브라우저를 띄워 실제 화면 캡처 후 디자인 검증',
     keyBenefits: [
       '무설정 MCP(Puppeteer, Filesystem)는 별도 키 없이 npx로 즉시 구동',
@@ -182,18 +182,18 @@ export const AI_TOOLS_CATALOG: AiToolItem[] = [
   }
 ];
 
-// 2. 실무 작업 모듈 8대 옵션 (STEP 2: 중복 선택 체크박스)
+// 2. 실무 작업 모듈 목록 (STEP 2: 중복 선택 체크박스 - 비전공자/실무자 모두 이해하기 쉬운 직관적 구성)
 export const TASK_FEATURE_MODULES: TaskFeatureModule[] = [
-  // --- [1] 프론트엔드 & UI/UX ---
+  // --- [1] 프론트엔드 & 화면 디자인 ---
   {
     id: 'mod-react-ui',
-    name: '🎨 React/Next.js UI 컴포넌트 & 디자인 시스템 (DESIGN.md)',
+    name: '🎨 깔끔한 웹/앱 화면 만들기 (버튼·카드·메뉴 디자인)',
     category: '프론트엔드/UI',
-    badge: 'UI 토큰',
+    badge: '화면 디자인',
     badgeColor: 'bg-purple-500/10 text-purple-300 border-purple-500/30',
-    shortDesc: 'React 18+, TypeScript strict, DESIGN.md 토큰(컬러/폰트/여백) 준수 및 UI 컴포넌트 자동 스캐폴딩 스킬',
+    shortDesc: '내 브랜드 컬러와 글꼴(DESIGN.md)을 준수하여 조잡하지 않고 완성도 높은 버튼, 입력창, 카드 UI 제작',
     detailedImpact: {
-      agentRuleSummary: 'React strict, any 금지, DESIGN.md 토큰 준수 지침 주입',
+      agentRuleSummary: '디자인 색상·글꼴 통일, 완성도 높은 UI 컴포넌트 규칙',
       skillPath: 'skills/ui-component-scaffold/SKILL.md'
     },
     defaultSelected: true,
@@ -204,17 +204,17 @@ export const TASK_FEATURE_MODULES: TaskFeatureModule[] = [
 - **타입 정의**: 모든 컴포넌트 Props는 \`src/types/\` 내 인터페이스로 명시적 정의`,
     skillFile: {
       path: 'skills/ui-component-scaffold/SKILL.md',
-      description: 'DESIGN.md 규격을 준수하는 React 함수형 컴포넌트 자동 생성 스킬',
+      description: 'DESIGN.md 규격을 준수하는 깔끔한 UI 컴포넌트 자동 생성 스킬',
       content: `---
 name: ui-component-scaffold
-description: DESIGN.md 규격을 준수하는 React 함수형 컴포넌트 자동 생성
+description: DESIGN.md 규격을 준수하는 깔끔한 React 컴포넌트 자동 생성
 tools: [file_writer, shell]
 ---
 
 # UI 컴포넌트 자동 생성 워크플로우
 1. 생성할 컴포넌트의 Props 인터페이스를 명시적으로 정의한다.
 2. DESIGN.md의 토큰(컬러, 폰트, 여백)을 Tailwind CSS 클래스로 매핑한다.
-3. 반응형 디자인(sm, md, lg)과 마우스 호버/액티브 상태 애니메이션을 포함한다.
+3. 반응형 디자인(sm, md, lg)과 마우스 호버/클릭 상태 애니메이션을 포함한다.
 4. \`npm run build\`를 실행하여 TypeScript 타입 오류가 없는지 검증한다.`
     },
     extraFile: {
@@ -246,73 +246,160 @@ tools: [file_writer, shell]
   },
   {
     id: 'mod-responsive-browser',
-    name: '📱 반응형 모바일 대응 & Puppeteer 화면 캡처 검증',
+    name: '📱 스마트폰·태블릿·PC 화면 맞춤 & 화면 자동 검사',
     category: '프론트엔드/UI',
-    badge: '화면 검증 MCP',
+    badge: '화면 검증',
     badgeColor: 'bg-purple-500/10 text-purple-300 border-purple-500/30',
-    shortDesc: '모바일(sm)/태블릿(md)/데스크톱(lg) 반응형 필수 대응 및 Puppeteer 브라우저 스크린샷 MCP 연동',
+    shortDesc: '스마트폰, 태블릿, PC 어디서 열어도 글자나 버튼이 깨지지 않게 맞추고, AI가 직접 화면을 캡처해 검사',
     detailedImpact: {
-      agentRuleSummary: '반응형 브레이크포인트 필수 대응 및 캡처 검증',
+      agentRuleSummary: '모바일·태블릿 화면 자동 최적화, 브라우저 화면 캡처 검사',
       mcpServerName: 'puppeteer-browser',
       mcpType: 'zero-config',
       mcpSetupGuide: 'API 키 없이 npx로 즉시 브라우저 구동'
     },
     defaultSelected: true,
     agentRuleSection: `### [반응형 디자인 및 브라우저 검증 규칙]
-- **반응형 필수 대응**: 모바일(sm: 640px), 태블릿(md: 768px), 데스크톱(lg: 1024px) 뷰포트에서 깨짐이 없도록 설계
-- **화면 렌더링 검증**: UI 컴포넌트 작성 후 Puppeteer MCP 도구를 활용해 브라우저 렌더링 화면을 캡처하고 시각적 결함을 점검할 것.`,
+- **반응형 필수 대응**: 모바일(sm: 640px), 태블릿(md: 768px), 데스크톱(lg: 1024px) 화면 크기에서 글자나 버튼 깨짐이 없도록 설계
+- **화면 렌더링 검증**: UI 컴포넌트 작성 후 Puppeteer 브라우저 도구를 활용해 렌더링 화면을 캡처하고 시각적 결함을 점검할 것.`,
     mcpServer: {
       key: 'puppeteer-browser',
       mcpType: 'zero-config',
       config: {
         command: 'npx',
         args: ['-y', '@modelcontextprotocol/server-puppeteer'],
-        description: '실제 웹 브라우저를 띄워 UI 스크린샷 캡처 및 화면 렌더링 검증 (무설정 즉시 실행)'
+        description: '실제 웹 브라우저를 띄워 UI 스크린샷 캡처 및 화면 레이아웃 자동 검사 (무설정 즉시 실행)'
       }
     }
   },
 
-  // --- [2] 백엔드 & 데이터베이스 ---
+  // --- [2] 교육/학습용 & 비즈니스 문서 ---
+  {
+    id: 'mod-edu-quiz',
+    name: '📚 카드 뒤집기 단어장 & 자동 채점 퀴즈 (교육용 웹/앱)',
+    category: '교육/학습용',
+    badge: '교육용 기능',
+    badgeColor: 'bg-yellow-500/10 text-yellow-300 border-yellow-500/30',
+    shortDesc: '카드가 3D로 휙 뒤집히는 단어장, 발음 읽어주기(TTS), 4지선다 퀴즈 및 틀린 문제 오답 노트 저장 기능',
+    detailedImpact: {
+      agentRuleSummary: '3D 카드 뒤집기 애니메이션, 발음 듣기, 틀린 문제 오답 노트 저장',
+      skillPath: 'skills/edu-quiz-generator/SKILL.md'
+    },
+    defaultSelected: false,
+    agentRuleSection: `### [교육용 웹/앱 및 인터랙티브 학습 규칙]
+- **학습자 친화 인터랙션**: 카드가 뒤집히는 3D 플립 애니메이션과 즉각적인 정답/오답 사운드/시각 피드백을 제공할 것.
+- **오답 노트 영속화**: 틀린 문제는 \`localStorage\`에 저장하여 언제든 다시 복습할 수 있도록 설계할 것.
+- **음성 재생(TTS) 예외 처리**: \`window.speechSynthesis\` 지원 여부를 사전에 체크하고 음성 안내를 안정적으로 제공할 것.`,
+    skillFile: {
+      path: 'skills/edu-quiz-generator/SKILL.md',
+      description: '인터랙티브 퀴즈 및 플래시카드 단어장 컴포넌트 자동 생성 스킬',
+      content: `---
+name: edu-quiz-generator
+description: 단어 목록을 입력받아 플래시카드, 4지선다 퀴즈 및 오답 노트 컴포넌트 자동 생성
+tools: [file_writer, shell]
+---
+
+# 교육용 퀴즈 컴포넌트 생성 워크플로우
+1. 단어/문제 JSON 데이터 구조(id, question, options, answer, explanation)를 정의한다.
+2. 카드 뒤집기 애니메이션과 즉각적인 채점 상태 머신(State Machine)을 구현한다.
+3. 오답 복습용 필터링 및 브라우저 로컬 저장 로직을 추가한다.`
+    }
+  },
+  {
+    id: 'mod-chart-dashboard',
+    name: '📈 엑셀 파일 올리면 바로 그려지는 인터랙티브 차트·그래프',
+    category: '데이터/시각화',
+    badge: '차트 시각화',
+    badgeColor: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30',
+    shortDesc: '엑셀이나 CSV 파일을 마우스로 끌어다 놓으면(드래그) 매출 추이 꺾은선·막대·도넛 그래프와 핵심 수치 요약 카드가 자동 생성',
+    detailedImpact: {
+      agentRuleSummary: '스마트폰에서도 안 깨지는 반응형 차트, 엑셀 파일 드래그 자동 인식',
+      skillPath: 'skills/chart-dashboard-scaffold/SKILL.md'
+    },
+    defaultSelected: false,
+    agentRuleSection: `### [데이터 시각화 및 대시보드 규칙]
+- **반응형 차트**: 모든 차트는 \`ResponsiveContainer\`로 감싸 화면 크기에 따라 너비와 높이가 유연하게 조절되도록 할 것.
+- **CSV/Excel 결측치 정제**: 빈 행, 비정상적인 문자열 금액, 누락된 날짜 데이터를 사전에 걸러내는 파싱 유틸을 구현할 것.
+- **KPI 요약 카드**: 대시보드 상단에 총매출, 건수, 평균 객단가 등 핵심 지표 카드를 눈에 띄게 배치할 것.`,
+    skillFile: {
+      path: 'skills/chart-dashboard-scaffold/SKILL.md',
+      description: 'CSV 데이터 분석 및 인터랙티브 차트 대시보드 자동 생성 스킬',
+      content: `---
+name: chart-dashboard-scaffold
+description: CSV 데이터 파싱 및 반응형 그래프 대시보드 자동 스캐폴딩
+tools: [file_writer, shell]
+---
+
+# 차트 대시보드 자동 생성 워크플로우
+1. CSV/JSON 데이터를 파싱하고 빈칸이나 잘못된 값을 정제하는 유틸 함수를 작성한다.
+2. 꺾은선, 막대, 도넛 차트 컴포넌트를 보기 쉬운 반응형 그리드로 배치한다.
+3. 마우스 호버 시 상세 말풍선(Tooltip) 및 핵심 수치 요약 카드를 렌더링한다.`
+    }
+  },
+  {
+    id: 'mod-biz-docs',
+    name: '📄 한눈에 들어오는 서비스 기획서 & 사업 제안서(IR) 양식',
+    category: '비즈니스/문서',
+    badge: '기획서 양식',
+    badgeColor: 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30',
+    shortDesc: '누가 봐도 설득력 있는 핵심 아이디어 정리, 사용자 타겟 분석, 개발 일정 계획표가 포함된 깔끔한 기획서 자동 작성',
+    detailedImpact: {
+      agentRuleSummary: '핵심 요약 표, 사용자 분석, 월별 개발 일정표 표준 양식',
+      policyPath: 'rules/documentation_standards.md'
+    },
+    defaultSelected: false,
+    agentRuleSection: `### [비즈니스 기획 및 문서화 표준 규칙]
+- **구조화된 문서 양식**: 모든 기획서는 [1. 문제 정의], [2. 시장 기회], [3. 핵심 기능], [4. 수익 모델], [5. 개발 로드맵 표] 순서로 작성할 것.
+- **정량적 지표 제시**: 단순 줄글 대신 표(Table), 불릿 포인트, 구체적인 목표 수치를 명시할 것.`,
+    extraFile: {
+      path: 'rules/documentation_standards.md',
+      description: '사내 표준 비즈니스 기획서 및 기술 문서 작성 가이드',
+      content: `# Documentation Standards
+1. 모든 서비스 기획서는 문제 정의와 해결책을 첫 페이지에 요약한다.
+2. 개발 로드맵은 월별 마일스톤과 담당 항목을 표로 구조화한다.`
+    }
+  },
+
+  // --- [3] 백엔드 & 데이터베이스 ---
   {
     id: 'mod-rest-api',
-    name: '⚙️ 백엔드 REST API 아키텍처 & DTO 타입 검증',
+    name: '⚙️ 데이터 주고받기 & 서버 통신 규격 (로그인/회원가입/데이터 전송)',
     category: '백엔드/DB',
-    badge: 'API 표준',
+    badge: '서버 통신',
     badgeColor: 'bg-teal-500/10 text-teal-300 border-teal-500/30',
-    shortDesc: 'RESTful 상태 코드 규격, 요청/응답 DTO 인터페이스 검증, API 엔드포인트 테스트 스킬',
+    shortDesc: '화면과 서버 간에 데이터를 안전하게 주고받고, 잘못된 입력값이 들어오면 친절한 안내 메시지를 띄우는 서버 통신 규칙',
     detailedImpact: {
-      agentRuleSummary: 'RESTful 상태 코드 및 DTO 명시적 검증',
+      agentRuleSummary: '서버 통신 데이터 정밀 검증, 알기 쉬운 에러 메시지 반환',
       skillPath: 'skills/api-endpoint-test/SKILL.md'
     },
     defaultSelected: true,
     agentRuleSection: `### [백엔드 REST API 아키텍처 규칙]
-- **RESTful 표준**: 리소스 기반 URI 명명, HTTP 상태 코드(200, 201, 400, 401, 404, 500) 명확히 반환
-- **DTO 타입 검증**: 모든 API 요청(Request Body/Query)과 응답(Response)은 TypeScript 인터페이스 또는 Zod 스키마로 100% 검증
-- **에러 핸들링**: 전역 예외 처리 미들웨어를 두어 일관된 에러 JSON 포맷(\`{ error: { code, message } }\`)으로 반환할 것.`,
+- **표준 HTTP 상태 코드**: 성공(200, 201), 사용자 실수(400, 401, 404), 서버 에러(500) 코드를 명확히 반환
+- **입력 데이터 검증**: 모든 API 요청과 응답은 잘못된 값이 들어오지 못하도록 엄격히 검증할 것.
+- **친절한 에러 안내**: 알기 쉬운 에러 JSON 포맷(\`{ error: { code, message } }\`)으로 반환하여 프론트엔드에서 안내 팝업을 띄우기 쉽게 만들 것.`,
     skillFile: {
       path: 'skills/api-endpoint-test/SKILL.md',
-      description: 'API 엔드포인트 자동 테스트 및 응답 스키마 검증 스킬',
+      description: '서버 API 엔드포인트 자동 테스트 및 응답 구조 검증 스킬',
       content: `---
 name: api-endpoint-test
-description: 백엔드 REST API 엔드포인트의 정상/예외 케이스 자동 테스트
+description: 백엔드 API 엔드포인트의 정상/예외 케이스 자동 테스트
 tools: [shell]
 ---
 
 # API 엔드포인트 테스트 워크플로우
 1. 200/201 성공 응답 데이터 구조와 타입 일치 여부를 검증한다.
-2. 400 유효하지 않은 입력값 전송 시 에러 메시지가 정확한지 확인한다.
-3. 401/403 미인증 요청에 대한 접근 차단 상태를 검증한다.`
+2. 400 유효하지 않은 입력값 전송 시 에러 안내 문구가 정확한지 확인한다.
+3. 401/403 미인증 요청에 대한 안전한 차단 상태를 검증한다.`
     }
   },
   {
     id: 'mod-postgres-db',
-    name: '🗄️ PostgreSQL / MySQL DB 연동 & 마이그레이션',
+    name: '🗄️ 회원 정보·게시글 데이터베이스(DB) 안전 저장 및 조회',
     category: '백엔드/DB',
-    badge: 'DB MCP (연결 필요)',
+    badge: 'DB 연동',
     badgeColor: 'bg-teal-500/10 text-teal-300 border-teal-500/30',
-    shortDesc: 'PostgreSQL DB 스키마 실시간 조회 MCP, DB 무단 파괴(DROP) 방어, SQL 마이그레이션 스킬',
+    shortDesc: '회원 정보나 게시글 데이터를 DB에 안전하게 저장하고, 실수로 전체 데이터가 날아가는(삭제) 사고를 완벽 차단',
     detailedImpact: {
-      agentRuleSummary: 'DB 조회 시 읽기전용 우선, DROP/DELETE 전수 삭제 차단',
+      agentRuleSummary: '안전한 데이터 읽기/쓰기, 데이터 전체 삭제 사고 원천 차단',
       mcpServerName: 'postgres',
       mcpType: 'needs-auth',
       mcpSetupGuide: '.env의 DATABASE_URL 또는 로컬 postgresql 연결 URL 입력 필요',
@@ -320,9 +407,9 @@ tools: [shell]
     },
     defaultSelected: true,
     agentRuleSection: `### [데이터베이스 보안 및 스키마 관리 규칙]
-- **DB 접근 제한**: 데이터베이스 조회 시 쓰기(Write) 대신 읽기 전용(Read-Only) 쿼리를 우선 활용할 것.
-- **위험 명령 차단**: 운영 DB 파괴 명령(\`DROP TABLE\`, \`DELETE FROM\` 전수 삭제)은 사람 승인 없이 절대 실행 금지.
-- **인덱스 및 관계**: 외래키(FK) 연결 시 반드시 인덱스를 생성하여 N+1 쿼리 및 성능 저하를 방지할 것.`,
+- **DB 접근 제한**: 데이터베이스 조회 시 쓰기(Write) 대신 읽기 전용(Read-Only) 조회를 우선 활용할 것.
+- **위험 명령 차단**: 데이터 전체 삭제 명령(\`DROP TABLE\`, 조건 없는 \`DELETE\`)은 사람의 확인 승인 없이 절대 실행 금지.
+- **조회 속도 최적화**: 자주 검색하는 데이터 항목에는 인덱스를 생성하여 서비스가 버벅거리지 않게 할 것.`,
     mcpServer: {
       key: 'postgres',
       mcpType: 'needs-auth',
@@ -330,86 +417,86 @@ tools: [shell]
       config: {
         command: 'npx',
         args: ['-y', '@modelcontextprotocol/server-postgres', 'postgresql://user:password@localhost:5432/my_database'],
-        description: '로컬 데이터베이스 테이블 스키마 조회 및 읽기 전용 쿼리 실행 (.env DATABASE_URL 연결)'
+        description: '데이터베이스 테이블 구조 조회 및 안전한 읽기 쿼리 실행 (.env DATABASE_URL 연결)'
       }
     },
     skillFile: {
       path: 'skills/db-migration-gen/SKILL.md',
-      description: 'SQL 마이그레이션 스크립트 및 롤백 쿼리 자동 생성 스킬',
+      description: 'DB 테이블 변경 및 되돌리기(롤백) SQL 스크립트 자동 생성 스킬',
       content: `---
 name: db-migration-gen
 description: 테이블 스키마 변경 시 안전한 Up/Down SQL 마이그레이션 스크립트 생성
 tools: [file_writer, shell]
 ---
 
-# DB 마이그레이션 스크립트 생성 워크플로우
-1. 변경할 테이블의 외래키(FK) 및 인덱스 영향도를 사전에 분석한다.
-2. \`UP\` 쿼리(신규 테이블 생성 또는 컬럼 추가)를 작성한다.
-3. 장애 발생 시 즉시 복구할 수 있는 \`DOWN\` 롤백 쿼리를 반드시 세트로 작성한다.`
+# DB 스키마 생성 워크플로우
+1. 변경할 테이블의 관계와 데이터 영향도를 사전에 분석한다.
+2. 신규 테이블 생성 또는 컬럼 추가 쿼리를 작성한다.
+3. 문제 발생 시 즉시 이전 상태로 되돌릴 수 있는 원상복구(롤백) 쿼리를 세트로 작성한다.`
     }
   },
 
-  // --- [3] 보안 & 결제 ---
+  // --- [4] 보안 & 결제 ---
   {
     id: 'mod-security-auth',
-    name: '🔐 보안 인증 (JWT / OAuth2 / API Key 방어)',
+    name: '🔐 카카오/구글 간편 로그인 & 비밀번호 암호화 보안',
     category: '보안/결제',
-    badge: '보안 정책',
+    badge: '보안 수칙',
     badgeColor: 'bg-rose-500/10 text-rose-300 border-rose-500/30',
-    shortDesc: 'API Secret Key 소스코드 하드코딩 금지, JWT 만료 처리, 사내 보안 정책(security_policy.md)',
+    shortDesc: '카카오·구글 소셜 로그인, 비밀번호 안전 암호화 저장, 비밀키(API Key) 외부 유출 방지 보안 수칙',
     detailedImpact: {
-      agentRuleSummary: '시크릿 키 .env 강제, JWT Bearer 미들웨어 검증',
+      agentRuleSummary: '소셜 로그인 연동, 비밀번호 암호화 저장, 비밀키 유출 방지',
       policyPath: 'rules/security_policy.md'
     },
     defaultSelected: true,
-    agentRuleSection: `### [보안 및 시크릿 키 관리 규칙]
-- **시크릿 키 하드코딩 금지**: API Key, DB 비밀번호, JWT Secret을 코드에 절대 노출하지 말고 \`.env\` 환경변수로만 참조할 것.
-- **인증 토큰 검증**: 모든 보호된 API 엔드포인트는 Authorization Bearer 헤더 검증 미들웨어를 통과시킬 것.
-- **비밀번호 암호화**: 평문 비밀번호 저장 금지. 반드시 bcrypt(saltRounds >= 10) 이상으로 해싱할 것.`,
+    agentRuleSection: `### [보안 및 비밀키 관리 규칙]
+- **비밀키 코드 노출 금지**: API Key, DB 비밀번호, 토큰 키를 소스코드에 절대 직접 적지 말고 \`.env\` 환경변수로만 참조할 것.
+- **인증 토큰 검증**: 마이페이지, 주문내역 등 로그인 전용 화면은 로그인 여부를 철저히 검증할 것.
+- **비밀번호 암호화**: 비밀번호를 원문 그대로 저장하지 말고, 반드시 안전한 암호화(bcrypt 등)를 거쳐 저장할 것.`,
     extraFile: {
       path: 'rules/security_policy.md',
       description: '사내 보안 인증 및 시크릿 키 관리 정책',
       content: `# Security Policy & Secret Key Management
-1. 모든 비밀번호는 bcrypt(saltRounds >= 10) 또는 Argon2로 단방향 암호화한다.
-2. JWT Access Token 유효기간은 최대 2시간, Refresh Token은 HttpOnly Cookie로 저장한다.
+1. 모든 비밀번호는 단방향 암호화하여 저장한다.
+2. 로그인 토큰 유효기간을 설정하고 안전한 쿠키 방식으로 관리한다.
 3. .env 파일은 절대 Git 레포지토리에 커밋하지 않는다 (.gitignore 필수 등록).`
     }
   },
   {
     id: 'mod-payment-idempotency',
-    name: '💳 결제 시스템 & 트랜잭션 멱등성 (Toss / Stripe)',
+    name: '💳 카드 결제 연동 & 중복 결제(돈 두 번 빠짐) 방지',
     category: '보안/결제',
-    badge: '결제 정책',
+    badge: '결제 안전장치',
     badgeColor: 'bg-rose-500/10 text-rose-300 border-rose-500/30',
-    shortDesc: '중복 결제 방지 멱등키(Idempotency Key), 부동소수점 오차 방지 Decimal.js 연산 규칙',
+    shortDesc: '토스·KG이니시스·스트라이프 결제 연동 시, 새로고침이나 더블 클릭으로 돈이 두 번 빠져나가지 않도록 완벽 방지',
     detailedImpact: {
-      agentRuleSummary: 'Idempotency-Key 필수 헤더 검증 및 Decimal.js 금액 연산',
+      agentRuleSummary: '중복 결제 방지 안전장치, 1원 단위 오차 없는 정확한 금액 계산',
       policyPath: 'rules/payment_policy.md'
     },
     defaultSelected: false,
-    agentRuleSection: `### [결제 및 금융 트랜잭션 규칙]
-- **결제 멱등성 보장**: 모든 결제/환불 API 요청 시 \`Idempotency-Key\` 헤더를 필수로 검증하여 중복 결제를 100% 차단할 것.
-- **부동소수점 오차 방지**: 자바스크립트 금액 계산 시 \`Decimal.js\` 라이브러리를 필수로 사용하여 소수점 오차를 방지할 것.
-- **트랜잭션 격리**: 잔액 차감 및 주문 생성을 동일한 DB 트랜잭션(ACID)으로 묶을 것.`,
+    agentRuleSection: `### [결제 및 금액 계산 안전 규칙]
+- **중복 결제 방지**: 사용자가 결제 버튼을 연타하거나 새로고침해도 주문이 1번만 승인되도록 고유 결제 키를 검증할 것.
+- **금액 계산 오차 방지**: 자바스크립트 소수점 오차로 1원이 어긋나지 않도록 정밀 계산 라이브러리(Decimal)를 사용할 것.
+- **주문-결제 묶음 처리**: 결제 성공과 재고 차감, 주문서 생성을 하나의 안전한 거래 단위(트랜잭션)로 묶어 처리할 것.`,
     extraFile: {
       path: 'rules/payment_policy.md',
       description: '결제 트랜잭션 및 금액 연산 무결성 정책',
       content: `# Payment & Transaction Policy
-1. 모든 결제 승인 API는 중복 요청 방지를 위해 Redis 기반 멱등성 락(Lock)을 적용한다.
-2. 부동소수점 오차 방지를 위해 모든 금액 및 수수료 계산 시 Decimal.js를 사용한다.`
+1. 모든 결제 승인 API는 중복 결제를 방지하기 위해 중복 요청 방지 락(Lock)을 적용한다.
+2. 부동소수점 오차 방지를 위해 모든 금액 및 수수료 계산 시 정밀 연산 모듈을 사용한다.`
     }
   },
 
-  // --- [4] 협업 & DevOps ---
+  // --- [5] 협업 & DevOps & 자동화 ---
   {
     id: 'mod-git-pr-skill',
-    name: '🚀 Git 커밋 & GitHub PR 자동 생성 (Conventional Commits)',
+    name: '🚀 작업 내용 깃허브(GitHub) 자동 백업 & 에러 발생 시 스스로 수정',
     category: '협업/DevOps',
-    badge: '생산성 스킬 & MCP',
+    badge: '자동 백업 & 치유',
     badgeColor: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
-    shortDesc: '소스코드 변경점을 자동 분석하여 feat/fix 규격 커밋 및 GitHub PR을 3초 만에 생성하는 실무 스킬',
+    shortDesc: 'AI가 수정한 코드 내용을 일목요연하게 요약해 깃허브에 백업하고, 터미널 오류 발생 시 멈추지 않고 스스로 고치도록 지시',
     detailedImpact: {
-      agentRuleSummary: '빌드/테스트 자가 치유 및 0에러 입증 선언',
+      agentRuleSummary: '코드 변경 내역 자동 요약, 에러 발생 시 AI 스스로 자동 수정',
       mcpServerName: 'github',
       mcpType: 'needs-auth',
       mcpSetupGuide: '.env의 GITHUB_PERSONAL_ACCESS_TOKEN 입력 필요',
@@ -417,8 +504,8 @@ tools: [file_writer, shell]
     },
     defaultSelected: true,
     agentRuleSection: `### [Git 커밋 및 자가 검증 규칙]
-- **자가 치유 (Self-Healing)**: 터미널 빌드/테스트 에러 발생 시 멈추지 말고 에러 로그를 분석하여 스스로 1차 수정을 시도할 것.
-- **검증 완료 선언**: 작업 완료 선언 전 반드시 \`npm run build\`로 에러 0건을 입증할 것.`,
+- **에러 자동 수정 (Self-Healing)**: 터미널 빌드/테스트 중 에러가 발생하면 멈추지 말고 에러 로그를 읽고 스스로 1차 수정을 시도할 것.
+- **작업 완료 입증**: 작업을 마쳤다고 선언하기 전에 반드시 \`npm run build\`를 돌려 에러가 0건임을 확인할 것.`,
     mcpServer: {
       key: 'github',
       mcpType: 'needs-auth',
@@ -429,35 +516,33 @@ tools: [file_writer, shell]
         env: {
           GITHUB_PERSONAL_ACCESS_TOKEN: '${GITHUB_PERSONAL_ACCESS_TOKEN}'
         },
-        description: 'GitHub 이슈 조회, PR 생성, 코드 리뷰 자동화 (.env 토큰 연결)'
+        description: 'GitHub 저장소 이슈 조회, 코드 백업 및 PR 생성 자동화 (.env 토큰 연결)'
       }
     },
     skillFile: {
       path: 'skills/git-auto-pr/SKILL.md',
-      description: 'Git 커밋 및 PR 자동 생성 스킬 교본',
+      description: '작업 내역 요약 커밋 및 GitHub 백업 스킬 교본',
       content: `---
 name: git-auto-pr
-description: 소스코드 변경점을 자동 분석하여 Conventional Commits 규칙 커밋 및 PR 생성
+description: 소스코드 변경점을 자동 분석하여 알기 쉬운 커밋 및 GitHub PR 생성
 tools: [git, shell]
 ---
 
-# Git Auto PR 생성 워크플로우
-1. \`git status\` 및 \`git diff --staged\`를 실행하여 실제 변경된 파일과 라인을 확인한다.
-2. 변경 유형(feat, fix, refactor, style, docs)을 분류하여 50자 이내 요약 제목 작성.
-3. PR 본문에 [주요 변경 사항], [자가 테스트 검증 결과], [관련 이슈 번호]를 포함하여 생성한다.`
+# Git 변경 사항 백업 워크플로우
+1. \`git status\` 및 변경된 코드를 확인한다.
+2. 어떤 기능이 추가/수정되었는지 50자 이내로 명확히 요약하여 커밋 메시지를 작성한다.
+3. 주요 변경 사항과 테스트 완료 결과를 정리하여 기록한다.`
     }
   },
-
-  // --- [5] 데이터 & 자동화 ---
   {
     id: 'mod-data-pipeline',
-    name: '📊 데이터 분석 & 파이썬 정제 파이프라인 (Pandas / Polars)',
+    name: '📊 대용량 엑셀·고객 데이터 자동 정리 & 분석 (파이썬)',
     category: '데이터/자동화',
-    badge: '데이터 MCP',
+    badge: '데이터 정리',
     badgeColor: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
-    shortDesc: 'Python 가상환경(.venv) 강제, 결측치(NaN) 검증, 대용량 파일 청크 처리 및 데이터 정제 스킬',
+    shortDesc: '수만 줄의 엑셀/CSV 데이터에서 빈칸이나 오타를 자동으로 찾아내 깨끗하게 정리하고 통계 요약 추출',
     detailedImpact: {
-      agentRuleSummary: '로컬 가상환경(.venv), 결측치/타입 검증, 메모리 최적화',
+      agentRuleSummary: '빈칸·오타 자동 정리, 대용량 파일 멈춤 없이 고속 처리',
       mcpServerName: 'filesystem',
       mcpType: 'zero-config',
       mcpSetupGuide: 'API 키 없이 로컬 data 폴더 즉시 탐색',
@@ -465,117 +550,94 @@ tools: [git, shell]
     },
     defaultSelected: false,
     agentRuleSection: `### [데이터 처리 및 파이썬 가상환경 규칙]
-- **로컬 가상환경 준수**: 시스템 전역 파이썬 대신 반드시 로컬 가상환경(\`.venv\` / uv)을 사용할 것.
-- **결측치 & 타입 검증**: 데이터 로딩 시 결측치(Null) 비율을 가장 먼저 검증하고 보고할 것.
-- **대용량 메모리 최적화**: 1GB 이상의 데이터는 청크 단위로 처리하여 OOM(Out of Memory)을 방지할 것.`,
+- **독립 가상환경 준수**: 내 컴퓨터 전역 파이썬을 어지럽히지 말고 프로젝트 로컬 가상환경(\`.venv\`)을 사용할 것.
+- **빈칸 및 이상치 검증**: 데이터를 불러올 때 빈칸(Null)이나 비정상적인 데이터가 몇 %인지 먼저 검사하고 보고할 것.
+- **대용량 파일 메모리 최적화**: 용량이 큰 파일도 컴퓨터가 멈추지 않도록 나누어서 안전하게 읽어들일 것.`,
     mcpServer: {
       key: 'filesystem',
       mcpType: 'zero-config',
       config: {
         command: 'npx',
         args: ['-y', '@modelcontextprotocol/server-filesystem', './data'],
-        description: 'data 디렉토리 대용량 데이터셋 파일 고속 탐색 (무설정 즉시 실행)'
+        description: 'data 폴더의 대용량 데이터 파일 고속 탐색 (무설정 즉시 실행)'
       }
     },
     skillFile: {
       path: 'skills/data-pipeline/SKILL.md',
-      description: '데이터 전처리 및 정제 파이프라인 자동화 스킬',
+      description: '데이터 정제 및 요약 통계 자동화 스킬',
       content: `---
 name: data-pipeline
-description: 원시 데이터(Raw Data)의 결측치 처리, 이상치 제거 및 표준화 자동 수행
+description: 원본 엑셀/CSV 데이터의 빈칸 채우기, 오타 제거 및 표준 데이터 정리
 tools: [file_writer, shell]
 ---
 
-# 데이터 전처리 자동화 워크플로우
-1. 입력 데이터의 컬럼별 데이터 타입과 결측치 비율을 분석한다.
-2. 이상치(Outlier)를 탐지 및 정제하고 Parquet 형식으로 저장한다.`
+# 데이터 정리 자동화 워크플로우
+1. 입력 데이터의 컬럼별 데이터 종류와 빈칸 비율을 분석한다.
+2. 이상한 값이나 중복 데이터를 찾아 정제한 뒤 깔끔한 파일로 저장한다.`
     }
   },
 
-  // --- [6] 교육용 웹/앱 & 비즈니스 문서 ---
+  // --- [6] 미니게임 & AI 챗봇 ---
   {
-    id: 'mod-edu-quiz',
-    name: '📚 인터랙티브 퀴즈 & 학습 단어장 교육용 웹 모듈 (EduTech)',
-    category: '교육/학습용',
-    badge: '교육용 스킬',
-    badgeColor: 'bg-yellow-500/10 text-yellow-300 border-yellow-500/30',
-    shortDesc: '플래시카드 뒤집기 애니메이션, Web Speech 음성 재생, 퀴즈 채점 및 오답 노트 로컬 저장 지침',
+    id: 'mod-mini-game',
+    name: '🎮 손맛 나는 2D 미니게임 & 물리 시뮬레이션 (웹게임)',
+    category: '게임/시뮬레이션',
+    badge: '게임/물리',
+    badgeColor: 'bg-orange-500/10 text-orange-300 border-orange-500/30',
+    shortDesc: '벽돌깨기·슬링샷 탄도학 물리 엔진, 점수 콤보 시스템, 효과음 및 최고 기록 저장이 들어간 인터랙티브 웹게임 제작',
     detailedImpact: {
-      agentRuleSummary: '학습자 친화 UI/UX, 오답노트 로컬 동기화, 음성 재생 예외 처리',
-      skillPath: 'skills/edu-quiz-generator/SKILL.md'
+      agentRuleSummary: '60FPS 부드러운 물리 렌더링, Web Audio 효과음, 최고 기록 저장',
+      skillPath: 'skills/game-physics-scaffold/SKILL.md'
     },
     defaultSelected: false,
-    agentRuleSection: `### [교육용 웹/앱 및 인터랙티브 학습 규칙]
-- **학습자 친화 인터랙션**: 카드가 뒤집히는 3D 플립 애니메이션과 즉각적인 정답/오답 사운드/시각 피드백을 제공할 것.
-- **오답 노트 영속화**: 틀린 문제는 \`localStorage\`에 저장하여 재학습이 가능하도록 설계할 것.
-- **음성 재생(TTS) 예외 처리**: \`window.speechSynthesis\` 지원 여부를 사전에 체크하고 미지원 브라우저 폴백을 둘 것.`,
+    agentRuleSection: `### [인터랙티브 웹 게임 및 물리 시뮬레이션 규칙]
+- **부드러운 화면 갱신**: 프레임 끊김 없이 부드럽게 60FPS로 동작하도록 \`requestAnimationFrame\` 게임 루프를 유지할 것.
+- **물리 충돌 및 사운드**: 충돌 반발력 계산과 함께 Web Audio API를 활용해 타격감 있는 효과음을 즉각 재생할 것.
+- **점수 및 최고 기록**: 콤보 점수 시스템과 최고 점수를 브라우저에 저장하여 재도전 동기를 부여할 것.`,
     skillFile: {
-      path: 'skills/edu-quiz-generator/SKILL.md',
-      description: '인터랙티브 퀴즈 및 단어장 컴포넌트 자동 생성 스킬',
+      path: 'skills/game-physics-scaffold/SKILL.md',
+      description: '2D 아케이드 물리 웹게임 컴포넌트 자동 생성 스킬',
       content: `---
-name: edu-quiz-generator
-description: 단어 목록을 입력받아 플래시카드, 4지선다 퀴즈 및 오답 노트 컴포넌트 자동 생성
+name: game-physics-scaffold
+description: 2D Canvas 및 물리 엔진 기반 인터랙티브 웹게임 자동 스캐폴딩
 tools: [file_writer, shell]
 ---
 
-# 교육용 퀴즈 컴포넌트 생성 워크플로우
-1. 단어/문제 JSON 데이터 구조(id, question, options, answer, explanation)를 정의한다.
-2. 카드 뒤집기 애니메이션과 즉각적인 채점 상태 머신(State Machine)을 구현한다.
-3. 오답 복습용 필터링 및 로컬스토리지 저장 로직을 추가한다.`
+# 웹게임 생성 워크플로우
+1. 게임 오브젝트(플레이어, 장애물, 점수)의 좌표 및 물리 상태를 정의한다.
+2. 키보드/마우스/터치 입력 이벤트와 충돌 감지 알고리즘을 연결한다.
+3. 게임 오버, 다시 시작, 최고 점수 랭킹 UI를 깔끔하게 구현한다.`
     }
   },
   {
-    id: 'mod-biz-docs',
-    name: '📄 서비스 기획서 & 사업 제안서(IR) 표준 문서화 모듈',
-    category: '비즈니스/문서',
-    badge: '문서화 지침',
-    badgeColor: 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30',
-    shortDesc: '시장 분석(TAM/SAM/SOM), 타겟 페르소나, 핵심 기능 정의서, 6개월 로드맵 표 마크다운 자동 생성',
+    id: 'mod-ai-chatbot',
+    name: '🤖 카톡 스타일 AI 챗봇 대화창 & 프롬프트 어시스턴트',
+    category: 'AI챗봇/어시스턴트',
+    badge: 'AI 챗봇',
+    badgeColor: 'bg-sky-500/10 text-sky-300 border-sky-500/30',
+    shortDesc: '말풍선에 타자 치듯 글자가 찍히는(스트리밍) 깔끔한 AI 채팅창, 이전 대화 기억 및 추천 질문 버튼 기능',
     detailedImpact: {
-      agentRuleSummary: '표준 사업 기획서 및 개발 마일스톤 마크다운 규격 준수',
-      policyPath: 'rules/documentation_standards.md'
+      agentRuleSummary: '실시간 말풍선 타이핑 스트리밍, 대화 기억 저장, 질문 추천 버튼',
+      skillPath: 'skills/ai-chat-interface/SKILL.md'
     },
     defaultSelected: false,
-    agentRuleSection: `### [비즈니스 기획 및 문서화 표준 규칙]
-- **구조화된 문서 양식**: 모든 기획서는 [1. 문제 정의], [2. 시장 기회], [3. 핵심 기능], [4. 수익 모델], [5. 개발 로드맵 표] 순서로 작성할 것.
-- **정량적 지표 제시**: 단순 서술형 대신 표(Table), 불릿 포인트, 구체적인 수치(TAM/SAM/SOM, 전환율 목표)를 명시할 것.`,
-    extraFile: {
-      path: 'rules/documentation_standards.md',
-      description: '사내 표준 비즈니스 기획서 및 기술 문서 작성 가이드',
-      content: `# Documentation Standards
-1. 모든 서비스 기획서는 문제 정의와 해결책을 첫 페이지에 요약한다.
-2. 개발 로드맵은 월별 마일스톤과 담당 엔지니어링 항목을 표로 구조화한다.`
-    }
-  },
-  {
-    id: 'mod-chart-dashboard',
-    name: '📈 엑셀·CSV 데이터 분석 & 실시간 인터랙티브 차트 대시보드',
-    category: '데이터/시각화',
-    badge: '차트 스킬',
-    badgeColor: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30',
-    shortDesc: 'Recharts 기반 꺾은선/막대/도넛 차트, CSV 드래그 앤 드롭 파싱, 결측치 자동 정제 및 KPI 요약 카드',
-    detailedImpact: {
-      agentRuleSummary: 'Recharts ResponsiveContainer 반응형 차트 및 CSV 결측치 파싱 검증',
-      skillPath: 'skills/chart-dashboard-scaffold/SKILL.md'
-    },
-    defaultSelected: false,
-    agentRuleSection: `### [데이터 시각화 및 대시보드 규칙]
-- **반응형 차트**: 모든 차트는 \`ResponsiveContainer\`로 감싸 화면 크기에 따라 너비와 높이가 유연하게 조절되도록 할 것.
-- **CSV 결측치 정제**: 빈 행, 비정상적인 문자열 금액, 누락된 날짜 데이터를 사전에 걸러내는 파싱 유틸을 구현할 것.
-- **KPI 요약 카드**: 대시보드 상단에 총매출, 건수, 평균 객단가 등 핵심 지표 카드를 눈에 띄게 배치할 것.`,
+    agentRuleSection: `### [AI 챗봇 인터페이스 및 대화형 UI 규칙]
+- **실시간 타이핑 효과**: AI 답변 생성 시 텍스트가 한 글자씩 매끄럽게 흘러나오는 스트리밍(Streaming) 말풍선을 구현할 것.
+- **대화 내역 보존**: 사용자가 페이지를 새로고침해도 이전 대화 타래가 유지되도록 안전하게 저장할 것.
+- **추천 질문 칩**: 사용자가 무엇을 물어볼지 쉽게 고를 수 있도록 첫 화면에 추천 질문 버튼(Quick Chips)을 배치할 것.`,
     skillFile: {
-      path: 'skills/chart-dashboard-scaffold/SKILL.md',
-      description: 'CSV 데이터 분석 및 인터랙티브 차트 대시보드 자동 생성 스킬',
+      path: 'skills/ai-chat-interface/SKILL.md',
+      description: '카카오톡 스타일 AI 채팅 인터페이스 자동 생성 스킬',
       content: `---
-name: chart-dashboard-scaffold
-description: CSV 데이터 파싱 및 Recharts 기반 반응형 대시보드 자동 스캐폴딩
+name: ai-chat-interface
+description: 실시간 스트리밍 답변과 대화 히스토리 관리를 지원하는 AI 챗봇 UI 생성
 tools: [file_writer, shell]
 ---
 
-# 차트 대시보드 자동 생성 워크플로우
-1. CSV/JSON 데이터를 파싱하고 결측치를 정제하는 유틸 함수를 작성한다.
-2. Recharts 꺾은선, 막대, 도넛 차트 컴포넌트를 반응형 그리드로 배치한다.
-3. 마우스 호버 시 툴팁 및 KPI 카드 요약 통계를 렌더링한다.`
+# AI 챗봇 UI 생성 워크플로우
+1. 메시지 말풍선(사용자 질문, AI 답변, 로딩 애니메이션) 컴포넌트를 설계한다.
+2. 실시간 텍스트 스트리밍 렌더링 및 자동 스크롤 하단 고정 로직을 구현한다.
+3. 코드 블록 복사 버튼과 추천 질문 퀵 버튼을 추가한다.`
     }
   }
 ];
