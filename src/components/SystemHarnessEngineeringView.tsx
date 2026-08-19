@@ -118,13 +118,15 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
     );
   };
 
-  // Task Quick Scenarios (교사/교육자, 개발자 4대 표준, 비전공자 맞춤 프리셋)
+  // Task Quick Scenarios (AI_IDE_Codex_Claude_Antigravity_Setup_Prompt.md 규격 100% 반영 프리셋)
   const applyScenarioDeveloperStandard = () => {
     setSelectedModuleIds([
       'mod-plan-feature',
       'mod-implement-feature',
       'mod-debug-skill',
       'mod-code-review',
+      'mod-testing-rule',
+      'mod-docs-knowledge-base',
       'mod-skill-mcp-router',
       'mod-react-ui',
       'mod-git-pr-skill'
@@ -205,24 +207,14 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
     ]);
   };
 
-  const applyScenarioSnsMarketing = () => {
-    setSelectedModuleIds([
-      'mod-sns-card-news',
-      'mod-biz-docs'
-    ]);
-  };
-
-  const applyScenarioDutchPay = () => {
-    setSelectedModuleIds([
-      'mod-dutch-pay',
-      'mod-react-ui'
-    ]);
-  };
-
   const applyScenarioFullstack = () => {
     setSelectedModuleIds([
       'mod-plan-feature',
       'mod-implement-feature',
+      'mod-debug-skill',
+      'mod-code-review',
+      'mod-testing-rule',
+      'mod-docs-knowledge-base',
       'mod-react-ui', 
       'mod-responsive-browser', 
       'mod-rest-api', 
@@ -322,6 +314,7 @@ Project persistent knowledge lives under \`/docs\`:
 - \`docs/plans/\`: Implementation plans for major features.
 - \`docs/decisions/\`: Architectural Decision Records (ADRs).
 - \`docs/tasks/\`: Persistent task tracking.
+- \`docs/reference/\`: Project reference materials and policies.
 
 ## 6. Definition of Done
 A task is complete ONLY when:
@@ -581,6 +574,24 @@ Follow the shared project instructions in \`AGENTS.md\`.
             isDynamic: true
           },
           {
+            filename: '.agents/rules/testing.md',
+            path: '.agents/rules/testing.md',
+            icon: '🧪',
+            roleSummary: '테스트 정책: 실제 동작 검증, 회귀 테스트 실행 및 성공 입증 원칙',
+            targetConsumers: ['Antigravity', 'Codex'],
+            riskIfMissing: '테스트 없이 완료를 선언하거나 회귀 오류를 인지하지 못함',
+            isDynamic: true
+          },
+          {
+            filename: '.agents/rules/ui-design.md',
+            path: '.agents/rules/ui-design.md',
+            icon: '📐',
+            roleSummary: 'UI 디자인 규칙: 일관된 인터랙션 패턴 및 반응형 UI 레이아웃 검증',
+            targetConsumers: ['Antigravity', 'Codex'],
+            riskIfMissing: 'UI 요소의 반응형 레이아웃 깨짐 발생',
+            isDynamic: true
+          },
+          {
             filename: '.agents/skills/student-record-writer/SKILL.md',
             path: '.agents/skills/student-record-writer/SKILL.md',
             icon: '🎓',
@@ -636,7 +647,7 @@ Follow the shared project instructions in \`AGENTS.md\`.
             roleSummary: '현재 시스템의 모듈 간 관계, 데이터 흐름도, 폴더별 책임을 도식화하여 설명',
             targetConsumers: ['전체 AI 도구 & 개발자'],
             riskIfMissing: '새로운 기능을 추가할 때 기존 시스템 구조를 이해하지 못해 엉뚱한 폴더에 파일 생성',
-            isDynamic: false
+            isDynamic: true
           },
           {
             filename: 'docs/plans/',
@@ -736,21 +747,15 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
 
   const taskCategories = [
     'ALL',
-    '협업/DevOps',
-    '교사/교육자 특화',
+    '4대 개발 표준 (DevOps/SOP)',
     '스킬/MCP 자동추천',
+    '교사/교육자 특화',
     '초중고 수업/활동지',
     '독서/문화/글쓰기',
     '학급/모임/도구',
-    '교육/학습용',
-    '데이터/시각화',
-    '비즈니스/문서',
-    '게임/시뮬레이션',
-    'AI챗봇/어시스턴트',
     '프론트엔드/UI',
     '백엔드/DB',
-    '보안/결제',
-    '데이터/자동화'
+    '보안/결제'
   ];
 
   return (
@@ -800,7 +805,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
       </div>
 
       {/* ========================================================================= */}
-      {/* 🌟 NEW: 시각적 파일 구조 & 폴더별 파일 역할 가시화 인스펙터 */}
+      {/* 🌟 시각적 파일 구조 & 폴더별 파일 역할 가시화 인스펙터 */}
       {/* ========================================================================= */}
       <div className="p-6 sm:p-8 rounded-3xl bg-slate-950 border border-cyan-500/30 space-y-6 shadow-2xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
@@ -1100,7 +1105,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
               </h4>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              체크하신 기능에 맞춰 AI가 엉뚱한 코드를 짜지 않도록 맞춤 지침서(AGENTS.md), 외부 연결 도구(mcp.json), 자동화 매뉴얼(.agents/skills/)이 실시간 조립됩니다.
+              체크하신 기능에 맞춰 AI가 엉뚱한 코드를 짜지 않도록 맞춤 지침서(AGENTS.md), 외부 연결 도구(mcp.json), 자동화 매뉴얼(.agents/skills/), 영구 지식(docs/)이 실시간 조립됩니다.
             </p>
           </div>
 
@@ -1112,7 +1117,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
               className="px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-400/60 font-bold transition-all flex items-center gap-1"
             >
               <Zap className="w-3.5 h-3.5 text-indigo-300" />
-              <span>4대 개발 표준 (Plan+Impl+Debug+Review)</span>
+              <span>4대 개발 표준 (Plan+Impl+Debug+Review+Test+Docs)</span>
             </button>
             {/* Teacher Master Preset */}
             <button
@@ -1157,12 +1162,6 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
               className="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 font-bold transition-all"
             >
               🎯 학급 뽑기·스티커판
-            </button>
-            <button
-              onClick={applyScenarioSnsMarketing}
-              className="px-2.5 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 font-bold transition-all"
-            >
-              📝 SNS 카드뉴스·글
             </button>
             <button
               onClick={applyScenarioFullstack}
@@ -1218,7 +1217,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
           {displayedModules.map((module: TaskFeatureModule) => {
             const isChecked = selectedModuleIds.includes(module.id);
             const isTeacherMod = module.category === '교사/교육자 특화';
-            const isStandardDev = module.category === '협업/DevOps';
+            const isStandardDev = module.category === '4대 개발 표준 (DevOps/SOP)';
             return (
               <div
                 key={module.id}

@@ -15,21 +15,15 @@ export interface TaskFeatureModule {
   id: string;
   name: string;
   category: 
+    | '4대 개발 표준 (DevOps/SOP)'
     | '스킬/MCP 자동추천' 
     | '교사/교육자 특화'
     | '초중고 수업/활동지' 
     | '독서/문화/글쓰기' 
     | '학급/모임/도구' 
-    | '교육/학습용' 
-    | '데이터/시각화' 
-    | '비즈니스/문서' 
-    | '게임/시뮬레이션' 
-    | 'AI챗봇/어시스턴트' 
     | '프론트엔드/UI' 
     | '백엔드/DB' 
-    | '보안/결제' 
-    | '협업/DevOps' 
-    | '데이터/자동화';
+    | '보안/결제';
   badge: string;
   badgeColor: string;
   shortDesc: string;
@@ -109,7 +103,7 @@ export interface TemplateConfigFile {
   rawContent: string;
 }
 
-// 템플릿 파일 3대장 (CLAUDE.md, AGENTS.md, DESIGN.md)
+// 템플릿 파일 3대장 (AGENTS.md, CLAUDE.md, DESIGN.md)
 export const TEMPLATE_CONFIG_FILES: TemplateConfigFile[] = [
   {
     id: 'template-agents-md',
@@ -138,9 +132,10 @@ export const TEMPLATE_CONFIG_FILES: TemplateConfigFile[] = [
 - Unit Tests: \`npm test\`
 - Lint & Format: \`npm run lint\`
 
-## 3. Development & Safety Principles
+## 3. Development Principles & Safety Rules
 - **Smallest Coherent Change**: Prefer small, focused changes over broad rewrites.
 - **Component Reuse**: Inspect existing components and utilities before creating new ones.
+- **Single Source of Truth**: Durable project instructions live centrally in \`AGENTS.md\`. Do not duplicate in \`docs/rules/\`.
 - **Zero Regression**: Verify behavior, not just compilation. Never break existing working features.
 - **Secrets Management**: Never hardcode credentials; use \`.env\` environment variables.
 - **User Approval Required**: Destruction commands (\`DROP TABLE\`, \`DELETE FROM\`), \`git push -f\`, paid API calls.
@@ -150,13 +145,15 @@ export const TEMPLATE_CONFIG_FILES: TemplateConfigFile[] = [
 - \`docs/plans/\`: Implementation plans for major features.
 - \`docs/decisions/\`: Architectural Decision Records (ADRs).
 - \`docs/tasks/\`: Persistent task tracking.
+- \`docs/reference/\`: Project reference materials and policies.
 
 ## 5. Definition of Done
 A task is complete ONLY when:
 1. Requested behavior is fully implemented.
 2. \`npm run build\` passes with 0 TypeScript/Lint errors.
 3. Relevant tests pass and obvious regressions are checked.
-4. No unnecessary unrelated files were modified.`
+4. No unnecessary unrelated files were modified.
+5. Persistent documentation under \`docs/\` is updated when persistent behavior changed.`
   },
   {
     id: 'template-claude-md',
@@ -312,10 +309,211 @@ export const AI_TOOLS_CATALOG: AiToolItem[] = [
   }
 ];
 
-// 2. 실무 작업 모듈 목록 (STEP 2: 교사/교육자 필수 실무부터 개발 4대 표준 스킬까지 완벽 지원)
+// 2. 실무 작업 모듈 목록 (STEP 2: AI_IDE_Codex_Claude_Antigravity_Setup_Prompt.md 규격 100% 반영)
 export const TASK_FEATURE_MODULES: TaskFeatureModule[] = [
   // =========================================================================
-  // --- [1] 스킬 & MCP 지능형 자동 라우터 (스마트 도구 선택기 - 1순위 추천) ---
+  // --- [1] 4대 핵심 개발 표준 스킬 (Plan, Implement, Debug, Review, Test, Docs) ---
+  // =========================================================================
+  {
+    id: 'mod-plan-feature',
+    name: '📋 plan-feature (작업 착수 전 사전 기획 & 위험 분석 스킬)',
+    category: '4대 개발 표준 (DevOps/SOP)',
+    badge: '기획 & 위험분석',
+    badgeColor: 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30',
+    shortDesc: '코드를 바로 건드려 망가뜨리지 않고, 변경 범위와 위험 요소를 분석하여 단계별 구현 계획서를 docs/plans/ 에 사전 작성',
+    detailedImpact: {
+      agentRuleSummary: '기존 코드 사전 분석, 최소 변경 범위 설정, docs/plans/ 계획서 수립',
+      skillPath: '.agents/skills/plan-feature/SKILL.md'
+    },
+    defaultSelected: true,
+    agentRuleSection: `### [plan-feature 기획 원칙]
+- 코드를 작성하기 전에 AGENTS.md와 관련 문서를 먼저 읽고 영향을 받는 모듈을 파악할 것.
+- 3개 이상의 파일이 변경되는 복잡한 작업은 반드시 docs/plans/ 에 사전 계획서를 작성하여 위험을 예방할 것.`,
+    skillFile: {
+      path: '.agents/skills/plan-feature/SKILL.md',
+      description: '기능 구현 전 사전 아키텍처 및 리스크 분석 스킬',
+      content: `# Plan Feature
+
+Use this skill before implementing a significant feature.
+
+## Procedure
+1. Read \`AGENTS.md\`.
+2. Inspect relevant project documentation under \`docs/\`.
+3. Inspect the existing implementation.
+4. Identify affected modules and dependencies.
+5. Identify risks, edge cases, and compatibility constraints.
+6. Define the smallest reasonable implementation scope.
+7. Produce a step-by-step implementation plan.
+8. Identify how the result will be verified.
+9. Record a persistent plan under \`/docs/plans/\` only when the work is large enough to justify it.`
+    }
+  },
+  {
+    id: 'mod-implement-feature',
+    name: '⚡ implement-feature (무결점 최소 변경 구현 & 빌드 검증 스킬)',
+    category: '4대 개발 표준 (DevOps/SOP)',
+    badge: '최소변경 구현',
+    badgeColor: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+    shortDesc: '불필요한 리팩토링을 배제하고 기존 패턴을 재사용하여 가장 작고 응집력 높은 코드를 안전하게 작성 및 npm run build 검증',
+    detailedImpact: {
+      agentRuleSummary: '최소 응집 변경, 기존 패턴 재사용, npm run build 검증 필수',
+      skillPath: '.agents/skills/implement-feature/SKILL.md'
+    },
+    defaultSelected: true,
+    agentRuleSection: `### [implement-feature 구현 원칙]
+- 불필요한 전면 재작성을 피하고 가장 작은 단위의 변경을 적용할 것.
+- 작업 완료 전 반드시 npm run build와 테스트를 실행해 0에러를 증명할 것.`,
+    skillFile: {
+      path: '.agents/skills/implement-feature/SKILL.md',
+      description: '안전한 최소 단위 기능 구현 및 사후 검증 스킬',
+      content: `# Implement Feature
+
+Use this skill when implementing an approved feature or plan.
+
+## Procedure
+1. Read \`AGENTS.md\`.
+2. Read the relevant implementation plan if one exists.
+3. Inspect affected files before modifying them.
+4. Reuse existing patterns and components.
+5. Implement the smallest coherent change.
+6. Avoid unrelated refactoring.
+7. Run relevant tests, type checks, linting, build steps (\`npm run build\`), or manual verification.
+8. Review the diff for accidental changes.
+9. Update documentation if persistent behavior or architecture changed.
+10. Summarize completed work, verification, and remaining limitations.`
+    }
+  },
+  {
+    id: 'mod-debug-skill',
+    name: '🔍 debug (원인 분석 ➔ 최소 안전 패치 ➔ 회귀 방지 스킬)',
+    category: '4대 개발 표준 (DevOps/SOP)',
+    badge: '디버깅 & 자가치유',
+    badgeColor: 'bg-rose-500/10 text-rose-300 border-rose-500/30',
+    shortDesc: '단순 증상만 덮지 않고 에러의 근본 원인(Root Cause)을 추적하여 다른 기능이 망가지지 않게 안전하게 수정',
+    detailedImpact: {
+      agentRuleSummary: '원인 추적, 최소 안전 패치, 회귀 오류 방지 검증',
+      skillPath: '.agents/skills/debug/SKILL.md'
+    },
+    defaultSelected: true,
+    agentRuleSection: `### [debug 디버깅 원칙]
+- 에러 발생 시 로그와 실행 흐름을 먼저 추적하여 근본 원인을 식별할 것.
+- 엉뚱한 코드를 건드리지 말고 최소한의 안전한 패치를 적용한 뒤 회귀 테스트를 수행할 것.`,
+    skillFile: {
+      path: '.agents/skills/debug/SKILL.md',
+      description: '결함 진단, 근본 원인 분석 및 안전한 패치 스킬',
+      content: `# Debug
+
+Use this skill to diagnose and fix defects.
+
+## Procedure
+1. Reproduce or clearly identify the failure.
+2. Gather evidence before changing code.
+3. Trace the relevant execution path.
+4. Identify the root cause rather than only the visible symptom.
+5. Check for related regressions.
+6. Implement the smallest safe fix.
+7. Verify the original failure no longer occurs.
+8. Run relevant regression checks.
+9. Avoid unrelated cleanup.
+10. Explain the root cause and the fix.`
+    }
+  },
+  {
+    id: 'mod-code-review',
+    name: '🛡️ code-review (10단계 다차원 정밀 코드 리뷰 스킬)',
+    category: '4대 개발 표준 (DevOps/SOP)',
+    badge: '10단계 코드리뷰',
+    badgeColor: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
+    shortDesc: '기능 정확성, 회귀 위험, 데이터 유실, 타입 안정성, 아키텍처 일관성, 문서 반영까지 10개 관점에서 꼼꼼히 점검',
+    detailedImpact: {
+      agentRuleSummary: '10단계 리뷰 기준, 보안/타입/회귀 위험 점검, 구체적 개선점 리포트',
+      skillPath: '.agents/skills/code-review/SKILL.md'
+    },
+    defaultSelected: true,
+    agentRuleSection: `### [code-review 리뷰 원칙]
+- 1. 기능 정확성 ➔ 2. 회귀 위험 ➔ 3. 보안/데이터 유실 ➔ 4. 에러 핸들링 ➔ 5. 타입 안전성 ➔ 6. 테스트 ➔ 7. 아키텍처 ➔ 8. 유지보수성 ➔ 9. UI 일관성 ➔ 10. 문서 반영 순으로 리뷰할 것.`,
+    skillFile: {
+      path: '.agents/skills/code-review/SKILL.md',
+      description: '10단계 체계적 다차원 코드 리뷰 스킬',
+      content: `# Code Review
+
+Review changes for correctness, regressions, maintainability, and consistency.
+
+## Review Order
+1. Functional correctness
+2. Regression risk
+3. Data loss or security risk
+4. Error handling
+5. Type safety
+6. Test coverage
+7. Architecture consistency
+8. Maintainability
+9. UI / UX consistency where relevant
+10. Documentation impact
+
+Report concrete findings first. Do not invent issues solely to produce a longer review.`
+    }
+  },
+  {
+    id: 'mod-testing-rule',
+    name: '🧪 testing-rule (단위 테스트 & 회귀 방지 자동 검증 룰)',
+    category: '4대 개발 표준 (DevOps/SOP)',
+    badge: '테스트 & 회귀방지',
+    badgeColor: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30',
+    shortDesc: '컴파일 성공뿐만 아니라 실제 기능 동작을 테스트하고, 현재 변경으로 인한 회귀 오류를 방지하는 테스트 정책',
+    detailedImpact: {
+      agentRuleSummary: '동작 검증, 회귀 테스트, Definition of Done 충족',
+      policyPath: '.agents/rules/testing.md'
+    },
+    defaultSelected: true,
+    agentRuleSection: `### [테스트 및 검증 규칙]
+- **동작 검증 필수**: 단순 컴파일 확인을 넘어 실제 비즈니스 로직과 UI 인터랙션이 정상 동작하는지 테스트할 것.
+- **회귀 오류 차단**: 변경 사항 적용 후 기존 테스트 스위트(\`npm test\`)를 실행하여 부수 효과가 없는지 증명할 것.`,
+    extraFile: {
+      path: '.agents/rules/testing.md',
+      description: '프로젝트 단위 테스트 및 사후 검증 안전 정책',
+      content: `# Testing and Verification Policy
+1. Run the most relevant available checks after changes.
+2. Verify behavior, not only compilation.
+3. Fix regressions introduced by the current change.
+4. Do not claim success without verification.`
+    }
+  },
+  {
+    id: 'mod-docs-knowledge-base',
+    name: '🏛️ docs-knowledge-base (영구 아키텍처 & ADR 의사결정 보관소)',
+    category: '4대 개발 표준 (DevOps/SOP)',
+    badge: '영구 지식보관소',
+    badgeColor: 'bg-teal-500/10 text-teal-300 border-teal-500/30',
+    shortDesc: '프롬프트 컨텍스트를 낭비하지 않고, 시스템 구조도(overview.md)와 기술 의사결정(ADR)을 docs/ 에 영구 보관',
+    detailedImpact: {
+      agentRuleSummary: '시스템 아키텍처 문서화, ADR 기술 결정 기록, 지속적 태스크 추적',
+      policyPath: 'docs/architecture/overview.md'
+    },
+    defaultSelected: true,
+    agentRuleSection: `### [영구 지식 문서화 규칙]
+- 프로젝트 영구 지식은 \`/docs\` 아래에 보관하며, 일시적 작업 내용은 프롬프트에 남기지 말 것.
+- \`docs/architecture/\`: 현재 시스템 아키텍처 / \`docs/decisions/\`: 기술 결정(ADR) / \`docs/plans/\`: 대형 구현 계획서.`,
+    extraFile: {
+      path: 'docs/architecture/overview.md',
+      description: '프로젝트 전체 아키텍처 및 모듈 경계 개요서',
+      content: `# Project Architecture Overview
+
+## 1. System Structure
+- Frontend: React 18+ (Vite) / TypeScript / Tailwind CSS
+- State Management: Zustand (Global) & useState (Local UI)
+- Tooling: Single Source of Truth via AGENTS.md
+
+## 2. Directory Responsibilities
+- \`src/components/\`: UI presentation components
+- \`src/data/\`: Type-safe static datasets and configurations
+- \`src/types/\`: Explicit TypeScript interfaces and models
+- \`.agents/skills/\`: Reusable procedural workflow skills`
+    }
+  },
+
+  // =========================================================================
+  // --- [2] 스킬 & MCP 지능형 자동 라우터 (스마트 도구 선택기) ---
   // =========================================================================
   {
     id: 'mod-skill-mcp-router',
@@ -354,128 +552,6 @@ tools: [file_reader, shell]
       content: `# Tool & Skill Selection Policy
 1. 항상 최소 비용과 최소 스텝으로 목적을 달성할 수 있는 도구를 우선 선택한다.
 2. 동일 작업에 여러 스킬이 존재할 경우, 대상 사용자(초등/일반/전문가)에 맞춘 특화 스킬을 선택한다.`
-    }
-  },
-
-  // =========================================================================
-  // --- [2] 4대 핵심 개발 표준 스킬 (Plan, Implement, Debug, Code Review) ---
-  // =========================================================================
-  {
-    id: 'mod-plan-feature',
-    name: '📋 plan-feature (작업 착수 전 사전 기획 & 위험 분석 스킬)',
-    category: '협업/DevOps',
-    badge: '기획 & 위험분석',
-    badgeColor: 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30',
-    shortDesc: '코드를 바로 건드려 망가뜨리지 않고, 변경 범위와 위험 요소를 분석하여 단계별 구현 계획서를 사전 작성',
-    detailedImpact: {
-      agentRuleSummary: '기존 코드 사전 분석, 최소 변경 범위 설정, docs/plans/ 계획서 수립',
-      skillPath: '.agents/skills/plan-feature/SKILL.md'
-    },
-    defaultSelected: true,
-    agentRuleSection: `### [plan-feature 기획 원칙]
-- 코드를 작성하기 전에 AGENTS.md와 관련 문서를 먼저 읽고 영향을 받는 모듈을 파악할 것.
-- 3개 이상의 파일이 변경되는 복잡한 작업은 반드시 사전 계획서를 작성하여 위험을 예방할 것.`,
-    skillFile: {
-      path: '.agents/skills/plan-feature/SKILL.md',
-      description: '기능 구현 전 사전 아키텍처 및 리스크 분석 스킬',
-      content: `# Plan Feature Skill
-Use this skill before implementing a significant feature.
-
-## Procedure
-1. Read AGENTS.md and inspect relevant project documentation under docs/.
-2. Inspect the existing implementation and identify affected modules.
-3. Define the smallest reasonable scope and step-by-step implementation plan.
-4. Record persistent plans under docs/plans/ when the work is large enough.`
-    }
-  },
-  {
-    id: 'mod-implement-feature',
-    name: '⚡ implement-feature (무결점 최소 변경 구현 & 검증 스킬)',
-    category: '협업/DevOps',
-    badge: '최소변경 구현',
-    badgeColor: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
-    shortDesc: '불필요한 리팩토링을 배제하고 기존 패턴을 재사용하여 가장 작고 응집력 높은 코드를 안전하게 작성',
-    detailedImpact: {
-      agentRuleSummary: '최소 응집 변경, 기존 패턴 재사용, npm run build 검증 필수',
-      skillPath: '.agents/skills/implement-feature/SKILL.md'
-    },
-    defaultSelected: true,
-    agentRuleSection: `### [implement-feature 구현 원칙]
-- 불필요한 전면 재작성을 피하고 가장 작은 단위의 변경을 적용할 것.
-- 작업 완료 전 반드시 npm run build와 테스트를 실행해 0에러를 증명할 것.`,
-    skillFile: {
-      path: '.agents/skills/implement-feature/SKILL.md',
-      description: '안전한 최소 단위 기능 구현 및 사후 검증 스킬',
-      content: `# Implement Feature Skill
-Use this skill when implementing an approved feature or plan.
-
-## Procedure
-1. Read AGENTS.md and relevant implementation plan.
-2. Inspect affected files and reuse existing patterns.
-3. Implement the smallest coherent change without unrelated refactoring.
-4. Run relevant tests, type checks, and npm run build.
-5. Review diff and summarize completed work.`
-    }
-  },
-  {
-    id: 'mod-debug-skill',
-    name: '🔍 debug (원인 분석 ➔ 최소 안전 패치 ➔ 회귀 방지 스킬)',
-    category: '협업/DevOps',
-    badge: '디버깅 & 자가치유',
-    badgeColor: 'bg-rose-500/10 text-rose-300 border-rose-500/30',
-    shortDesc: '단순 증상만 덮지 않고 에러의 근본 원인(Root Cause)을 추적하여 다른 기능이 망가지지 않게 안전하게 수정',
-    detailedImpact: {
-      agentRuleSummary: '원인 추적, 최소 안전 패치, 회귀 오류 방지 검증',
-      skillPath: '.agents/skills/debug/SKILL.md'
-    },
-    defaultSelected: true,
-    agentRuleSection: `### [debug 디버깅 원칙]
-- 에러 발생 시 로그와 실행 흐름을 먼저 추적하여 근본 원인을 식별할 것.
-- 엉뚱한 코드를 건드리지 말고 최소한의 안전한 패치를 적용한 뒤 회귀 테스트를 수행할 것.`,
-    skillFile: {
-      path: '.agents/skills/debug/SKILL.md',
-      description: '결함 진단, 근본 원인 분석 및 안전한 패치 스킬',
-      content: `# Debug Skill
-Use this skill to diagnose and fix defects.
-
-## Procedure
-1. Reproduce or clearly identify the failure.
-2. Trace the execution path and identify the root cause.
-3. Implement the smallest safe fix without unrelated cleanup.
-4. Verify the failure no longer occurs and run regression checks.`
-    }
-  },
-  {
-    id: 'mod-code-review',
-    name: '🛡️ code-review (10단계 다차원 정밀 코드 리뷰 스킬)',
-    category: '협업/DevOps',
-    badge: '10단계 코드리뷰',
-    badgeColor: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
-    shortDesc: '기능 정확성, 회귀 위험, 데이터 유실, 타입 안정성, 아키텍처 일관성, 문서 반영까지 10개 관점에서 꼼꼼히 점검',
-    detailedImpact: {
-      agentRuleSummary: '10단계 리뷰 기준, 보안/타입/회귀 위험 점검, 구체적 개선점 리포트',
-      skillPath: '.agents/skills/code-review/SKILL.md'
-    },
-    defaultSelected: true,
-    agentRuleSection: `### [code-review 리뷰 원칙]
-- 1. 기능 정확성 ➔ 2. 회귀 위험 ➔ 3. 보안/데이터 유실 ➔ 4. 에러 핸들링 ➔ 5. 타입 안전성 ➔ 6. 테스트 ➔ 7. 아키텍처 ➔ 8. 유지보수성 ➔ 9. UI 일관성 ➔ 10. 문서 반영 순으로 리뷰할 것.`,
-    skillFile: {
-      path: '.agents/skills/code-review/SKILL.md',
-      description: '10단계 체계적 다차원 코드 리뷰 스킬',
-      content: `# Code Review Skill
-Review changes for correctness, regressions, maintainability, and consistency.
-
-## Review Order
-1. Functional correctness
-2. Regression risk
-3. Data loss or security risk
-4. Error handling
-5. Type safety
-6. Test coverage
-7. Architecture consistency
-8. Maintainability
-9. UI / UX consistency
-10. Documentation impact`
     }
   },
 
@@ -812,7 +888,7 @@ tools: [file_writer, shell]
     shortDesc: '내 브랜드 컬러와 글꼴(DESIGN.md)을 준수하여 조잡하지 않고 완성도 높은 버튼, 입력창, 카드 UI 제작',
     detailedImpact: {
       agentRuleSummary: '디자인 색상·글꼴 통일, 완성도 높은 UI 컴포넌트 규칙',
-      skillPath: '.agents/skills/ui-component-scaffold/SKILL.md'
+      policyPath: '.agents/rules/ui-design.md'
     },
     defaultSelected: true,
     agentRuleSection: `### [프론트엔드 UI 및 디자인 토큰 규칙]
@@ -820,46 +896,14 @@ tools: [file_writer, shell]
 - **디자인 토큰 준수**: 인라인 style 금지. 반드시 \`./DESIGN.md\`의 컬러(#3182F6 등)와 4px 여백 그리드 규격 준수
 - **상태 관리 & 아이콘**: \`lucide-react\` 아이콘 사용, 전역 상태는 \`zustand\`, 로컬 상태는 \`useState\`
 - **타입 정의**: 모든 컴포넌트 Props는 \`src/types/\` 내 인터페이스로 명시적 정의`,
-    skillFile: {
-      path: '.agents/skills/ui-component-scaffold/SKILL.md',
-      description: 'DESIGN.md 규격을 준수하는 깔끔한 UI 컴포넌트 자동 생성 스킬',
-      content: `---
-name: ui-component-scaffold
-description: DESIGN.md 규격을 준수하는 깔끔한 React 컴포넌트 자동 생성
-tools: [file_writer, shell]
----
-
-# UI 컴포넌트 자동 생성 워크플로우
-1. 생성할 컴포넌트의 Props 인터페이스를 명시적으로 정의한다.
-2. DESIGN.md의 토큰(컬러, 폰트, 여백)을 Tailwind CSS 클래스로 매핑한다.
-3. 반응형 디자인(sm, md, lg)과 마우스 호버/클릭 상태 애니메이션을 포함한다.
-4. \`npm run build\`를 실행하여 TypeScript 타입 오류가 없는지 검증한다.`
-    },
     extraFile: {
-      path: 'DESIGN.md',
-      description: '프로젝트 디자인 시스템 토큰 규격서',
-      content: `# DESIGN.md - 프로젝트 디자인 시스템 규격
-
-## 1. 컬러 팔레트 (Color Palette)
-- Primary (메인 포인트): \`#3182F6\` (Toss Blue)
-- Secondary (보조 포인트): \`#6366F1\` (Indigo 500)
-- Background (기본 배경): \`#0F172A\` (Slate 900)
-- Surface / Card (카드 배경): \`#1E293B\` (Slate 800) / Border: \`1px solid rgba(255,255,255,0.1)\`
-- Text Primary (기본 글자): \`#F8FAFC\` (Slate 50)
-- Text Secondary (보조 글자): \`#94A3B8\` (Slate 400)
-- Success / Danger: \`#10B981\` / \`#EF4444\`
-
-## 2. 타이포그래피 (Typography)
-- Font Family: \`Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif\`
-- Heading 1: \`24px\` / Bold (700) / Line-height: 1.3
-- Heading 2: \`18px\` / SemiBold (600) / Line-height: 1.4
-- Body: \`14px\` / Regular (400) / Line-height: 1.5
-- Caption: \`11px\` / Medium (500)
-
-## 3. 여백 및 곡률 (Spacing & Radius)
-- Base Grid: 4px 기준 (p-2=8px, p-4=16px, p-6=24px)
-- Button Radius: \`rounded-xl\` (12px)
-- Card Radius: \`rounded-2xl\` (16px)`
+      path: '.agents/rules/ui-design.md',
+      description: 'UI 디자인 토큰 및 인터랙션 안전 정책',
+      content: `# UI / UX Design Principles & Rules
+1. Preserve the established visual language defined in DESIGN.md.
+2. Keep interaction patterns consistent across all screens.
+3. Verify responsive behavior after UI changes (mobile, tablet, desktop).
+4. Maintain accessible color contrast and keyboard navigable elements.`
     }
   },
   {
@@ -992,7 +1036,7 @@ tools: [file_writer, shell]
   {
     id: 'mod-git-pr-skill',
     name: '🚀 작업 내용 깃허브(GitHub) 자동 백업 & 에러 발생 시 스스로 수정',
-    category: '협업/DevOps',
+    category: '보안/결제',
     badge: '자동 백업 & 치유',
     badgeColor: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
     shortDesc: 'AI가 수정한 코드 내용을 일목요연하게 요약해 깃허브에 백업하고, 터미널 오류 발생 시 멈추지 않고 스스로 고치도록 지시',
@@ -1071,7 +1115,7 @@ export const NEW_PROJECT_SCAFFOLD_GUIDE: NewProjectScaffoldGuide = {
 ├── .env.example                [환경변수: API 시크릿 키 템플릿]
 │
 ├── .agents/                    [Antigravity & Codex 공용]
-│   ├── rules/                  [전용 안전 정책 (frontend.md, testing.md)]
+│   ├── rules/                  [전용 안전 정책 (testing.md, ui-design.md)]
 │   └── skills/                 [공용 워크플로우 스킬]
 │       ├── plan-feature/       [사전 기획 & 위험 분석]
 │       ├── implement-feature/  [최소 변경 안전 구현]
@@ -1084,7 +1128,7 @@ export const NEW_PROJECT_SCAFFOLD_GUIDE: NewProjectScaffoldGuide = {
 │   └── rules/                  [Claude 전용 행동 오버라이드]
 │
 └── docs/                       [영구 프로젝트 지식 베이스]
-    ├── architecture/           [현재 시스템 아키텍처]
+    ├── architecture/           [현재 시스템 아키텍처 (overview.md)]
     ├── plans/                  [대형 기능 구현 계획서]
     ├── decisions/              [ADR 기술적 의사결정]
     └── reference/              [교육과정 및 사내 규정]`,
