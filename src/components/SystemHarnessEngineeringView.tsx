@@ -45,7 +45,8 @@ import {
   Wrench,
   Key,
   HelpCircle,
-  Compass
+  Compass,
+  GraduationCap
 } from 'lucide-react';
 
 interface SystemHarnessEngineeringViewProps {
@@ -90,10 +91,53 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
     );
   };
 
-  // Task Quick Scenarios (비전공자/교육/기획/실무자 모두 이해하기 쉬운 실무 프리셋)
+  // Task Quick Scenarios (교사/교육자, 비전공자, 실무자 맞춤 프리셋)
+  const applyScenarioTeacherMaster = () => {
+    setSelectedModuleIds([
+      'mod-student-record',
+      'mod-lesson-plan-rubric',
+      'mod-parent-notice',
+      'mod-lesson-worksheet',
+      'mod-feedback-coach',
+      'mod-skill-mcp-router'
+    ]);
+  };
+
+  const applyScenarioStudentRecord = () => {
+    setSelectedModuleIds([
+      'mod-student-record',
+      'mod-feedback-coach',
+      'mod-skill-mcp-router'
+    ]);
+  };
+
+  const applyScenarioLessonPlan = () => {
+    setSelectedModuleIds([
+      'mod-lesson-plan-rubric',
+      'mod-lesson-worksheet',
+      'mod-skill-mcp-router'
+    ]);
+  };
+
+  const applyScenarioParentNotice = () => {
+    setSelectedModuleIds([
+      'mod-parent-notice',
+      'mod-feedback-coach'
+    ]);
+  };
+
+  const applyScenarioSteam = () => {
+    setSelectedModuleIds([
+      'mod-steam-project',
+      'mod-class-activity',
+      'mod-react-ui'
+    ]);
+  };
+
   const applyScenarioSmartRouter = () => {
     setSelectedModuleIds([
       'mod-skill-mcp-router',
+      'mod-student-record',
       'mod-lesson-worksheet',
       'mod-react-ui'
     ]);
@@ -102,6 +146,7 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
   const applyScenarioLessonWorksheet = () => {
     setSelectedModuleIds([
       'mod-lesson-worksheet',
+      'mod-lesson-plan-rubric',
       'mod-skill-mcp-router'
     ]);
   };
@@ -181,37 +226,6 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
     ]);
   };
 
-  const applyScenarioDocs = () => {
-    setSelectedModuleIds([
-      'mod-biz-docs',
-      'mod-git-pr-skill'
-    ]);
-  };
-
-  const applyScenarioDashboard = () => {
-    setSelectedModuleIds([
-      'mod-chart-dashboard',
-      'mod-data-pipeline',
-      'mod-react-ui'
-    ]);
-  };
-
-  const applyScenarioGame = () => {
-    setSelectedModuleIds([
-      'mod-mini-game',
-      'mod-react-ui',
-      'mod-responsive-browser'
-    ]);
-  };
-
-  const applyScenarioAiChat = () => {
-    setSelectedModuleIds([
-      'mod-ai-chatbot',
-      'mod-react-ui',
-      'mod-responsive-browser'
-    ]);
-  };
-
   const selectAllTasks = () => setSelectedModuleIds(TASK_FEATURE_MODULES.map(m => m.id));
   const clearAllTasks = () => setSelectedModuleIds([]);
 
@@ -281,12 +295,12 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
 - 린트 및 포맷팅: \`npm run lint\`
 
 ## 2. 에이전트 기본 역할 및 권한 경계 (Role & Permissions)
-- **기본 역할**: 사용자의 지시에 따라 프로젝트 파일 생성, 수정, 터미널 빌드/테스트를 자율 실행하는 시니어 엔지니어.
+- **기본 역할**: 사용자의 지시에 따라 프로젝트 파일 생성, 수정, 터미널 빌드/테스트를 자율 실행하는 시니어 엔지니어 및 교육 기획자.
 ${grokTip}
 - **사용자 승인 필수**: 운영 DB 파괴 명령(\`DROP\`, \`DELETE FROM\` 전수), Git 강제 푸시(\`git push -f\`), 유료 API 외부 호출.
 
 ## 3. 작업별 특화 지침 (Selected Task Guidelines)
-${rulesSections || '- 범용 웹 개발 표준 규칙을 준수합니다.'}
+${rulesSections || '- 범용 웹 개발 표준 및 교육 규정을 준수합니다.'}
 
 ## 4. 계획 수립 및 자가 치유 원칙 (Self-Healing)
 - **계획 수립 (Planning)**: 3개 이상의 파일을 수정하는 복잡한 작업은 코드를 작성하기 전에 어떤 파일을 어떻게 바꿀지 먼저 요약 보고할 것.
@@ -305,7 +319,7 @@ ${rulesSections || '- 범용 웹 개발 표준 규칙을 준수합니다.'}
 - 린트 및 포맷팅: \`npm run lint\`
 
 ## 2. 작업별 특화 지침 (Selected Guidelines)
-${rulesSections || '- 범용 웹 개발 표준 규칙을 준수합니다.'}
+${rulesSections || '- 범용 웹 개발 표준 및 교육 규정을 준수합니다.'}
 
 ## 3. 워크플로우 및 검증 원칙 (Workflow)
 - **사후 검증**: 파일 수정 후 반드시 \`npm run build\`로 타입/빌드 오류가 없는지 확인할 것.
@@ -487,7 +501,7 @@ Please read and strictly adhere to @AGENTS.md for all build/test commands and co
       });
 
       // Add a helpful README.md for the downloaded package
-      const readmeContent = `# 맞춤형 AI 개발 하네스 패키지 (Custom AI Development Harness)
+      const readmeContent = `# 맞춤형 AI 개발 & 교육 하네스 패키지 (Custom AI Development & Education Harness)
 > 생성 일시: ${new Date().toLocaleDateString('ko-KR')}
 > 선택된 AI 도구 (${activeTools.length}개): ${activeTools.map(t => t.name).join(', ')}
 > 선택된 실무 기능 (${activeModules.length}개): ${activeModules.map(m => m.name).join(', ')}
@@ -502,7 +516,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
 ## 🚀 사용 방법
 1. 압축을 풀고 이 파일들을 내 프로젝트 **루트(최상위) 폴더**에 덮어씌웁니다.
 2. 만약 \`.env.example\` 파일이 있다면, \`.env\` 로 이름을 바꾸고 본인의 GitHub 토큰이나 DB 주소를 입력합니다.
-3. 터미널에서 Claude Code (\`claude\`) 또는 Google Antigravity를 실행하면 자동으로 규칙과 MCP가 적용됩니다!`;
+3. 터미널에서 Claude Code (\`claude\`) 또는 Google Antigravity를 실행하면 자동으로 교육/개발 규칙과 MCP가 적용됩니다!`;
 
       zip.file('README.md', readmeContent);
 
@@ -524,6 +538,25 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
     }
   };
 
+  const taskCategories = [
+    'ALL',
+    '교사/교육자 특화',
+    '스킬/MCP 자동추천',
+    '초중고 수업/활동지',
+    '독서/문화/글쓰기',
+    '학급/모임/도구',
+    '교육/학습용',
+    '데이터/시각화',
+    '비즈니스/문서',
+    '게임/시뮬레이션',
+    'AI챗봇/어시스턴트',
+    '프론트엔드/UI',
+    '백엔드/DB',
+    '보안/결제',
+    '협업/DevOps',
+    '데이터/자동화'
+  ];
+
   return (
     <div className="space-y-8">
       {/* Hero Header */}
@@ -535,11 +568,11 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
                 <FolderArchive className="w-6 h-6" />
               </span>
               <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-                개발 환경 맞춤 설정 & 실시간 ZIP 패키지 다운로드
+                개발 & 교육 환경 맞춤 설정 및 실시간 ZIP 패키지 다운로드
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-              사용할 AI 도구와 필요한 실무 기능을 체크하시면, <strong>스킬/도구 자동 라우터, 교과 활동지, 기획서, 지침서(AGENTS.md/CLAUDE.md), mcp.json, skills/ 교본, rules/ 정책 파일</strong>이 실시간 조립되어 원클릭 ZIP으로 다운로드됩니다.
+              사용할 AI 도구와 필요한 실무 기능을 체크하시면, <strong>선생님 생기부·지도안·가정통신문, 스킬/도구 자동 라우터, 교과 활동지, 지침서(AGENTS.md/CLAUDE.md), mcp.json, skills/ 교본, rules/ 정책 파일</strong>이 실시간 조립되어 원클릭 ZIP으로 다운로드됩니다.
             </p>
           </div>
 
@@ -579,7 +612,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
                 STEP 01
               </span>
               <h4 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <Sliders className="w-5 h-5 text-indigo-400" /> 사용할 AI 개발 도구를 선택하세요 (다중 선택 가능)
+                <Sliders className="w-5 h-5 text-indigo-400" /> 사용할 AI 도구를 선택하세요 (다중 선택 가능)
               </h4>
             </div>
             <p className="text-xs text-slate-400 mt-1">
@@ -666,16 +699,48 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
                 STEP 02
               </span>
               <h4 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <CheckSquare className="w-5 h-5 text-emerald-400" /> 내가 만들 서비스에 필요한 실무 기능을 체크하세요 (중복 선택 가능)
+                <CheckSquare className="w-5 h-5 text-emerald-400" /> 필요한 교사·실무 기능을 체크하세요 (중복 선택 가능)
               </h4>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              체크하신 기능에 맞춰 AI가 엉뚱한 코드를 짜지 않도록 맞춤 지침서(AGENTS.md), 외부 연결 도구(mcp.json), 자동화 매뉴얼(skills/)이 실시간 조립됩니다.
+              체크하신 기능에 맞춰 AI가 엉뚱한 코드를 짜거나 금지어를 쓰지 않도록 맞춤 지침서(AGENTS.md), 외부 연결 도구(mcp.json), 자동화 매뉴얼(skills/)이 실시간 조립됩니다.
             </p>
           </div>
 
           {/* Quick Scenario Buttons */}
           <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            {/* Teacher Master Preset */}
+            <button
+              onClick={applyScenarioTeacherMaster}
+              className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-600/30 to-teal-600/30 hover:from-emerald-600/50 hover:to-teal-600/50 text-emerald-200 border border-emerald-400/60 font-bold transition-all flex items-center gap-1"
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-emerald-300" />
+              <span>교사 실무 올인원 팩</span>
+            </button>
+            <button
+              onClick={applyScenarioStudentRecord}
+              className="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 font-bold transition-all"
+            >
+              📋 생기부 & 피드백
+            </button>
+            <button
+              onClick={applyScenarioLessonPlan}
+              className="px-2.5 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 font-bold transition-all"
+            >
+              📐 지도안 & 루브릭
+            </button>
+            <button
+              onClick={applyScenarioParentNotice}
+              className="px-2.5 py-1 rounded-lg bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/40 font-bold transition-all"
+            >
+              ✉️ 가정통신문·알림장
+            </button>
+            <button
+              onClick={applyScenarioSteam}
+              className="px-2.5 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 font-bold transition-all"
+            >
+              🔬 STEAM 융합수업
+            </button>
             <button
               onClick={applyScenarioSmartRouter}
               className="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 font-bold transition-all"
@@ -713,40 +778,10 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
               💰 모임 정산·가계부
             </button>
             <button
-              onClick={applyScenarioEdu}
-              className="px-2.5 py-1 rounded-lg bg-yellow-600/20 hover:bg-yellow-600/30 text-yellow-300 border border-yellow-500/40 font-bold transition-all"
-            >
-              📚 교육용 단어장·퀴즈
-            </button>
-            <button
               onClick={applyScenarioFullstack}
               className="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 font-bold transition-all"
             >
-              🚀 1인 풀스택 (웹+DB)
-            </button>
-            <button
-              onClick={applyScenarioFrontend}
-              className="px-2.5 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 font-bold transition-all"
-            >
-              🎨 화면 디자인
-            </button>
-            <button
-              onClick={applyScenarioDashboard}
-              className="px-2.5 py-1 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 font-bold transition-all"
-            >
-              📈 차트·대시보드
-            </button>
-            <button
-              onClick={applyScenarioGame}
-              className="px-2.5 py-1 rounded-lg bg-orange-600/20 hover:bg-orange-600/30 text-orange-300 border border-orange-500/40 font-bold transition-all"
-            >
-              🎮 2D 미니게임
-            </button>
-            <button
-              onClick={applyScenarioAiChat}
-              className="px-2.5 py-1 rounded-lg bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/40 font-bold transition-all"
-            >
-              🤖 AI 챗봇
+              🚀 1인 풀스택 웹개발
             </button>
             <button
               onClick={selectAllTasks}
@@ -766,13 +801,13 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
         {/* Category Filter Tabs & Live Counter */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            {['ALL', '스킬/MCP 자동추천', '초중고 수업/활동지', '독서/문화/글쓰기', '학급/모임/도구', '교육/학습용', '데이터/시각화', '비즈니스/문서', '게임/시뮬레이션', 'AI챗봇/어시스턴트', '프론트엔드/UI', '백엔드/DB', '보안/결제', '협업/DevOps', '데이터/자동화'].map(cat => (
+            {taskCategories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-3 py-1 rounded-xl text-xs font-bold transition-all border whitespace-nowrap ${
                   selectedCategory === cat
-                    ? 'bg-emerald-600 text-white border-emerald-400 shadow-md'
+                    ? 'bg-emerald-600 text-white border-emerald-400 shadow-md scale-102'
                     : 'bg-slate-900 text-slate-400 hover:text-white border-slate-800'
                 }`}
               >
@@ -781,7 +816,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
             ))}
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
+          <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400 shrink-0">
             <span>실시간 구성:</span>
             <span className="text-indigo-300 font-bold">도구 {activeTools.length}개</span>
             <span>•</span>
@@ -795,6 +830,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-3.5">
           {displayedModules.map((module: TaskFeatureModule) => {
             const isChecked = selectedModuleIds.includes(module.id);
+            const isTeacherMod = module.category === '교사/교육자 특화';
             return (
               <div
                 key={module.id}
@@ -802,13 +838,18 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
                 className={`p-4 rounded-2xl cursor-pointer transition-all border select-none space-y-2.5 ${
                   isChecked
                     ? 'bg-gradient-to-br from-indigo-950/80 via-slate-900 to-slate-950 text-white shadow-lg border-emerald-500/60 scale-101 ring-1 ring-emerald-500/20'
+                    : isTeacherMod
+                    ? 'bg-slate-900/60 text-slate-300 hover:text-white hover:bg-slate-850 border-emerald-500/30'
                     : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-850 border-slate-800'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${module.badgeColor}`}>
-                    {module.category}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${module.badgeColor}`}>
+                      {module.category}
+                    </span>
+                    {isTeacherMod && <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />}
+                  </div>
                   <div className="text-emerald-400">
                     {isChecked ? <CheckSquare className="w-5 h-5 text-emerald-400" /> : <Square className="w-5 h-5 text-slate-600" />}
                   </div>

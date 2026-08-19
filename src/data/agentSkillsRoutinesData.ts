@@ -3,6 +3,7 @@ export interface CustomSkillTemplate {
   name: string;
   category: 
     | '도구 라우팅/오케스트레이션' 
+    | '교사/교육자 특화'
     | '교육/수업/활동지' 
     | '독서/문화/글쓰기' 
     | '학급/모임/도구' 
@@ -38,11 +39,11 @@ export interface DailyRoutineGuide {
 
 export const AGENT_ARCHITECTURE_GUIDE = {
   title: '2026 자율형 에이전트 & 멀티 에이전트(Multi-agent) 시스템 아키텍처',
-  tagline: '단순 프롬프트 질의응답에서 "스스로 계획하고 검증하는 자율 개발팀"으로의 진화',
+  tagline: '단순 프롬프트 질의응답에서 "스스로 계획하고 검증하는 자율 개발·수업 설계팀"으로의 진화',
   principles: [
     {
       step: '1. 사전 기획 & 사용자 승인 (Planning Mode)',
-      desc: '코드를 바로 건드려 망가뜨리지 않고, `implementation_plan.md`를 먼저 작성하여 변경 범위, 아키텍처, 위험 요소를 사용자에게 검토 및 승인받은 후 착수합니다.'
+      desc: '코드를 바로 건드려 망가뜨리지 않고, `implementation_plan.md`를 먼저 작성하여 변경 범위, 수업 구성안, 위험 요소를 사용자에게 검토 및 승인받은 후 착수합니다.'
     },
     {
       step: '2. 도구 호출 & 샌드박스 실행 루프 (Tool Execution Loop)',
@@ -50,20 +51,23 @@ export const AGENT_ARCHITECTURE_GUIDE = {
     },
     {
       step: '3. 전문 서브에이전트 병렬 오케스트레이션 (Subagents)',
-      desc: '메인 에이전트(Supervisor)가 리서치 전담 서브에이전트, 코딩 전담 에이전트, 테스트 전담 에이전트를 백그라운드에 동시 스폰하여 컨텍스트 오염 없이 협업합니다.'
+      desc: '메인 에이전트(Supervisor)가 교육과정 분석 에이전트, 활동지 제작 에이전트, 브라우저 렌더링 검사 에이전트를 백그라운드에 동시 스폰하여 컨텍스트 오염 없이 협업합니다.'
     },
     {
       step: '4. 반응형 비동기 깨움 (Reactive Wakeup & Task Management)',
-      desc: '긴 빌드(`npm run build`)나 대규모 테스트 동안 폴링 루프를 돌지 않고, 작업 완료 이벤트 발생 시 자동으로 에이전트가 깨어나 결과를 처리합니다.'
+      desc: '대규모 빌드나 복잡한 문서 변환 동안 무한 대기하지 않고, 완료 이벤트 발생 시 자동으로 에이전트가 깨어나 결과를 처리합니다.'
     },
     {
       step: '5. 사후 검증 & 자가 치유 (Verification & Self-healing Walkthrough)',
-      desc: '단위 테스트(`npm test`) 실패 시 오류 스택트레이스를 스스로 분석해 자가 수정(Self-healing)을 거친 후, `walkthrough.md`로 최종 산출물을 증명합니다.'
+      desc: '타입/빌드 실패나 나이스 글자수 초과 시 오류를 스스로 분석해 자가 수정(Self-healing)을 거친 후, `walkthrough.md`로 최종 산출물을 증명합니다.'
     }
   ]
 };
 
 export const CUSTOM_SKILL_TEMPLATES: CustomSkillTemplate[] = [
+  // =========================================================================
+  // --- [1] 도구 라우팅/오케스트레이션 ---
+  // =========================================================================
   {
     id: 'skill-mcp-router',
     name: '🧭 skill-mcp-router (스킬 & MCP 스마트 라우터)',
@@ -83,17 +87,171 @@ tools: [file_reader, shell]
 # Skill & MCP Smart Router Workflow
 
 ## 1. Intent Extraction
-- Extract [Goal], [Input Format], [Expected Output] from the user's prompt.
+- Extract [Goal], [Target Audience (Teachers, Students, Devs)], [Input Format], [Expected Output] from the user's prompt.
 
 ## 2. Matchmaking & Tool Selection
 - Scan available \`skills/\` directories and inspect \`mcp.json\` tool definitions.
 - Rank candidate tools by precision, token cost, and execution safety.
 
 ## 3. Chained Execution
-- Route execution to the #1 matched skill.
+- Route execution to the #1 matched skill (e.g., student-record-writer for NEIS, lesson-worksheet-generator for quizzes).
 - If an MCP tool returns an error, automatically fallback to secondary tools without stopping.`,
     triggerExample: '"초등 과학 활동지 만들고 브라우저로 화면 캡처해서 확인해줘 (적절한 스킬/도구 알아서 선택해줘)."'
   },
+
+  // =========================================================================
+  // --- [2] 교사/교육자 특화 스킬 5종 (생기부, 지도안, 가정통신문, 피드백, STEAM) ---
+  // =========================================================================
+  {
+    id: 'student-record-writer',
+    name: '📋 student-record-writer (생기부 과세특·행특 문구 작성기)',
+    category: '교사/교육자 특화',
+    description: '학생의 관찰 키워드를 입력받아 교육부 NEIS 바이트 수(세특 1,500Byte)를 검증하고, 기재 금지어(외부 수상, 부모 직업, 공인인증)를 전수 필터링하여 수려한 문장으로 자동 작성합니다.',
+    directoryStructure: `skills/
+└── student-record-writer/
+    ├── SKILL.md
+    └── references/
+        └── neis_banned_words.json`,
+    skillMdContent: `---
+name: student-record-writer
+description: Generates compliant NEIS student record narratives (Subject-specific talents, behavioral traits) with strict banned-phrase checks and byte calculations.
+tools: [file_writer]
+---
+
+# 생기부 과세특 및 행특 작성 워크플로우
+
+## 1. 관찰 키워드 분석
+- 교과목, 수행평가 주제, 학생의 구체적 탐구 내용 및 협업 태도 파악.
+
+## 2. 교육부 NEIS 기재 규정 준수 검사
+- **금지어 필터링**: 공인어학시험(TOEIC 등), 교외 경시대회 수상, 부모 직업/사회경제적 지위 암시 단어 전수 배제.
+- **바이트 계산**: 한글 1자=3바이트, 띄어쓰기=1바이트 기준으로 1,500바이트 한도 내 최적 분량 구성.
+
+## 3. 3단 구조 서술 문체
+- [동기 및 계기] ➔ [구체적 탐구/수행 과정] ➔ [성장한 역량 및 인성적 배려]
+- 긍정적 종결어미(~함, ~을 보임, ~로 평가됨)로 전문성 있는 교사 서술체 완성.`,
+    triggerExample: '"중2 과학 태양계 행성 모형 만들기 수업에서 모둠장 맡아 성실히 발표한 학생 과세특 500자 써줘."'
+  },
+  {
+    id: 'lesson-plan-rubric-gen',
+    name: '📐 lesson-plan-rubric-gen (교수학습 지도안 & 채점 루브릭)',
+    category: '교사/교육자 특화',
+    description: '2022 개정 교육과정 성취기준을 연계하여 45분/50분 차시별 [도입-전개-정리] 교수학습 과정안과 상/중/하 3단계 수행평가 채점 기준표(루브릭)를 생성합니다.',
+    directoryStructure: `skills/
+└── lesson-plan-rubric-gen/
+    ├── SKILL.md
+    └── references/
+        └── 2022_revised_curriculum.md`,
+    skillMdContent: `---
+name: lesson-plan-rubric-gen
+description: Creates structured 45-min/50-min lesson plans (timelines, teacher prompts, student activities) and 3-level assessment rubrics aligned with national standards.
+tools: [file_writer]
+---
+
+# 교수학습 지도안 및 루브릭 생성 워크플로우
+
+## 1. 성취기준 매핑
+- 국가 교육과정 성취기준 코드 및 학습 목표(지식, 기능, 태도) 설정.
+
+## 2. 차시별 타임라인 (50분 기준)
+- [도입 5분]: 전시 학습 상기, 생각 열기 동기유발 질문, 학습 목표 제시.
+- [전개 35분]: [활동 1: 핵심 개념 탐구] ➔ [활동 2: 모둠 협동 과제] ➔ [활동 3: 적용 및 공유].
+- [정리 10분]: 배움 정리, 형성평가 퀴즈, 차시 예고 및 과제 안내.
+
+## 3. 상/중/하 3단계 채점 루브릭
+- 모호한 표현 대신 관찰 가능한 행동 지표로 평가 기준 명시.`,
+    triggerExample: '"초등 5학년 2학기 사회 \'조선 후기 서민 문화\' 1차시 교수학습 과정안이랑 수행평가 채점 루브릭 표 만들어줘."'
+  },
+  {
+    id: 'parent-notice-newsletter',
+    name: '✉️ parent-notice-newsletter (가정통신문 & 모바일 알림장)',
+    category: '교사/교육자 특화',
+    description: '현장체험학습, 학부모 상담주간, 계절별 안전교육 등 공손하고 격식 있는 학교 공식 가정통신문 서식과 알림장 앱(하이클래스, 클래스팅)용 친절한 3줄 요약본을 자동 작성합니다.',
+    directoryStructure: `skills/
+└── parent-notice-newsletter/
+    ├── SKILL.md
+    └── templates/
+        └── official_notice_a4.md`,
+    skillMdContent: `---
+name: parent-notice-newsletter
+description: Drafts polite, formal school parent newsletters with return slips and concise mobile notification summaries for classroom communication apps.
+tools: [file_writer]
+---
+
+# 가정통신문 및 알림장 작성 워크플로우
+
+## 1. 안내 목적 및 일정 구조화
+- 행사명, 일시, 장소, 대상, 준비물, 1인당 소요 경비, 안전 수칙 취합.
+
+## 2. 공식 문서 서식 (A4 1장 출력용)
+- 계절 인사말 ➔ 행사 취지 ➔ 세부 안내 표 ➔ 참가 신청 및 동의서(절취선) ➔ 학교장 직인란.
+
+## 3. 모바일 알림장 요약본 (스마트폰 앱용)
+- 바쁜 학부모님을 위한 핵심 일정/준비물 3줄 요약 및 제출 마감일 강조.`,
+    triggerExample: '"가을 현장체험학습(경주 국립박물관) 안내 가정통신문과 참가 신청서 양식, 학부모 알림장 문구 작성해줘."'
+  },
+  {
+    id: 'student-feedback-coach',
+    name: '💬 student-feedback-coach (과제 샌드위치 성장 피드백 코칭)',
+    category: '교사/교육자 특화',
+    description: '학생 과제물이나 서술형 답안을 보고 [구체적 칭찬 ➔ 1가지 핵심 개선 조언 ➔ 따뜻한 격려]의 3단계 샌드위치 피드백 코멘트를 학생 눈높이에 맞게 다정하게 작성합니다.',
+    directoryStructure: `skills/
+└── student-feedback-coach/
+    ├── SKILL.md
+    └── references/
+        └── growth_mindset_phrases.md`,
+    skillMdContent: `---
+name: student-feedback-coach
+description: Produces growth-mindset oriented 3-tier sandwich feedback (Praise Effort -> Actionable Next Step -> Warm Encouragement) for student assignments.
+tools: [file_writer]
+---
+
+# 학생 피드백 코칭 워크플로우
+
+## 1. 학생 과제 분석
+- 잘된 점(독창성, 성실성, 논리성)과 개선이 필요한 핵심 영역 파악.
+
+## 2. 3단계 샌드위치 피드백 작성
+1. **[1단계 칭찬]**: 결과보다 과정과 노력을 구체적으로 칭찬 (예: "자료 조사를 3가지나 꼼꼼히 찾은 점이 돋보여요!").
+2. **[2단계 개선 팁]**: 스스로 고쳐볼 수 있는 질문형 힌트 (예: "결론에서 내 생각을 한 줄만 더 보태면 훨씬 설득력 있어질 거예요.").
+3. **[3단계 격려]**: 다음 학습에 대한 기대와 자신감 북돋움 (예: "다음 발표도 정말 기대할게요! 멋져요.").`,
+    triggerExample: '"초등 6학년 학생이 쓴 환경오염 주장하는 글 읽고 다정한 샌드위치 피드백 코멘트 써줘."'
+  },
+  {
+    id: 'steam-project-designer',
+    name: '🔬 steam-project-designer (교과 융합 STEAM 프로젝트 설계기)',
+    category: '교사/교육자 특화',
+    description: '과학+예술, 사회+인공지능 등 2개 이상 교과를 엮은 문제해결형(PBL) 융합 프로젝트 수업, 모둠 미션지, 준비물 리스트 및 산출물 전시 평가서를 설계합니다.',
+    directoryStructure: `skills/
+└── steam-project-designer/
+    ├── SKILL.md
+    └── templates/
+        └── pbl_challenge_brief.md`,
+    skillMdContent: `---
+name: steam-project-designer
+description: Designs real-world interdisciplinary STEAM projects (Science, Tech, Engineering, Arts, Math) with PBL challenge briefs and peer review rubrics.
+tools: [file_writer]
+---
+
+# STEAM 융합 프로젝트 설계 워크플로우
+
+## 1. 실생활 중심 탐구 질문 (Driving Question)
+- 예: "지속 가능한 친환경 스마트 시티를 모형으로 제작한다면?"
+
+## 2. 교과 연계 및 4차시 모둠 활동 구성
+- [1차시]: 문제 탐색 및 과학적/사회적 배경 조사.
+- [2차시]: 수학적 수치 계산 및 기술적 설계도 스케치.
+- [3차시]: 메이커 제작 및 예술적 디자인 완성.
+- [4차시]: 모둠별 부스 전시 발표 및 상호 동료 평가.
+
+## 3. 준비물 & 동료 평가 양식
+- 재료 목록, 안전 유의사항, 학생 상호 평가표 동봉.`,
+    triggerExample: '"중학교 1학년 과학(빛과 파동)+미술(착시 예술) 연계한 4차시 STEAM 프로젝트 수업 계획서 짜줘."'
+  },
+
+  // =========================================================================
+  // --- [3] 교육/수업/활동지 & 독서 감상문 & 학급 도구 ---
+  // =========================================================================
   {
     id: 'lesson-worksheet-generator',
     name: '🏫 lesson-worksheet-generator (교과 수업 활동지 생성기)',
@@ -245,6 +403,10 @@ tools: [file_writer, shell]
 - CSV export for group bookkeeping.`,
     triggerExample: '"동아리 회식 영수증 35만원 12명 정산하고 카톡 공유 문구랑 엑셀 다운로드 기능 만들어줘."'
   },
+
+  // =========================================================================
+  // --- [4] 전문 개발 및 보안/DB/DevOps ---
+  // =========================================================================
   {
     id: 'git-auto-pr',
     name: '🚀 git-auto-pr (자동 브랜치 · 커밋 · PR 생성 스킬)',
@@ -396,67 +558,67 @@ export const RULE_FILE_TEMPLATES: RuleFileTemplate[] = [
     fileName: 'custom_instructions.md',
     purpose: 'ChatGPT Custom Instructions / Codex System Prompt 주입용 규칙',
     content: `# ChatGPT Custom Instructions
-- You are a senior fullstack engineer and educational software designer.
-- Provide production-grade, copy-paste ready code with full types.
+- You are a senior educator and software architect.
+- Provide production-grade, copy-paste ready educational content with full rubrics and clean code.
 - Format structured tables and breakdown lists for clarity.`
   }
 ];
 
 export const DAILY_ROUTINES_GUIDES: DailyRoutineGuide[] = [
   {
-    timeSlot: '09:00 AM (출근 / 아침)',
-    routineName: '아침 기상 & 이슈 브리핑 자동화',
+    timeSlot: '08:30 AM (출근 / 아침 조회 전)',
+    routineName: '아침 알림장 & 일일 수업 브리핑',
     icon: 'Sun',
-    persona: '스마트 업무 비서',
-    triggerCommand: '/morning-briefing',
-    objective: '밤새 들어온 GitHub 이슈, 미해결 버그, 오늘의 우선순위 3가지를 30초 만에 브리핑받기',
+    persona: '학급 담임 및 교과 전문 어시스턴트',
+    triggerCommand: '/parent-notice-newsletter',
+    objective: '오늘 진행할 수업 일정 확인, 학부모 모바일 알림장 문구 발송 및 아침 조회 사항 1분 만에 점검',
     steps: [
-      { stepNumber: 1, title: 'GitHub 이슈 및 PR 조회', desc: 'GitHub MCP를 호출하여 나에게 할당된 이슈와 리뷰 대기 중인 PR 목록 수집' },
-      { stepNumber: 2, title: '우선순위 3대 태스크 정렬', desc: '마감일과 중요도를 기준으로 오늘 해결할 핵심 과제 선정 및 일정 요약' }
+      { stepNumber: 1, title: '오늘의 학급 일정 확인', desc: '1~6교시 시간표와 준비물, 특별실 이동 일정 자동 점검' },
+      { stepNumber: 2, title: '모바일 알림장 문구 생성', desc: '하이클래스/클래스팅에 바로 복사해 올릴 친절한 알림장 3줄 메시지 작성' }
     ],
-    expectedOutput: '아침 업무 브리핑 카드 및 오늘의 액션 아이템 목록',
-    proTip: '슬랙(Slack)이나 노션(Notion)에 브리핑 결과를 바로 복사해 팀원들에게 공유하세요.'
+    expectedOutput: '당일 학급 알림장 텍스트 및 아침 조회 브리핑 메모',
+    proTip: '학급 칠판이나 TV 화면에 띄워 학생들이 등교하자마자 준비물을 챙기게 하세요.'
   },
   {
-    timeSlot: '01:30 PM (오후 집중)',
-    routineName: '스마트 도구 라우팅 & 초고속 코딩/활동지 제작',
+    timeSlot: '01:30 PM (오후 수업 / 공강)',
+    routineName: '스마트 수업 활동지 & 단원 평가 퀴즈 제작',
     icon: 'Terminal',
-    persona: '전문 시니어 개발자 & 교육 기획자',
-    triggerCommand: '/skill-mcp-router',
-    objective: '자연어로 목표만 지시하면 AI가 최적의 스킬을 찾아 활동지나 웹 기능을 0에러로 완성하기',
-    steps: [
-      { stepNumber: 1, title: '목표 지시 및 스킬 자동 매칭', desc: '"초등 과학 퀴즈 웹앱 만들어줘"라고 입력하면 skill-mcp-router가 최적 스킬을 자동 실행' },
-      { stepNumber: 2, title: '자율 생성 및 빌드 검증', desc: '파일 생성 ➔ 단위 테스트 ➔ npm run build 에러 자가 치유까지 원스톱 완결' }
-    ],
-    expectedOutput: '실행 가능한 완전한 컴포넌트 및 검증 완료 보고서',
-    proTip: '3개 이상의 파일을 건드릴 때는 Planning 모드로 계획을 먼저 확인하세요.'
-  },
-  {
-    timeSlot: '05:30 PM (퇴근 전)',
-    routineName: '보안 검사 & 자동 PR 커밋 백업',
-    icon: 'ShieldCheck',
-    persona: '보안 감사관 & DevOps 엔지니어',
-    triggerCommand: '/git-auto-pr',
-    objective: '코드 보안 취약점을 검사하고, 깔끔한 커밋과 PR을 생성하여 GitHub에 안전하게 백업하기',
-    steps: [
-      { stepNumber: 1, title: '보안 취약점 및 API Key 유출 검사', desc: 'owasp-security-auditor 스킬로 하드코딩된 키나 취약점 사전 차단' },
-      { stepNumber: 2, title: 'Conventional Commits & PR 생성', desc: '오늘 변경된 코드를 깔끔한 제목과 요약으로 깃허브에 푸시' }
-    ],
-    expectedOutput: '완전한 GitHub PR 및 0에러 빌드 입증',
-    proTip: '퇴근 전 PR 본문 링크를 팀원들에게 공유하여 빠른 리뷰를 유도하세요.'
-  },
-  {
-    timeSlot: '10:00 PM (야간 / 학습)',
-    routineName: '내일 수업/업무 준비 & 아이디어 기획',
-    icon: 'Moon',
-    persona: '창의적 아이디어 파트너',
+    persona: '교과 수업 설계 전문가',
     triggerCommand: '/lesson-worksheet-generator',
-    objective: '내일 진행할 교과 수업 활동지나 독서 토론 질문지를 1분 만에 미리 준비해 두기',
+    objective: '내일 진행할 단원의 A4 출력용 수업 활동지, 생각 열기 질문 및 4지선다 퀴즈를 3초 만에 생성',
     steps: [
-      { stepNumber: 1, title: '수업 주제 입력', desc: '과목과 학년, 내일 다룰 책이나 영화 제목을 입력' },
-      { stepNumber: 2, title: 'A4 출력용 활동지 생성', desc: '생각 열기 질문, 빈칸 채우기, 퀴즈, 해설지가 완비된 활동지 마크다운 출력' }
+      { stepNumber: 1, title: '단원 성취기준 입력', desc: '과목과 단원명을 입력하면 skill-mcp-router가 최적 활동지 템플릿 호출' },
+      { stepNumber: 2, title: 'A4 양식 및 해설지 완결', desc: '생각 열기 발문 ➔ 개념 정리 ➔ 퀴즈 ➔ 교사용 정답표 일괄 출력' }
     ],
-    expectedOutput: '즉시 인쇄 가능한 수업 활동지 및 교사용 가이드',
-    proTip: 'PDF나 한글(HWP)로 내보내 학교/사내 공유 폴더에 저장하세요.'
+    expectedOutput: '인쇄 즉시 가능한 A4 수업 활동지 마크다운 및 HWP 복사용 텍스트',
+    proTip: '학교 인쇄실에 넘기기 전에 교사용 지도 팁과 정답지를 별도로 분리해 인쇄하세요.'
+  },
+  {
+    timeSlot: '04:30 PM (방과 후 / 교무실)',
+    routineName: '생기부 과세특 작성 & 나이스 금지어 검사',
+    icon: 'ShieldCheck',
+    persona: '생기부 전문 행정 및 평가관',
+    triggerCommand: '/student-record-writer',
+    objective: '오늘 관찰한 학생들의 수업 태도와 발표 내용을 나이스 글자수 및 금지어 위반 없이 학생부 문장으로 저장',
+    steps: [
+      { stepNumber: 1, title: '학생 관찰 키워드 입력', desc: '학생별 수행 과제 키워드를 입력해 400~500자 세특 초안 생성' },
+      { stepNumber: 2, title: 'NEIS 바이트 및 금지어 전수 검사', desc: '사외 수상, 부모 직업 등 기재 금지어 위반 0건 확인' }
+    ],
+    expectedOutput: 'NEIS 나이스 시스템에 바로 복사해 붙여넣을 수 있는 학생별 과세특 문장 목록',
+    proTip: '학기말에 몰아서 쓰지 말고, 매주 방과 후에 3~4명씩 꾸준히 기록해두면 학기말 업무가 90% 줄어듭니다.'
+  },
+  {
+    timeSlot: '09:00 PM (야간 / 교재 연구)',
+    routineName: 'STEAM 융합 프로젝트 & 창의 수행평가 기획',
+    icon: 'Moon',
+    persona: '창의 융합 수업 기획 파트너',
+    triggerCommand: '/steam-project-designer',
+    objective: '다음 주 진행할 교과 융합(STEAM) 모둠 프로젝트 미션지와 상/중/하 채점 루브릭 미리 완성하기',
+    steps: [
+      { stepNumber: 1, title: '융합 교과 및 주제 설정', desc: '과학+미술, 사회+인공지능 등 실생활 문제 해결 중심 테마 선정' },
+      { stepNumber: 2, title: '모둠 미션지 및 루브릭 출력', desc: '차시별 활동 흐름표와 학생 상호 평가표 완비' }
+    ],
+    expectedOutput: '4차시 분량의 융합 프로젝트 수업 계획서 및 평가 기준표',
+    proTip: '동학년 선생님들과 공유하여 공동 수업 연구 자료로 활용하세요.'
   }
 ];

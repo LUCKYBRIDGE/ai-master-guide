@@ -16,6 +16,7 @@ export interface TaskFeatureModule {
   name: string;
   category: 
     | '스킬/MCP 자동추천' 
+    | '교사/교육자 특화'
     | '초중고 수업/활동지' 
     | '독서/문화/글쓰기' 
     | '학급/모임/도구' 
@@ -35,7 +36,7 @@ export interface TaskFeatureModule {
   detailedImpact: {
     agentRuleSummary: string;
     mcpServerName?: string;
-    mcpType?: 'zero-config' | 'needs-auth';
+    mcpType?: 'zero-config' | 'needs-auth'; // 즉시 동작(No Key) vs 인증/키 필요
     mcpSetupGuide?: string;
     skillPath?: string;
     policyPath?: string;
@@ -237,7 +238,7 @@ export const MCP_SKILL_AGENT_CONCEPTS: McpSkillAgentSummary[] = [
     englishName: 'Reusable Workflow Recipe',
     role: '반복 작업 자동화 매뉴얼 (Workflows)',
     metaphor: '📖 표준 작업 레시피: 복잡한 작업을 언제나 동일한 품질로 빠르게 처리하도록 적어둔 실무 가이드',
-    description: '교과 활동지 자동 생성, Git PR 자동 생성 등 반복되는 실무 작업을 AI가 실수 없이 일관되게 수행하도록 절차를 정리해 둔 재사용 문서입니다.',
+    description: '교과 활동지 자동 생성, 생기부 문구 검사, Git PR 자동 생성 등 반복되는 실무 작업을 AI가 실수 없이 일관되게 수행하도록 절차를 정리해 둔 재사용 문서입니다.',
     practicalExample: '에이전트에게 `/lesson-worksheet` 스킬을 실행시키면 초등학교 국어 1단원 맞춤 활동지를 A4 양식으로 3초 만에 작성',
     keyBenefits: [
       '매번 프롬프트를 길게 쓸 필요 없이 짧은 명령어 하나로 표준화된 작업 수행',
@@ -292,9 +293,11 @@ export const AI_TOOLS_CATALOG: AiToolItem[] = [
   }
 ];
 
-// 2. 실무 작업 모듈 목록 (STEP 2: 중복 선택 체크박스)
+// 2. 실무 작업 모듈 목록 (STEP 2: 교사/교육자 필수 실무부터 일상 활동, 개발까지 100% 지원)
 export const TASK_FEATURE_MODULES: TaskFeatureModule[] = [
-  // --- [1] 스킬 & MCP 지능형 자동 라우터 ---
+  // =========================================================================
+  // --- [1] 스킬 & MCP 지능형 자동 라우터 (스마트 도구 선택기 - 1순위 추천) ---
+  // =========================================================================
   {
     id: 'mod-skill-mcp-router',
     name: '🧭 스킬 & MCP 자동 탐색 및 스마트 추천 라우터 (Skill & MCP Smart Selector)',
@@ -335,7 +338,172 @@ tools: [file_reader, shell]
     }
   },
 
-  // --- [2] 초중고 교과 수업 & 독서/영화 감상문 & 학급/모임 도구 ---
+  // =========================================================================
+  // --- [2] 교사/교육자 특화 실무 (생기부, 지도안, 가정통신문, 피드백, STEAM) ---
+  // =========================================================================
+  {
+    id: 'mod-student-record',
+    name: '📋 학생생활기록부(생기부) 과세특·행특 문구 생성 & 나이스 금지어 검사기',
+    category: '교사/교육자 특화',
+    badge: '교사 필수 생기부',
+    badgeColor: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+    shortDesc: '학생 관찰 키워드만 넣으면 교육부 NEIS 글자수(바이트)에 맞추고 기재 금지어(외부 수상, 부모 직업 등)를 자동 검사하여 수려한 학생부 문장으로 완성',
+    detailedImpact: {
+      agentRuleSummary: 'NEIS 글자수/바이트 검사, 교육부 기재 금지어 자동 필터링, 개별 학생 역량 중심 문장화',
+      skillPath: 'skills/student-record-writer/SKILL.md',
+      policyPath: 'rules/neis_record_guideline.md'
+    },
+    defaultSelected: true,
+    agentRuleSection: `### [학생생활기록부(생기부) 과세특/행특 작성 규칙]
+- **교육부 기재 금지어 엄격 배제**: 공인어학시험, 교외 수상 실적, 부모 직업/사회경제적 지위 암시 문구, 외부 기관명 절대 기재 금지.
+- **NEIS 바이트 수 규격 준수**: 한글 1자=3바이트, 띄어쓰기/영문=1바이트 기준으로 과목별 세특(1,500바이트), 행특(1,500바이트) 상한선 초과 방지.
+- **성장과 역량 중심 문체**: 단순 '참여함' 나열이 아닌, [동기/계기] ➔ [구체적 활동 과정] ➔ [배우고 성장한 점(자기주도성)] 구조로 서술.`,
+    skillFile: {
+      path: 'skills/student-record-writer/SKILL.md',
+      description: '학생 관찰 키워드 기반 생기부 과세특 및 행동특성 자동 작성 스킬',
+      content: `---
+name: student-record-writer
+description: Generates compliant NEIS student record narratives (Subject-specific talents, behavioral traits) with built-in banned phrase validation and byte count checks.
+tools: [file_writer]
+---
+
+# 생기부 문구 생성 워크플로우
+1. 학생의 과목명, 수행 과제 주제, 핵심 관찰 키워드(예: 협력, 비판적 사고, 끈기)를 분석한다.
+2. 기재 금지어 사전을 대조하여 위반 단어가 없는지 1차 검사한다.
+3. [동기 ➔ 활동 ➔ 성장 역량] 3단 논법으로 400~500자 내외의 자연스러운 문장을 생성한다.`
+    },
+    extraFile: {
+      path: 'rules/neis_record_guideline.md',
+      description: '교육부 학생생활기록부 기재 요령 준수 정책',
+      content: `# NEIS Student Record Guideline
+1. 교외 경시대회, 외부 인증시험 성적은 기재 불가.
+2. 학생의 잠재력, 탐구 열정, 긍정적인 협업 태도를 구체적 사례를 들어 긍정형 종결어미(~함, ~을 보임)로 서술.`
+    }
+  },
+  {
+    id: 'mod-lesson-plan-rubric',
+    name: '📐 차시별 교수학습 지도안(수업계획서) & 수행평가 채점 루브릭 생성기',
+    category: '교사/교육자 특화',
+    badge: '지도안 & 루브릭',
+    badgeColor: 'bg-blue-500/10 text-blue-300 border-blue-500/30',
+    shortDesc: '2022 개정 교육과정 성취기준 연계, 45분/50분 차시별 [도입-전개-정리] 교수학습 과정안 및 상/중/하 3단계 수행평가 채점 기준표(루브릭) 자동 설계',
+    detailedImpact: {
+      agentRuleSummary: '교육과정 성취기준 연계, 시간대별 발문-활동 흐름표, 상/중/하 루브릭 채점표',
+      skillPath: 'skills/lesson-plan-rubric-gen/SKILL.md'
+    },
+    defaultSelected: true,
+    agentRuleSection: `### [교수학습 지도안 및 채점 루브릭 작성 규칙]
+- **성취기준 코드 연계**: 국가 교육과정 성취기준(예: [6과02-01])을 명시하고 핵심 질문과 학습 목표를 일치시킬 것.
+- **시간대별 타임라인**: 40분/45분/50분 수업에 맞춰 [도입 5분] ➔ [전개 30~35분] ➔ [정리 5~10분]으로 발문과 학생 활동을 표로 구성.
+- **객관적 루브릭**: 평가 기준을 '매우 잘함' 같은 모호한 표현 대신, 구체적인 도달 행동 지표(상/중/하)로 명시할 것.`,
+    skillFile: {
+      path: 'skills/lesson-plan-rubric-gen/SKILL.md',
+      description: '차시별 교수학습 지도안 및 수행평가 루브릭 자동 생성 스킬',
+      content: `---
+name: lesson-plan-rubric-gen
+description: Creates comprehensive lesson plans (timeline, teacher prompts, student activities) and 3-tier scoring rubrics.
+tools: [file_writer]
+---
+
+# 지도안 & 루브릭 생성 워크플로우
+1. 교과, 학년, 단원명, 차시 목표를 확인한다.
+2. [도입: 동기유발] ➔ [전개: 활동 1, 2, 3] ➔ [정리: 배움 확인 및 차시 예고] 표를 생성한다.
+3. 지식/기능/태도 영역별 상/중/하 3단계 채점 기준표를 출력한다.`
+    }
+  },
+  {
+    id: 'mod-parent-notice',
+    name: '✉️ 학부모 가정통신문 & 학생 모바일 알림장 작성기',
+    category: '교사/교육자 특화',
+    badge: '가정통신문 공문',
+    badgeColor: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
+    shortDesc: '현장체험학습, 학부모 상담주간, 계절별 안전수칙 등 격식을 갖춘 학교장 명의 공문 서식 및 알림장 앱용 친절한 모바일 요약본 생성',
+    detailedImpact: {
+      agentRuleSummary: '공식 공문 인사말/서식, 일정/준비물 표, 모바일 알림장 앱용 3줄 요약',
+      skillPath: 'skills/parent-notice-newsletter/SKILL.md'
+    },
+    defaultSelected: false,
+    agentRuleSection: `### [가정통신문 및 학급 알림장 작성 규칙]
+- **예의 바른 공문 서식**: 계절 인사 ➔ 행사 목적 ➔ 일시/장소/준비물 ➔ 회신서(절취선) ➔ 학교장 명의 직인란 구조 유지.
+- **모바일 알림장 버전 병기**: 스마트폰 앱(하이클래스, 클래스팅 등)으로 복사해 붙여넣기 좋은 가독성 높은 3줄 요약본을 함께 제공할 것.`,
+    skillFile: {
+      path: 'skills/parent-notice-newsletter/SKILL.md',
+      description: '학교 공식 가정통신문 및 학급 모바일 알림장 메시지 자동 생성 스킬',
+      content: `---
+name: parent-notice-newsletter
+description: Generates formal parent newsletters with return slips and concise mobile notification drafts for school apps.
+tools: [file_writer]
+---
+
+# 가정통신문 작성 워크플로우
+1. 안내 행사(체험학습, 상담, 방학, 안전교육)와 주요 일정을 수집한다.
+2. 격식 있는 학교 공식 가정통신문 서식(A4 1장)을 작성한다.
+3. 학부모 모바일 앱용 핵심 요약 알림장 문구를 함께 출력한다.`
+    }
+  },
+  {
+    id: 'mod-feedback-coach',
+    name: '💬 학생 맞춤형 성장 피드백 & 과제 샌드위치 첨삭 코멘트 생성기',
+    category: '교사/교육자 특화',
+    badge: '성장 피드백',
+    badgeColor: 'bg-pink-500/10 text-pink-300 border-pink-500/30',
+    shortDesc: '학생 과제나 시험 답안을 보고 [구체적 칭찬 ➔ 핵심 개선점 ➔ 따뜻한 격려]의 3단계 샌드위치 피드백 코멘트를 학생 눈높이에 맞게 다정하게 작성',
+    detailedImpact: {
+      agentRuleSummary: '3단계 샌드위치 코멘트, 자존감 향상 피드백, 실천 가능한 개선 힌트 제공',
+      skillPath: 'skills/student-feedback-coach/SKILL.md'
+    },
+    defaultSelected: false,
+    agentRuleSection: `### [학생 과제 피드백 및 샌드위치 첨삭 규칙]
+- **3단계 샌드위치 기법**: [1. 노력과 강점 칭찬] ➔ [2. 한 가지만 짚어주는 구체적 개선 조언] ➔ [3. 다음 도전을 응원하는 격려] 순서 엄수.
+- **친절하고 명확한 문체**: 지적이나 평가가 아닌, 학생의 성장을 돕는 친절한 조언자(코치)의 언어로 서술할 것.`,
+    skillFile: {
+      path: 'skills/student-feedback-coach/SKILL.md',
+      description: '학생 과제물에 대한 3단계 샌드위치 성장 피드백 생성 스킬',
+      content: `---
+name: student-feedback-coach
+description: Produces constructive, encouraging 3-stage sandwich feedback (Praise -> Actionable Improvement -> Motivation).
+tools: [file_writer]
+---
+
+# 학생 피드백 생성 워크플로우
+1. 학생의 과제 제출물 요약과 주요 장단점을 파악한다.
+2. [장점 발견 칭찬] ➔ [스스로 고쳐볼 수 있는 힌트] ➔ [따뜻한 응원 문구]를 조립한다.`
+    }
+  },
+  {
+    id: 'mod-steam-project',
+    name: '🔬 교과 융합(STEAM) & 메이커 창의체험 프로젝트 수업 설계기',
+    category: '교사/교육자 특화',
+    badge: 'STEAM 융합수업',
+    badgeColor: 'bg-purple-500/10 text-purple-300 border-purple-500/30',
+    shortDesc: '과학+미술, 수학+음악, 사회+AI 등 2개 이상 교과를 엮은 문제해결형(PBL) 융합 프로젝트 수업, 모둠 미션지 및 산출물 평가서 설계',
+    detailedImpact: {
+      agentRuleSummary: '실생활 문제 기반 PBL 시나리오, 모둠별 역할 분담표, 준비물 예산 및 평가표',
+      skillPath: 'skills/steam-project-designer/SKILL.md'
+    },
+    defaultSelected: false,
+    agentRuleSection: `### [교과 융합 STEAM 프로젝트 수업 규칙]
+- **실생활 맥락(Context) 기반**: "기후변화에 대응하는 우리 동네 스마트 쉼터 만들기"처럼 실제 생활 속 문제를 해결하는 프로젝트로 기획할 것.
+- **융합 교과 명시**: 각 단계에서 발휘되는 교과별 역량(과학적 탐구, 수학적 계산, 예술적 표현 등)을 구조화할 것.`,
+    skillFile: {
+      path: 'skills/steam-project-designer/SKILL.md',
+      description: '교과 융합 STEAM 프로젝트 및 메이커 수업 설계 스킬',
+      content: `---
+name: steam-project-designer
+description: Designs interdisciplinary STEAM projects (Science, Tech, Engineering, Arts, Math) with group challenge briefs.
+tools: [file_writer]
+---
+
+# STEAM 수업 설계 워크플로우
+1. 융합할 2~3개 교과와 중심 탐구 질문을 설정한다.
+2. 모둠별 4차시 프로젝트 활동 안내서와 준비물 체크리스트를 만든다.
+3. 최종 결과물 전시 및 동료 평가 루브릭을 생성한다.`
+    }
+  },
+
+  // =========================================================================
+  // --- [3] 초중고 교과 수업 활동지 & 독서/영화 감상문 & 학급 도구 ---
+  // =========================================================================
   {
     id: 'mod-lesson-worksheet',
     name: '🏫 초등·중고등 교과 수업 활동지 & 단원 평가 문제지',
@@ -491,7 +659,9 @@ tools: [file_writer, shell]
     }
   },
 
-  // --- [3] 교육용 인터랙티브 웹 & 엑셀 시각화 & 문서화 ---
+  // =========================================================================
+  // --- [4] 교육용 인터랙티브 웹 & 차트 대시보드 & 비즈니스 문서 ---
+  // =========================================================================
   {
     id: 'mod-edu-quiz',
     name: '📚 카드 뒤집기 단어장 & 자동 채점 퀴즈 (교육용 웹/앱)',
@@ -640,7 +810,9 @@ tools: [file_writer, shell]
     }
   },
 
-  // --- [4] 프론트엔드/백엔드/보안/자동화 개발 ---
+  // =========================================================================
+  // --- [5] 전문 웹 개발 (프론트엔드/백엔드/보안/자동화) ---
+  // =========================================================================
   {
     id: 'mod-react-ui',
     name: '🎨 깔끔한 웹/앱 화면 만들기 (버튼·카드·메뉴 디자인)',
@@ -952,9 +1124,15 @@ export const NEW_PROJECT_SCAFFOLD_GUIDE: NewProjectScaffoldGuide = {
 ├── .env.example                [3단계: 시크릿 키 및 환경변수 템플릿]
 ├── rules/                      [4단계: 보안, 결제 정책 영구 룰]
 │   ├── security_policy.md
+│   ├── neis_record_guideline.md
 │   └── payment_policy.md
 └── skills/                     [4단계: 반복 작업 자동화 스킬 교본]
     ├── skill-mcp-router/
+    ├── student-record-writer/
+    ├── lesson-plan-rubric-gen/
+    ├── parent-notice-newsletter/
+    ├── student-feedback-coach/
+    ├── steam-project-designer/
     ├── lesson-worksheet-generator/
     ├── book-movie-review-worksheet/
     ├── class-activity-picker/
@@ -983,7 +1161,7 @@ export const NEW_PROJECT_SCAFFOLD_GUIDE: NewProjectScaffoldGuide = {
     {
       stepNumber: 4,
       title: '4단계: 스킬 교본 & 영구 규칙(Rules) 장착',
-      action: 'skills/ 폴더에 스마트 라우터, 교과 활동지, 자동 PR 등 실무 레시피를 장착해 AI가 실수 없이 작업하게 합니다.',
+      action: 'skills/ 폴더에 스마트 라우터, 생기부 작성기, 교과 활동지, 자동 PR 등 실무 레시피를 장착해 AI가 실수 없이 작업하게 합니다.',
       outputFile: 'skills/*, rules/*'
     }
   ],
