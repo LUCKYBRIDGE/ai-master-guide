@@ -186,9 +186,9 @@ export const OBJECTIVE_MODEL_RANKINGS: ObjectiveModelRank[] = [
     mathScore: 'MATH 87.0%',
     contextWindow: '300K (출력 64K)',
     speedTokensPerSec: 175,
-    inputCostPer1M: 1.00,
-    outputCostPer1M: 5.00,
-    performanceTier: '[UI/UX 시각 인터랙션 특화] 디자인 시안(Figma/이미지)을 시각적으로 분석하여 정밀한 React Tailwind 컴포넌트로 직결 변환.',
+    inputCostPer1M: 10.00,
+    outputCostPer1M: 50.00,
+    performanceTier: '[UI/UX 시각 인터랙션 특화] 디자인 시안(Figma/이미지) 및 실시간 브라우저 인터랙션을 시각적으로 분석하여 정밀한 React Tailwind 컴포넌트로 직결 변환하는 고성능 멀티모달 모델.',
     officialDocUrl: 'https://www.anthropic.com/news'
   },
   // 6. Gemini 3.7 Flash

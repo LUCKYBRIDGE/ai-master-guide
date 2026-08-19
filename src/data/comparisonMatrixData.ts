@@ -126,7 +126,7 @@ export const COMPARISON_MATRIX_DATA: ComparisonRow[] = [
     feature: '개발자 API 비용 및 무료 티어 혜택',
     openai: 'GPT-5.6 3단 체제 (Sol $15/$60 · Terra $2.50/$10 · Luna $0.15/$0.60 per 1M)로 맞춤형 비용 설계',
     google: 'AI Studio에서 Gemini 3.7 Flash의 관대한 무료 티어 & 파격적 초저비용 ($0.10 / $0.40 per 1M)',
-    anthropic: 'Claude 5 프롬프트 캐싱 적용 시 최대 90% 비용 절감 (Fable $1/$5, Sonnet $3/$15, Opus $15/$75)',
+    anthropic: 'Claude 5 프롬프트 캐싱 적용 시 최대 90% 비용 절감 (Fable $10/$50, Sonnet $3/$15, Opus $15/$75)',
     xai: 'X Premium 구독 기본 포함 및 xAI Cloud 크레딧 (Grok 4.6 $2.00 / $10.00 per 1M)',
     winner: 'google',
     note: 'Gemini 3.7 Flash의 무료 API 티어와 백만 토큰당 가격(입력 $0.10 / 출력 $0.40)은 가장 경제적임.',
