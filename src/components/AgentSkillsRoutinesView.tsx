@@ -30,16 +30,17 @@ import {
 } from 'lucide-react';
 
 interface AgentSkillsRoutinesViewProps {
-  onCopy: (text: string, title: string) => void;
+  onCopy?: (text: string, title: string) => void;
 }
 
 export const AgentSkillsRoutinesView: React.FC<AgentSkillsRoutinesViewProps> = ({ onCopy }) => {
-  const [activeSection, setActiveSection] = useState<'architecture' | 'skills' | 'rules' | 'routines'>('architecture');
-  const [selectedSkillId, setSelectedSkillId] = useState<string>('git-auto-pr');
+  const [activeSection, setActiveSection] = useState<'architecture' | 'skills' | 'rules' | 'routines'>('skills');
+  const [selectedSkillId, setSelectedSkillId] = useState<string>('skill-mcp-router');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopy = (id: string, text: string, title: string) => {
-    onCopy(text, title);
+    if (onCopy) onCopy(text, title);
+    else navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
@@ -67,11 +68,11 @@ export const AgentSkillsRoutinesView: React.FC<AgentSkillsRoutinesViewProps> = (
                 <Workflow className="w-6 h-6" />
               </span>
               <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-                에이전트 · SKILL · 자동화 · 일일 루틴 마스터 가이드
+                에이전트 · SKILL · 스마트 라우터 · 일일 루틴 마스터 가이드
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-              단순 질문용 챗봇을 넘어 <strong>멀티 에이전트 오케스트레이션, 커스텀 SKILL.md 작성, 프로젝트 영구 규칙 파일(Rules), 실무 4대 자동화 루틴</strong>을 완벽하게 마스터하고 즉시 복사해 사용하세요.
+              단순 질문용 챗봇을 넘어 <strong>수많은 스킬/도구 중 최적의 도구를 스스로 골라 쓰는 스마트 라우터(Skill-MCP-Router), 초등 교과 활동지·감상문 생성기, 프로젝트 영구 규칙(Rules), 실무 4대 자동화 루틴</strong>을 완벽하게 마스터하고 즉시 복사해 사용하세요.
             </p>
           </div>
 
@@ -104,7 +105,7 @@ export const AgentSkillsRoutinesView: React.FC<AgentSkillsRoutinesViewProps> = (
             }`}
           >
             <Boxes className="w-4 h-4" />
-            <span>📦 2. 커스텀 SKILL.md 팩</span>
+            <span>📦 2. 커스텀 SKILL.md 팩 (인기 10종)</span>
           </button>
 
           <button
@@ -128,7 +129,7 @@ export const AgentSkillsRoutinesView: React.FC<AgentSkillsRoutinesViewProps> = (
             }`}
           >
             <Clock className="w-4 h-4" />
-            <span>🔄 4. 실전 일일 4대 루틴</span>
+            <span>⚡ 4. 실전 일일 4대 루틴</span>
           </button>
         </div>
       </div>
@@ -175,15 +176,16 @@ export const AgentSkillsRoutinesView: React.FC<AgentSkillsRoutinesViewProps> = (
                 <span>Reactive & Safe Execution Loop</span>
               </div>
               <pre className="text-[11px] text-purple-200 overflow-x-auto leading-relaxed p-2">
-{`사용자 요청 입력
-  └─► 1. Planning Mode (아키텍처 설계 & implementation_plan.md 생성)
-        └─► 2. 사용자 검토 및 [승인] 버튼 클릭
-              └─► 3. 메인 에이전트(Supervisor)가 서브에이전트 동시 스폰
-                    ├── 🔬 Research Agent (문서 & 웹 탐색)
-                    ├── 💻 Coding Agent (파일 생성 & diff 수정)
-                    └── 🧪 Test Agent (npm test & 터미널 자가 치유)
-              └─► 4. 비동기 빌드 완료 (Reactive Wakeup 알림)
-                    └─► 5. 최종 사후 검증 (walkthrough.md 증명 & 브라우저 렌더링)`}
+{`사용자 요청 입력 (예: "초등 과학 활동지 만들고 브라우저로 캡처 검증해줘")
+  └── 1. Intent Analysis & Smart Router (skill-mcp-router가 최적 도구 자동 매칭)
+        └── 2. Planning Mode (아키텍처 설계 & implementation_plan.md 작성)
+              └── 3. 사용자 검토 및 [승인] 버튼 클릭
+                    └── 4. 메인 에이전트(Supervisor)가 서브에이전트 동시 스폰
+                          ├── 🔍 Research Agent (단원 성취기준 & 웹 검색)
+                          ├── ✍️ Worksheet Agent (A4 활동지 & 퀴즈 생성)
+                          └── 🌐 Browser Agent (Puppeteer 스크린샷 렌더링 검사)
+                    └── 5. 비동기 빌드 완료 (Reactive Wakeup 알림 수신)
+                          └── 6. 최종 사후 검증 (walkthrough.md 증명 & 산출물 전달)`}
               </pre>
             </div>
           </div>
@@ -194,21 +196,21 @@ export const AgentSkillsRoutinesView: React.FC<AgentSkillsRoutinesViewProps> = (
       {activeSection === 'skills' && (
         <div className="space-y-6">
           {/* Skill Selector Tabs */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
             {CUSTOM_SKILL_TEMPLATES.map((skill: CustomSkillTemplate) => (
               <button
                 key={skill.id}
                 onClick={() => setSelectedSkillId(skill.id)}
-                className={`p-4 rounded-2xl text-left transition-all border ${
+                className={`p-3.5 rounded-2xl text-left transition-all border flex flex-col justify-between ${
                   selectedSkillId === skill.id
                     ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30 scale-102 border-purple-400'
                     : 'bg-slate-900/90 text-slate-400 hover:text-white hover:bg-slate-800 border-slate-800'
                 }`}
               >
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-950/60 uppercase block w-fit mb-1.5">
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-950/60 uppercase block w-fit mb-1.5 truncate">
                   {skill.category}
                 </span>
-                <h4 className="font-extrabold text-xs sm:text-sm text-white leading-snug">
+                <h4 className="font-extrabold text-xs text-white leading-snug">
                   {skill.name}
                 </h4>
               </button>
@@ -219,19 +221,21 @@ export const AgentSkillsRoutinesView: React.FC<AgentSkillsRoutinesViewProps> = (
           <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-slate-800 space-y-6 shadow-2xl">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
               <div className="space-y-1">
-                <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">
-                  {currentSkill.category} 커스텀 스킬
-                </span>
-                <h3 className="text-lg sm:text-xl font-extrabold text-white">
-                  {currentSkill.name}
-                </h3>
-                <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    {currentSkill.category}
+                  </span>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-white">
+                    {currentSkill.name}
+                  </h3>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                   {currentSkill.description}
                 </p>
               </div>
 
               <button
-                onClick={() => handleCopy(currentSkill.id, currentSkill.skillMdContent, currentSkill.name)}
+                onClick={() => handleCopy(currentSkill.id, currentSkill.skillMdContent, `${currentSkill.name} SKILL.md`)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all shadow-md shrink-0 self-start lg:self-auto"
               >
                 {copiedId === currentSkill.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -263,7 +267,7 @@ export const AgentSkillsRoutinesView: React.FC<AgentSkillsRoutinesViewProps> = (
             {/* SKILL.md Code Box */}
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
-                <span>SKILL.md 표준 코드 전문 (YAML Frontmatter 포함)</span>
+                <span>SKILL.md 표준 코드 본문 (YAML Frontmatter 포함)</span>
               </div>
               <pre className="p-4 rounded-2xl bg-slate-950 border border-slate-800 font-mono text-xs text-purple-200 overflow-x-auto leading-relaxed">
                 {currentSkill.skillMdContent}
@@ -345,7 +349,7 @@ export const AgentSkillsRoutinesView: React.FC<AgentSkillsRoutinesViewProps> = (
 
                   <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 max-w-xs shrink-0">
                     <span className="text-[10px] font-bold text-slate-400 block mb-1">
-                      💡 루틴 발동 트리거:
+                      ⚡ 루틴 발동 트리거
                     </span>
                     <code className="text-purple-300 font-mono text-[11px] block">{routine.triggerCommand}</code>
                   </div>
@@ -382,7 +386,7 @@ export const AgentSkillsRoutinesView: React.FC<AgentSkillsRoutinesViewProps> = (
                     <strong>🎯 최종 산출물:</strong> {routine.expectedOutput}
                   </div>
                   <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-500/20 text-amber-200">
-                    <strong>⚡ 프로 꿀팁:</strong> {routine.proTip}
+                    <strong>💡 실무 꿀팁:</strong> {routine.proTip}
                   </div>
                 </div>
               </div>
