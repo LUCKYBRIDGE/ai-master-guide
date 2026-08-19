@@ -1,11 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import JSZip from 'jszip';
 import { 
-  AI_TOOLS_CATALOG,
   TASK_FEATURE_MODULES,
   NEW_PROJECT_SCAFFOLD_GUIDE,
   MCP_SKILL_AGENT_CONCEPTS,
-  AiToolItem,
   TaskFeatureModule,
   McpSkillAgentSummary
 } from '../data/templateFilesData';
@@ -53,7 +51,9 @@ import {
   Eye,
   AlertTriangle,
   ArrowRight,
-  Info
+  Info,
+  Boxes,
+  CheckCheck
 } from 'lucide-react';
 
 interface SystemHarnessEngineeringViewProps {
@@ -81,12 +81,7 @@ interface FolderRoleDefinition {
 }
 
 export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringViewProps> = ({ onCopy }) => {
-  // STEP 1: Selected AI Tools IDs (Multi-select)
-  const [selectedToolIds, setSelectedToolIds] = useState<string[]>(
-    AI_TOOLS_CATALOG.filter(t => t.defaultSelected).map(t => t.id)
-  );
-
-  // STEP 2: Selected Task Module IDs (Multi-select)
+  // Selected Task Module IDs (Multi-select)
   const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>(
     TASK_FEATURE_MODULES.filter(m => m.defaultSelected).map(m => m.id)
   );
@@ -97,20 +92,6 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isZipping, setIsZipping] = useState<boolean>(false);
 
-  // Toggle AI Tool Checkbox
-  const toggleTool = (id: string) => {
-    setSelectedToolIds(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    );
-  };
-
-  // Tool Quick Presets
-  const setToolPresetTriIdeUnified = () => setSelectedToolIds(['tool-antigravity', 'tool-claude-code', 'tool-codex']);
-  const setToolPresetClaudeAntigravity = () => setSelectedToolIds(['tool-claude-code', 'tool-antigravity']);
-  const setToolPresetClaudeOnly = () => setSelectedToolIds(['tool-claude-code']);
-  const setToolPresetGrok = () => setSelectedToolIds(['tool-grok-build', 'tool-claude-code']);
-  const selectAllTools = () => setSelectedToolIds(AI_TOOLS_CATALOG.map(t => t.id));
-
   // Toggle Task Module Checkbox
   const toggleTaskModule = (id: string) => {
     setSelectedModuleIds(prev => 
@@ -118,7 +99,7 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
     );
   };
 
-  // Task Quick Scenarios (AI_IDE_Codex_Claude_Antigravity_Setup_Prompt.md 규격 100% 반영 프리셋)
+  // Task Quick Scenarios
   const applyScenarioDeveloperStandard = () => {
     setSelectedModuleIds([
       'mod-plan-feature',
@@ -227,11 +208,6 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
   const selectAllTasks = () => setSelectedModuleIds(TASK_FEATURE_MODULES.map(m => m.id));
   const clearAllTasks = () => setSelectedModuleIds([]);
 
-  // Active selected tools and tasks
-  const activeTools = useMemo(() => {
-    return AI_TOOLS_CATALOG.filter(t => selectedToolIds.includes(t.id));
-  }, [selectedToolIds]);
-
   const activeModules = useMemo(() => {
     return TASK_FEATURE_MODULES.filter(m => selectedModuleIds.includes(m.id));
   }, [selectedModuleIds]);
@@ -263,11 +239,6 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
     return { mcps, zeroConfigMcps, authRequiredMcps, skills, extraFiles };
   }, [activeModules]);
 
-  // Tool flags
-  const isClaudeSelected = selectedToolIds.includes('tool-claude-code');
-  const isOtherToolsSelected = selectedToolIds.some(id => id !== 'tool-claude-code');
-  const isGrokSelected = selectedToolIds.includes('tool-grok-build');
-
   // Dynamic Rule Sections
   const rulesSections = useMemo(() => {
     return activeModules
@@ -276,15 +247,10 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
       .join('\n\n');
   }, [activeModules]);
 
-  // Dynamically assemble AGENTS.md (Single Source of Truth)
+  // Dynamically assemble AGENTS.md (Single Source of Truth Constitution for ALL 3 AI engines)
   const dynamicAgentsMd = useMemo(() => {
-    const toolsNames = activeTools.map(t => t.name).join(' · ');
-    const grokTip = isGrokSelected 
-      ? '- **xAI Grok Build 최적화**: 최소한의 스텝(Minimum Steps)으로 파일 생성과 터미널 검증을 신속하게 완료할 것.' 
-      : '- **자율 실행 허용**: 소스코드 파일 편집, 패키지 설치(`npm i`), 빌드/테스트 실행(`npm test`, `npm run build`).';
-
     return `# AGENTS.md - Unified Project Constitution & Single Source of Truth
-> Supported AI Engines: ${toolsNames || 'OpenAI Codex · Claude Code · Google Antigravity'}
+> Standard AI Engines: OpenAI Codex · Claude Code · Google Antigravity (Universal Tri-IDE Support)
 
 ## 1. Project Overview & Technology Stack
 - Framework: React 18+ (Vite) / TypeScript Strict Mode
@@ -302,7 +268,7 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
 - **Component & Pattern Reuse**: Inspect existing components and utilities before creating new ones.
 - **Single Source of Truth**: Durable project instructions live centrally in \`AGENTS.md\`. Do not duplicate in \`docs/rules/\`.
 - **Zero Regression**: Verify behavior, not just compilation. Never delete working functionality.
-${grokTip}
+- **Autonomous Execution**: Allowed to edit code, install packages (\`npm i\`), and run builds/tests.
 - **User Approval Required**: Database destruction commands (\`DROP TABLE\`, unbounded \`DELETE\`), force push (\`git push -f\`), external paid API calls.
 
 ## 4. Selected Task Guidelines
@@ -323,7 +289,7 @@ A task is complete ONLY when:
 3. Relevant tests pass and regressions are checked.
 4. No unnecessary unrelated files were modified.
 5. Persistent documentation under \`docs/\` is updated if persistent behavior changed.`;
-  }, [activeTools, isGrokSelected, rulesSections]);
+  }, [rulesSections]);
 
   // Dynamically assemble CLAUDE.md (Imports @AGENTS.md)
   const dynamicClaudeMd = useMemo(() => {
@@ -395,7 +361,7 @@ Follow the shared project instructions in \`AGENTS.md\`.
       key: 'AGENTS.md',
       filename: 'AGENTS.md',
       path: 'AGENTS.md',
-      description: `통합 마스터 헌법 (${activeTools.length}개 AI 도구 공용 단일 진실 공급원)`,
+      description: '통합 마스터 헌법 (Codex · Claude · Antigravity 3대 AI 공용 단일 진실 공급원)',
       content: dynamicAgentsMd
     });
 
@@ -455,7 +421,6 @@ Follow the shared project instructions in \`AGENTS.md\`.
 
     return list;
   }, [
-    activeTools.length, 
     activeModules, 
     dynamicAgentsMd, 
     dynamicClaudeMd, 
@@ -534,15 +499,15 @@ Follow the shared project instructions in \`AGENTS.md\`.
         folderName: '.agents/ (Antigravity & Codex 공용)',
         badge: '공용 스킬 & 정책 구역',
         badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-        targetEngines: 'Antigravity · Codex 공용',
-        whyNeeded: '반복 가능한 작업 절차(SOP)와 전용 안전 정책을 저장하여 Codex와 Antigravity가 100% 공유하도록 만듭니다.',
+        targetEngines: 'Antigravity · Codex · Claude 공용',
+        whyNeeded: '반복 가능한 작업 절차(SOP)와 전용 안전 정책을 저장하여 Codex와 Antigravity, Claude가 100% 공유하도록 만듭니다.',
         files: [
           {
             filename: '.agents/skills/plan-feature/SKILL.md',
             path: '.agents/skills/plan-feature/SKILL.md',
             icon: '📋',
             roleSummary: '사전 기획 스킬: 대형 작업 전 기존 코드와 docs/를 먼저 분석하여 위험 요소와 최소 변경 계획서 작성',
-            targetConsumers: ['Antigravity', 'Codex'],
+            targetConsumers: ['Antigravity', 'Codex', 'Claude Code'],
             riskIfMissing: '코드를 무작정 수정하다가 기존에 잘 돌아가던 핵심 기능을 망가뜨림',
             isDynamic: true
           },
@@ -551,7 +516,7 @@ Follow the shared project instructions in \`AGENTS.md\`.
             path: '.agents/skills/implement-feature/SKILL.md',
             icon: '⚡',
             roleSummary: '안전 구현 스킬: 기존 패턴을 재사용하여 가장 작고 응집력 있는 코드 작성 및 npm run build 검증',
-            targetConsumers: ['Antigravity', 'Codex'],
+            targetConsumers: ['Antigravity', 'Codex', 'Claude Code'],
             riskIfMissing: '과도한 리팩토링으로 불필요한 코드 변경량이 급증하고 빌드 에러 유발',
             isDynamic: true
           },
@@ -560,7 +525,7 @@ Follow the shared project instructions in \`AGENTS.md\`.
             path: '.agents/skills/debug/SKILL.md',
             icon: '🔍',
             roleSummary: '디버깅 스킬: 증상만 덮지 않고 Root Cause를 추적하여 최소 안전 패치 및 회귀 방지 테스트 수행',
-            targetConsumers: ['Antigravity', 'Codex'],
+            targetConsumers: ['Antigravity', 'Codex', 'Claude Code'],
             riskIfMissing: '에러 하나 고치려다 다른 페이지 3개가 터지는 연쇄 장애 발생',
             isDynamic: true
           },
@@ -569,7 +534,7 @@ Follow the shared project instructions in \`AGENTS.md\`.
             path: '.agents/skills/code-review/SKILL.md',
             icon: '🛡️',
             roleSummary: '10단계 정밀 리뷰 스킬: 기능/보안/타입/회귀/테스트/문서 등 10개 관점에서 변경점 전수 검사',
-            targetConsumers: ['Antigravity', 'Codex'],
+            targetConsumers: ['Antigravity', 'Codex', 'Claude Code'],
             riskIfMissing: '보안 취약점이나 타입 에러가 포함된 불량 코드가 그대로 프로덕션에 배포됨',
             isDynamic: true
           },
@@ -596,7 +561,7 @@ Follow the shared project instructions in \`AGENTS.md\`.
             path: '.agents/skills/student-record-writer/SKILL.md',
             icon: '🎓',
             roleSummary: '교사 특화 스킬: 나이스 1,500Byte 규격 및 교육부 기재 금지어를 100% 필터링한 생기부 문구 생성',
-            targetConsumers: ['Antigravity', 'Codex'],
+            targetConsumers: ['Antigravity', 'Codex', 'Claude Code'],
             riskIfMissing: '나이스에 금지어(외부 수상, 부모 직업)가 포함되어 감사 지적을 받거나 바이트 수가 넘침',
             isDynamic: true
           },
@@ -707,10 +672,10 @@ Follow the shared project instructions in \`AGENTS.md\`.
       });
 
       // Add a helpful README.md for the downloaded package
-      const readmeContent = `# 맞춤형 AI 개발 & 교육 하네스 패키지 (Custom AI Development & Education Harness)
+      const readmeContent = `# 맞춤형 AI 개발 & 교육 통합 하네스 패키지 (Universal AI Development & Education Harness)
 > 생성 일시: ${new Date().toLocaleDateString('ko-KR')}
-> 아키텍처: Codex + Claude Code + Antigravity 통합 단일 진실 공급원(Single Source of Truth)
-> 선택된 AI 도구 (${activeTools.length}개): ${activeTools.map(t => t.name).join(', ')}
+> 아키텍처: OpenAI Codex · Claude Code · Google Antigravity 3대 AI 통합 단일 진실 공급원(Single Source of Truth)
+> 지원 도구: 3대 AI 엔진 100% 동시 호환 (규칙 중복 제로)
 > 선택된 실무 기능 (${activeModules.length}개): ${activeModules.map(m => m.name).join(', ')}
 
 ---
@@ -732,7 +697,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `ai-ide-unified-${activeTools.length}tools-${activeModules.length}features.zip`;
+      link.download = `ai-ide-unified-all-in-one-${activeModules.length}features.zip`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -773,7 +738,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-              규칙 중복 없이 <strong>단일 진실 공급원(AGENTS.md) + CLAUDE.md (@AGENTS.md 임포트) + .agents/skills/ 공용 스킬 + docs/ 영구 지식</strong> 체계로 실시간 조립되어 원클릭 ZIP으로 다운로드됩니다.
+              도구별로 따로 설정할 필요 없이, <strong>OpenAI Codex · Claude Code · Google Antigravity 3대 AI 도구를 모두 완벽하게 아우르는 단일 진실 공급원(AGENTS.md) 올인원 표준 포맷</strong>으로 실시간 조립되어 원클릭 ZIP으로 다운로드됩니다.
             </p>
           </div>
 
@@ -783,24 +748,29 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
             className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-sm shadow-xl shadow-emerald-900/40 transition-all scale-102 shrink-0 self-start md:self-auto border border-emerald-400/40"
           >
             {isZipping ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
-            <span>통합 환경 ZIP 일괄 다운로드 ({dynamicFilesList.length}개 파일)</span>
+            <span>3대 AI 통합 환경 ZIP 일괄 다운로드 ({dynamicFilesList.length}개 파일)</span>
           </button>
         </div>
 
-        {/* Live Indicator Badges */}
-        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-800 text-xs font-mono">
-          <span className="px-3 py-1 rounded-full bg-slate-950/80 border border-slate-700 text-slate-300">
-            선택된 도구: <strong className="text-indigo-400">{activeTools.length}개</strong>
-          </span>
-          <span className="px-3 py-1 rounded-full bg-slate-950/80 border border-slate-700 text-slate-300">
-            선택된 실무 기능: <strong className="text-emerald-400">{activeModules.length}개</strong>
-          </span>
-          <span className="px-3 py-1 rounded-full bg-slate-950/80 border border-slate-700 text-slate-300">
-            조립된 MCP: <strong className="text-teal-400">{counts.mcps}개</strong> (무설정 {counts.zeroConfigMcps} / 키필요 {counts.authRequiredMcps})
-          </span>
-          <span className="px-3 py-1 rounded-full bg-slate-950/80 border border-slate-700 text-slate-300">
-            생성될 파일: <strong className="text-amber-400">{dynamicFilesList.length}개</strong>
-          </span>
+        {/* Universal Tri-IDE Compatibility Banner */}
+        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-800 text-xs">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 font-bold">
+            <span>🟣 Claude Code</span>
+            <Check className="w-3.5 h-3.5 text-emerald-400" />
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-bold">
+            <span>🟢 Google Antigravity</span>
+            <Check className="w-3.5 h-3.5 text-emerald-400" />
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-300 font-bold">
+            <span>🔵 OpenAI Codex</span>
+            <Check className="w-3.5 h-3.5 text-emerald-400" />
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-mono">
+            <span>선택된 실무 기능: <strong className="text-emerald-400">{activeModules.length}개</strong></span>
+            <span>•</span>
+            <span>생성 파일: <strong className="text-amber-400">{dynamicFilesList.length}개</strong></span>
+          </div>
         </div>
       </div>
 
@@ -1005,107 +975,20 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
         </div>
       </div>
 
-      {/* STEP 1: Multi-Select AI Tools Catalog */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-slate-950 border border-slate-800 space-y-6 shadow-2xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono">
-                STEP 01
-              </span>
-              <h4 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <Sliders className="w-5 h-5 text-indigo-400" /> 사용할 AI 개발 도구를 선택하세요 (다중 선택 가능)
-              </h4>
-            </div>
-            <p className="text-xs text-slate-400 mt-1">
-              체크한 도구들의 특성에 맞춰 지침서 헤더와 포인터 파일(CLAUDE.md / AGENTS.md)이 자동으로 구성됩니다.
-            </p>
-          </div>
-
-          {/* Preset Buttons */}
-          <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            <button
-              onClick={setToolPresetTriIdeUnified}
-              className="px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-400/60 font-bold transition-all"
-            >
-              🌟 3대 AI 통합 (Codex+Claude+Antigravity)
-            </button>
-            <button
-              onClick={setToolPresetClaudeAntigravity}
-              className="px-2.5 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 font-bold transition-all"
-            >
-              Claude + Antigravity
-            </button>
-            <button
-              onClick={setToolPresetClaudeOnly}
-              className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-all"
-            >
-              Claude Code 단독
-            </button>
-            <button
-              onClick={selectAllTools}
-              className="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800"
-            >
-              전체
-            </button>
-          </div>
-        </div>
-
-        {/* Dynamic Tool Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {AI_TOOLS_CATALOG.map((tool: AiToolItem) => {
-            const isChecked = selectedToolIds.includes(tool.id);
-            return (
-              <div
-                key={tool.id}
-                onClick={() => toggleTool(tool.id)}
-                className={`p-4 rounded-2xl cursor-pointer transition-all border select-none space-y-3 ${
-                  isChecked
-                    ? 'bg-gradient-to-br from-indigo-950/80 via-slate-900 to-slate-950 text-white shadow-lg border-indigo-500/60 scale-101 ring-1 ring-indigo-500/20'
-                    : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-850 border-slate-800'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${tool.badgeColor}`}>
-                    {tool.badge}
-                  </span>
-                  <div className="text-indigo-400">
-                    {isChecked ? <CheckSquare className="w-5 h-5 text-indigo-400" /> : <Square className="w-5 h-5 text-slate-600" />}
-                  </div>
-                </div>
-
-                <div>
-                  <h5 className="text-xs sm:text-sm font-bold text-white leading-snug">
-                    {tool.name}
-                  </h5>
-                  <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                    {tool.description}
-                  </p>
-                </div>
-
-                <div className="pt-2 border-t border-slate-800/80 text-[10px] text-cyan-300 font-mono">
-                  💡 {tool.ruleHint}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* STEP 2: Multi-Select Practical Tasks Checklist */}
+      {/* STEP 1: Multi-Select Practical Tasks Checklist (All-in-One Engine Target) */}
       <div className="p-6 sm:p-8 rounded-3xl bg-slate-950 border border-slate-800 space-y-6 shadow-2xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">
-                STEP 02
+                STEP 01
               </span>
               <h4 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <CheckSquare className="w-5 h-5 text-emerald-400" /> 필요한 실무 기능 & 표준 스킬을 체크하세요 (중복 선택 가능)
               </h4>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              체크하신 기능에 맞춰 AI가 엉뚱한 코드를 짜지 않도록 맞춤 지침서(AGENTS.md), 외부 연결 도구(mcp.json), 자동화 매뉴얼(.agents/skills/), 영구 지식(docs/)이 실시간 조립됩니다.
+              체크하신 기능에 맞춰 <strong>Codex · Claude Code · Antigravity 3대 도구가 공통으로 읽는 지침서(AGENTS.md), 외부 연결 도구(mcp.json), 공용 스킬(.agents/skills/), 영구 지식(docs/)</strong>이 실시간 조립됩니다.
             </p>
           </div>
 
@@ -1204,8 +1087,6 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
 
           <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400 shrink-0">
             <span>실시간 구성:</span>
-            <span className="text-indigo-300 font-bold">도구 {activeTools.length}개</span>
-            <span>•</span>
             <span className="text-emerald-300 font-bold">기능 {activeModules.length}개</span>
             <span>•</span>
             <span className="text-teal-300 font-bold">외부 도구(MCP) {counts.mcps}개 (무설정 {counts.zeroConfigMcps} / 키필요 {counts.authRequiredMcps})</span>
@@ -1319,20 +1200,20 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
         </div>
       </div>
 
-      {/* STEP 3: Real-Time Generated Files Preview & Live Code Inspector */}
+      {/* STEP 2: Real-Time Generated Files Preview & Live Code Inspector */}
       <div className="p-6 sm:p-8 rounded-3xl bg-slate-950 border border-slate-800 space-y-6 shadow-2xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono">
-                STEP 03
+                STEP 02
               </span>
               <h3 className="text-lg font-extrabold text-white flex items-center gap-2">
                 <FileCode className="w-5 h-5 text-cyan-400" /> 실시간 생성 파일 뷰어 & 코드 검사기
               </h3>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              선택한 도구와 기능에 따라 실시간으로 조립된 실제 파일 내용을 직접 확인하고 개별 복사할 수 있습니다.
+              선택한 기능에 따라 3대 AI 공용 헌법(AGENTS.md)과 매뉴얼이 실시간으로 조립된 실제 파일 내용을 직접 확인하고 개별 복사할 수 있습니다.
             </p>
           </div>
 
