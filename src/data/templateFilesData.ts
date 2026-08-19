@@ -103,7 +103,7 @@ export interface TemplateConfigFile {
   rawContent: string;
 }
 
-// 템플릿 파일 3대장 (AGENTS.md, CLAUDE.md, DESIGN.md)
+// 템플릿 파일 3대장 (AGENTS.md, CLAUDE.md, docs/design/tokens.md)
 export const TEMPLATE_CONFIG_FILES: TemplateConfigFile[] = [
   {
     id: 'template-agents-md',
@@ -119,29 +119,31 @@ export const TEMPLATE_CONFIG_FILES: TemplateConfigFile[] = [
       'Definition of Done: 작업 완료 판정 기준(0에러 빌드 증명, 회귀 테스트 확인)을 명시합니다.'
     ],
     rawContent: `# AGENTS.md - Unified Project Constitution & Single Source of Truth
-> Supported AI Engines: OpenAI Codex · Claude Code · Google Antigravity
+> Standard AI Engines: OpenAI Codex · Claude Code · Google Antigravity (Universal Tri-IDE Support)
 
-## 1. Project Overview & Tech Stack
+## 1. Project Overview & Technology Stack
 - Framework: React 18+ (Vite) / TypeScript Strict Mode
-- Styling: Tailwind CSS v3 / Icons: lucide-react
+- Styling: Tailwind CSS v3 / Icons: lucide-react (See \`docs/design/tokens.md\` & \`.agents/rules/ui-design.md\`)
 - State Management: Zustand (Global) & useState (Local UI)
 
 ## 2. Essential Commands
 - Dev Server: \`npm run dev\`
-- Build & Typecheck: \`npm run build\`
+- Verification Build: \`npm run build\`
 - Unit Tests: \`npm test\`
 - Lint & Format: \`npm run lint\`
 
 ## 3. Development Principles & Safety Rules
-- **Smallest Coherent Change**: Prefer small, focused changes over broad rewrites.
-- **Component Reuse**: Inspect existing components and utilities before creating new ones.
+- **Smallest Coherent Change**: Prefer small, focused changes over broad speculative rewrites.
+- **Component & Pattern Reuse**: Inspect existing components and utilities before creating new ones.
 - **Single Source of Truth**: Durable project instructions live centrally in \`AGENTS.md\`. Do not duplicate in \`docs/rules/\`.
-- **Zero Regression**: Verify behavior, not just compilation. Never break existing working features.
-- **Secrets Management**: Never hardcode credentials; use \`.env\` environment variables.
-- **User Approval Required**: Destruction commands (\`DROP TABLE\`, \`DELETE FROM\`), \`git push -f\`, paid API calls.
+- **Zero Regression**: Verify behavior, not just compilation. Never delete working functionality.
+- **Autonomous Execution**: Allowed to edit code, install packages (\`npm i\`), and run builds/tests.
+- **User Approval Required**: Database destruction commands (\`DROP TABLE\`, unbounded \`DELETE\`), force push (\`git push -f\`), external paid API calls.
 
 ## 4. Documentation Architecture
-- \`docs/architecture/\`: Describes current system structure.
+Project persistent knowledge lives under \`/docs\`:
+- \`docs/architecture/\`: Current system and component structure.
+- \`docs/design/\`: Design system tokens, color palettes, spacing grid.
 - \`docs/plans/\`: Implementation plans for major features.
 - \`docs/decisions/\`: Architectural Decision Records (ADRs).
 - \`docs/tasks/\`: Persistent task tracking.
@@ -149,11 +151,11 @@ export const TEMPLATE_CONFIG_FILES: TemplateConfigFile[] = [
 
 ## 5. Definition of Done
 A task is complete ONLY when:
-1. Requested behavior is fully implemented.
+1. The requested behavior is fully implemented.
 2. \`npm run build\` passes with 0 TypeScript/Lint errors.
-3. Relevant tests pass and obvious regressions are checked.
+3. Relevant tests pass and regressions are checked.
 4. No unnecessary unrelated files were modified.
-5. Persistent documentation under \`docs/\` is updated when persistent behavior changed.`
+5. Persistent documentation under \`docs/\` is updated if persistent behavior changed.`
   },
   {
     id: 'template-claude-md',
@@ -180,19 +182,19 @@ Follow the shared project instructions in \`AGENTS.md\`.
 - Do not duplicate shared rules here unless Claude Code requires tool-specific behavioral overrides.`
   },
   {
-    id: 'template-design-md',
-    filename: 'DESIGN.md',
-    badge: '디자인 시스템 토큰',
+    id: 'template-design-tokens',
+    filename: 'docs/design/tokens.md',
+    badge: '디자인 시스템 토큰 (영구 보관)',
     badgeColor: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
-    targetLocation: '프로젝트 최상위 루트 (./DESIGN.md)',
+    targetLocation: 'docs/design/tokens.md',
     supportedTools: '모든 AI 도구 및 프론트엔드 에이전트 공통',
-    description: 'AI가 조잡한 무지개색 UI나 임의의 인라인 스타일을 작성하지 못하도록 색상, 폰트, 여백 그리드를 통제하는 디자인 가이드',
+    description: '루트 디렉토리를 어지럽히지 않고 docs/ 에 깔끔하게 보관된 디자인 토큰 (색상, 폰트, 4px 그리드 규격서)',
     whyNeeded: '디자인 규격서가 없으면 AI가 페이지마다 제각각 다른 색상과 스타일을 마구잡이로 작성합니다.',
     customizationTips: [
       'Primary Color: 브랜드 고유의 헥사코드(예: Toss Blue #3182F6, Slate #0F172A)를 입력합니다.',
       'Radius & Spacing: 버튼과 카드의 둥글기(rounded-xl, rounded-2xl)와 4px 그리드를 통일합니다.'
     ],
-    rawContent: `# DESIGN.md - Design System Tokens & Guidelines
+    rawContent: `# Design System Tokens & Guidelines (\`docs/design/tokens.md\`)
 
 ## 1. Color Palette
 - Primary Brand: \`#3182F6\` (Toss Blue)
@@ -928,7 +930,7 @@ tools: [file_writer]
     category: '프론트엔드/UI',
     badge: '화면 디자인',
     badgeColor: 'bg-purple-500/10 text-purple-300 border-purple-500/30',
-    shortDesc: '내 브랜드 컬러와 글꼴(DESIGN.md)을 준수하여 조잡하지 않고 완성도 높은 버튼, 입력창, 카드 UI 제작',
+    shortDesc: '브랜드 컬러와 글꼴(docs/design/tokens.md)을 준수하여 조잡하지 않고 완성도 높은 버튼, 입력창, 카드 UI 제작',
     isCoreDefault: false,
     detailedImpact: {
       agentRuleSummary: '디자인 색상·글꼴 통일, 완성도 높은 UI 컴포넌트 규칙',
@@ -937,15 +939,32 @@ tools: [file_writer]
     defaultSelected: false,
     agentRuleSection: `### [프론트엔드 UI 및 디자인 토큰 규칙]
 - **프레임워크**: React 18+, TypeScript Strict Mode (\`any\` 타입 사용 엄격 금지), Tailwind CSS v3
-- **디자인 토큰 준수**: 인라인 style 금지. 반드시 \`./DESIGN.md\`의 컬러(#3182F6 등)와 4px 여백 그리드 규격 준수
+- **디자인 토큰 준수**: 인라인 style 금지. 반드시 \`docs/design/tokens.md\`의 컬러(#3182F6 등)와 4px 여백 그리드 규격 준수
 - **상태 관리 & 아이콘**: \`lucide-react\` 아이콘 사용, 전역 상태는 \`zustand\`, 로컬 상태는 \`useState\``,
     extraFile: {
-      path: '.agents/rules/ui-design.md',
-      description: 'UI 디자인 토큰 및 인터랙션 안전 정책',
-      content: `# UI / UX Design Principles & Rules
-1. Preserve the established visual language defined in DESIGN.md.
-2. Keep interaction patterns consistent across all screens.
-3. Verify responsive behavior after UI changes (mobile, tablet, desktop).`
+      path: 'docs/design/tokens.md',
+      description: '디자인 시스템 토큰 규격서 (docs/ 보관)',
+      content: `# Design System Tokens & Guidelines (\`docs/design/tokens.md\`)
+
+## 1. Color Palette
+- Primary Brand: \`#3182F6\` (Toss Blue)
+- Secondary Accent: \`#6366F1\` (Indigo 500)
+- Background Base: \`#0F172A\` (Slate 900)
+- Surface / Card: \`#1E293B\` (Slate 800) / Border: \`1px solid rgba(255,255,255,0.1)\`
+- Text Primary: \`#F8FAFC\` (Slate 50)
+- Text Muted: \`#94A3B8\` (Slate 400)
+
+## 2. Typography & Hierarchy
+- Font Family: Pretendard, -apple-system, sans-serif
+- Heading 1: 24px / Bold (700)
+- Heading 2: 18px / SemiBold (600)
+- Body: 14px / Regular (400) / Line-height: 1.5
+- Caption: 11px / Medium (500)
+
+## 3. Spacing & Radius
+- Base Grid: 4px increments (p-2=8px, p-4=16px, p-6=24px)
+- Button Radius: \`rounded-xl\` (12px)
+- Card Radius: \`rounded-2xl\` (16px)`
     }
   },
   {
@@ -1128,7 +1147,7 @@ tools: [git, shell]
 // 3. 신규 프로젝트 시작 시 스캐폴딩 4단계 가이드 데이터
 export const NEW_PROJECT_SCAFFOLD_GUIDE: NewProjectScaffoldGuide = {
   title: 'Codex + Claude Code + Antigravity 3대 AI IDE 통합 스캐폴딩 로드맵',
-  summary: '도구마다 규칙을 중복 작성하지 않고, [AGENTS.md(단일 진실 공급원) ➔ @AGENTS.md 임포트(CLAUDE.md) ➔ .agents/skills/ 공용 스킬 ➔ docs/ 영구 지식] 구조로 구축하는 2026 표준 아키텍처입니다.',
+  summary: '루트 디렉토리를 어지럽히지 않고, [AGENTS.md(단일 진실 공급원) ➔ @AGENTS.md 임포트(CLAUDE.md) ➔ .agents/skills/ 공용 스킬 ➔ docs/ 영구 지식] 구조로 구축하는 2026 표준 아키텍처입니다.',
   triIdePrinciple: {
     title: '3대 AI IDE 단일 진실 공급원(Single Source of Truth) 메커니즘',
     diagram: `                         AGENTS.md
@@ -1142,19 +1161,18 @@ export const NEW_PROJECT_SCAFFOLD_GUIDE: NewProjectScaffoldGuide = {
                   +------> .agents/skills/ <--+ (CLAUDE.md -> @AGENTS.md)
                                |
                     영구 지식 보관소 (docs/)
-                    ├── architecture/  ├── plans/
-                    ├── tasks/         ├── decisions/`,
+                    ├── architecture/  ├── design/
+                    ├── plans/         ├── decisions/`,
     rules: [
       '1. 규칙 일원화: 모든 AI 공통 규칙은 루트 AGENTS.md 에만 작성하며, CLAUDE.md는 @AGENTS.md 임포트 포인터로 작동합니다.',
       '2. 스킬 공용화: 재사용 가능한 워크플로우는 .agents/skills/ 에 배치하여 Codex와 Antigravity가 100% 공유합니다.',
-      '3. Codex 규칙 금지: .codex/rules/ 는 일반 코딩 규칙용이 아니므로 생성하지 않고 루트 AGENTS.md를 활용합니다.',
+      '3. 디자인 & 정책 체계화: 디자인 토큰은 docs/design/tokens.md 및 .agents/rules/ui-design.md 에 배치하여 루트를 정갈하게 유지합니다.',
       '4. 영구 지식 분리: 일시적 태스크가 아닌 지속적 지식(아키텍처, ADR 결정)은 docs/ 디렉토리에 보관합니다.'
     ]
   },
   hierarchyDiagram: `프로젝트 루트 (Root Directory)
 ├── AGENTS.md                   [마스터 헌법: 모든 AI 도구 단일 진실 공급원]
 ├── CLAUDE.md                   [@AGENTS.md 임포트 포인터 (Claude Code 전용)]
-├── DESIGN.md                   [디자인 시스템: 컬러 팔레트, 폰트, 4px 그리드]
 ├── mcp.json                    [외부 도구: DB, 브라우저, GitHub MCP 연동]
 ├── .env.example                [환경변수: API 시크릿 키 템플릿]
 │
@@ -1174,6 +1192,7 @@ export const NEW_PROJECT_SCAFFOLD_GUIDE: NewProjectScaffoldGuide = {
 │
 └── docs/                       [영구 프로젝트 지식 베이스]
     ├── architecture/           [현재 시스템 아키텍처 (overview.md)]
+    ├── design/                 [디자인 시스템 토큰 (tokens.md)]
     ├── plans/                  [대형 기능 구현 계획서]
     ├── decisions/              [ADR 기술적 의사결정]
     └── reference/              [교육과정 및 사내 규정]`,
@@ -1186,9 +1205,9 @@ export const NEW_PROJECT_SCAFFOLD_GUIDE: NewProjectScaffoldGuide = {
     },
     {
       stepNumber: 2,
-      title: '2단계: 디자인 시스템 규격 (DESIGN.md) 주입',
-      action: 'DESIGN.md에 브랜드 메인 컬러(#3182F6 등), 폰트, 버튼 곡률(12px)을 정의하여 일관된 UI를 강제합니다.',
-      outputFile: 'DESIGN.md'
+      title: '2단계: 디자인 시스템 규격 (docs/design/tokens.md) 주입',
+      action: 'docs/design/tokens.md에 브랜드 메인 컬러(#3182F6 등), 폰트, 버튼 곡률(12px)을 정의하여 일관된 UI를 강제합니다.',
+      outputFile: 'docs/design/tokens.md'
     },
     {
       stepNumber: 3,
@@ -1203,5 +1222,5 @@ export const NEW_PROJECT_SCAFFOLD_GUIDE: NewProjectScaffoldGuide = {
       outputFile: 'docs/*, npm run build'
     }
   ],
-  copyableScaffoldPrompt: `"이 프로젝트의 AGENTS.md, DESIGN.md, mcp.json, .agents/skills/ 를 먼저 읽고 프로젝트 기본 뼈대(Scaffold)를 생성한 뒤, npm run build 를 실행하여 타입 오류 0건임을 입증해줘."`
+  copyableScaffoldPrompt: `"이 프로젝트의 AGENTS.md, docs/design/tokens.md, mcp.json, .agents/skills/ 를 먼저 읽고 프로젝트 기본 뼈대(Scaffold)를 생성한 뒤, npm run build 를 실행하여 타입 오류 0건임을 입증해줘."`
 };

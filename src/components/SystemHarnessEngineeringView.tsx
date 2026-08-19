@@ -220,7 +220,7 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
 
 ## 1. Project Overview & Technology Stack
 - Framework: React 18+ (Vite) / TypeScript Strict Mode
-- Styling: Tailwind CSS v3 / Icons: lucide-react
+- Styling: Tailwind CSS v3 / Icons: lucide-react (See \`docs/design/tokens.md\` & \`.agents/rules/ui-design.md\`)
 - State Management: Zustand (Global) & useState (Local UI)
 
 ## 2. Essential Commands
@@ -243,6 +243,7 @@ ${rulesSections || '- Standard web engineering and education compliance guidelin
 ## 5. Documentation Architecture
 Project persistent knowledge lives under \`/docs\`:
 - \`docs/architecture/\`: Current system and component structure.
+- \`docs/design/\`: Design system tokens, color palettes, spacing grid.
 - \`docs/plans/\`: Implementation plans for major features.
 - \`docs/decisions/\`: Architectural Decision Records (ADRs).
 - \`docs/tasks/\`: Persistent task tracking.
@@ -309,6 +310,12 @@ Follow the shared project instructions in \`AGENTS.md\`.
       envVars.push('');
     }
 
+    if (activeModules.some(m => m.id === 'mod-payment-idempotency')) {
+      envVars.push('# [결제 연동 API 키]');
+      envVars.push('TOSS_SECRET_KEY="test_sk_xxxxxxxxxxxx"');
+      envVars.push('');
+    }
+
     return envVars.join('\n');
   }, [activeModules]);
 
@@ -316,7 +323,7 @@ Follow the shared project instructions in \`AGENTS.md\`.
   const dynamicFilesList = useMemo(() => {
     const list: { key: string; filename: string; path: string; description: string; content: string }[] = [];
 
-    // 1. Instructions Files (Root)
+    // 1. Instructions Files (Root - Clean & Minimalist)
     list.push({
       key: 'AGENTS.md',
       filename: 'AGENTS.md',
@@ -353,7 +360,7 @@ Follow the shared project instructions in \`AGENTS.md\`.
       });
     }
 
-    // 4. Extra files (DESIGN.md, .agents/rules/..., docs/...)
+    // 4. Extra files (docs/design/tokens.md, .agents/rules/..., docs/...)
     activeModules.forEach(m => {
       if (m.extraFile) {
         list.push({
@@ -394,17 +401,17 @@ Follow the shared project instructions in \`AGENTS.md\`.
     return dynamicFilesList.find(f => f.key === selectedFileKey) || dynamicFilesList[0];
   }, [dynamicFilesList, selectedFileKey]);
 
-  // Visual Folder Hierarchy Role Definitions for Inspector
+  // Visual Folder Hierarchy Role Definitions for Inspector (Ultra-Clean Root Standard)
   const folderRoleDefinitions: FolderRoleDefinition[] = useMemo(() => {
     return [
       {
         id: 'zone-root',
         folderPath: '/',
-        folderName: '루트 최상위 (Project Root)',
+        folderName: '루트 최상위 (Clean & Minimalist Root)',
         badge: '단일 진실 공급원 헌법 구역',
         badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
         targetEngines: 'Codex · Claude Code · Antigravity 전체 공용',
-        whyNeeded: '모든 AI 도구가 프로젝트 진입 시 1순위로 읽어 들이는 최상위 헌법이자 빌드/테스트 규칙의 기준점입니다.',
+        whyNeeded: '루트 디렉토리를 최대한 깔끔하게 유지하여, AI가 진입하자마자 최상위 헌법(AGENTS.md)과 도구 설정만 정확히 읽도록 만듭니다.',
         files: [
           {
             filename: 'AGENTS.md',
@@ -422,15 +429,6 @@ Follow the shared project instructions in \`AGENTS.md\`.
             roleSummary: '@AGENTS.md를 임포트하는 클로드 코드 전용 3줄 포인터 (규칙 복사-붙여넣기 중복 원천 차단)',
             targetConsumers: ['Claude Code CLI'],
             riskIfMissing: 'Claude Code가 공통 헌법을 인식하지 못하고 독자적인 스타일로 코드를 파괴할 수 있음',
-            isDynamic: true
-          },
-          {
-            filename: 'DESIGN.md',
-            path: 'DESIGN.md',
-            icon: '🎨',
-            roleSummary: '디자인 시스템 토큰: 브랜드 메인/서브 컬러(#3182F6), 폰트, 버튼 곡률(12px), 4px 여백 그리드 강제',
-            targetConsumers: ['프론트엔드 에이전트 전체'],
-            riskIfMissing: '페이지마다 조잡한 무지개색 인라인 스타일이나 들쭉날쭉한 여백이 마구잡이로 생성됨',
             isDynamic: true
           },
           {
@@ -460,7 +458,7 @@ Follow the shared project instructions in \`AGENTS.md\`.
         badge: '공용 스킬 & 정책 구역',
         badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
         targetEngines: 'Antigravity · Codex · Claude 공용',
-        whyNeeded: '반복 가능한 작업 절차(SOP)와 전용 안전 정책을 저장하여 Codex와 Antigravity, Claude가 100% 공유하도록 만듭니다.',
+        whyNeeded: '반복 가능한 작업 절차(SOP)와 UI 디자인·테스트 안전 정책을 저장하여 3대 AI 도구가 100% 공유하도록 만듭니다.',
         files: [
           {
             filename: '.agents/skills/plan-feature/SKILL.md',
@@ -499,6 +497,24 @@ Follow the shared project instructions in \`AGENTS.md\`.
             isDynamic: true
           },
           {
+            filename: '.agents/rules/ui-design.md',
+            path: '.agents/rules/ui-design.md',
+            icon: '📐',
+            roleSummary: 'UI 디자인 규칙: 일관된 인터랙션 패턴 및 반응형 UI 레이아웃 검증 (docs/design/tokens.md 참조)',
+            targetConsumers: ['Antigravity', 'Codex', 'Claude Code'],
+            riskIfMissing: '페이지마다 제각각 다른 색상과 스타일을 마구잡이로 작성함',
+            isDynamic: true
+          },
+          {
+            filename: '.agents/rules/testing.md',
+            path: '.agents/rules/testing.md',
+            icon: '🧪',
+            roleSummary: '테스트 정책: 실제 동작 검증, 회귀 테스트 실행 및 성공 입증 원칙',
+            targetConsumers: ['Antigravity', 'Codex'],
+            riskIfMissing: '테스트 없이 완료를 선언하거나 회귀 오류를 인지하지 못함',
+            isDynamic: true
+          },
+          {
             filename: '.agents/skills/session-context-compactor/SKILL.md',
             path: '.agents/skills/session-context-compactor/SKILL.md',
             icon: '⚡',
@@ -514,24 +530,6 @@ Follow the shared project instructions in \`AGENTS.md\`.
             roleSummary: 'TDD 선행 테스트: 구현 전에 tests/ 에 실패하는 단위 테스트를 먼저 작성하여 무결점 검증',
             targetConsumers: ['Claude Code', 'Codex', 'Antigravity'],
             riskIfMissing: '테스트 없이 코드를 짜다가 숨겨진 버그가 배포 이후에 발견됨',
-            isDynamic: true
-          },
-          {
-            filename: '.agents/rules/testing.md',
-            path: '.agents/rules/testing.md',
-            icon: '🧪',
-            roleSummary: '테스트 정책: 실제 동작 검증, 회귀 테스트 실행 및 성공 입증 원칙',
-            targetConsumers: ['Antigravity', 'Codex'],
-            riskIfMissing: '테스트 없이 완료를 선언하거나 회귀 오류를 인지하지 못함',
-            isDynamic: true
-          },
-          {
-            filename: '.agents/skills/student-record-writer/SKILL.md',
-            path: '.agents/skills/student-record-writer/SKILL.md',
-            icon: '🎓',
-            roleSummary: '교사 특화 스킬: 나이스 1,500Byte 규격 및 교육부 기재 금지어를 100% 필터링한 생기부 문구 생성',
-            targetConsumers: ['Antigravity', 'Codex', 'Claude Code'],
-            riskIfMissing: '나이스에 금지어(외부 수상, 부모 직업)가 포함되어 감사 지적을 받거나 바이트 수가 넘침',
             isDynamic: true
           }
         ]
@@ -560,10 +558,10 @@ Follow the shared project instructions in \`AGENTS.md\`.
         id: 'zone-docs',
         folderPath: 'docs/',
         folderName: 'docs/ (영구 지식 보관소)',
-        badge: '영구 아키텍처 & ADR 구역',
+        badge: '영구 아키텍처 & 디자인 & ADR 구역',
         badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/30',
         targetEngines: '모든 AI 도구 및 인간 개발자/교육자',
-        whyNeeded: 'AI 컨텍스트 윈도우를 낭비하지 않고, 장기적으로 유지해야 할 시스템 구조와 설계 결정을 영구 보관합니다.',
+        whyNeeded: 'AI 컨텍스트 윈도우를 낭비하지 않고, 시스템 구조도와 디자인 토큰, 설계 결정을 영구 보관합니다.',
         files: [
           {
             filename: 'docs/architecture/overview.md',
@@ -572,6 +570,15 @@ Follow the shared project instructions in \`AGENTS.md\`.
             roleSummary: '현재 시스템의 모듈 간 관계, 데이터 흐름도, 폴더별 책임을 도식화하여 설명',
             targetConsumers: ['전체 AI 도구 & 개발자'],
             riskIfMissing: '새로운 기능을 추가할 때 기존 시스템 구조를 이해하지 못해 엉뚱한 폴더에 파일 생성',
+            isDynamic: true
+          },
+          {
+            filename: 'docs/design/tokens.md',
+            path: 'docs/design/tokens.md',
+            icon: '🎨',
+            roleSummary: '디자인 시스템 토큰: 브랜드 메인/서브 컬러(#3182F6), 폰트, 버튼 곡률(12px), 4px 여백 그리드 강제',
+            targetConsumers: ['프론트엔드 에이전트 전체'],
+            riskIfMissing: '페이지마다 조잡한 무지개색 인라인 스타일이나 들쭉날쭉한 여백이 마구잡이로 생성됨',
             isDynamic: true
           },
           {
@@ -735,7 +742,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
       </div>
 
       {/* ========================================================================= */}
-      {/* 🌟 2026 최종 권장 아키텍처 토폴로지 (글로벌 vs 개별 프로젝트 독립 패키지) */}
+      {/* 🌟 2026 최종 권장 아키텍처 토폴로지 (Clean Root & docs/design 표준) */}
       {/* ========================================================================= */}
       <div className="p-6 sm:p-8 rounded-3xl bg-slate-950 border border-indigo-500/40 space-y-6 shadow-2xl">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
@@ -744,7 +751,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
               <Scale className="w-5 h-5" />
             </span>
             <h3 className="text-base sm:text-lg font-bold text-white">
-              🏛️ 2026 글로벌 탑 개발자 권장 아키텍처: [글로벌 프로필 vs 프로젝트 완전 독립체]
+              🏛️ 2026 글로벌 탑 개발자 권장 아키텍처: [Clean Root & docs/design/tokens.md]
             </h3>
           </div>
           <span className="text-[11px] font-mono text-emerald-400 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 font-bold">
@@ -759,22 +766,22 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
   ➔ 개인 공통 취향 1회 설정 ("모든 답변은 한국어로", "친절한 어조")
                          │
                          ▼ (자동 상속)
-[ 📦 각 프로젝트 폴더 (C:\\ai_dev\\projects\\STUDY\\) - 100% 완전 독립체 ]
+[ 📦 각 프로젝트 폴더 (C:\\ai_dev\\projects\\STUDY\\) - Clean Root ]
   ├── 📄 AGENTS.md        (프로젝트 단일 진실 공급원 헌법)
   ├── 🟣 CLAUDE.md        (@AGENTS.md 임포트 포인터)
-  ├── 🎨 DESIGN.md        (디자인 토큰: 색상, 폰트, 여백)
   ├── 🔌 mcp.json         (외부 도구 연결: 브라우저, DB)
+  ├── 📁 .agents/rules/   (ui-design.md, testing.md, security_policy.md)
   ├── 📁 .agents/skills/  (전문가 8대 핵심 스킬 + 맞춤 스킬)
-  └── 📁 docs/            (영구 아키텍처 & ADR 보관소)`}</pre>
+  └── 📁 docs/            (architecture/overview.md, design/tokens.md)`}</pre>
           </div>
 
           {/* 4 Core Architectural Principles */}
           <div className="space-y-2.5 text-xs text-slate-300">
             <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start gap-2.5">
-              <Globe className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+              <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
               <div>
-                <strong className="text-white block">1. 상위 폴더 탐색 제한(Traversal Blindspot) 해결</strong>
-                <span className="text-slate-400 text-[11px]">AI가 프로젝트 폴더에 진입했을 때 상위 폴더를 못 읽는 문제를 막기 위해, 프로젝트마다 완전체 하네스를 탑재합니다.</span>
+                <strong className="text-white block">1. 정갈한 최상위 루트 (Clean & Minimalist Root)</strong>
+                <span className="text-slate-400 text-[11px]">루트에는 AGENTS.md와 CLAUDE.md만 남기고, 디자인 규격은 docs/design/tokens.md와 .agents/rules/ui-design.md 로 체계화합니다.</span>
               </div>
             </div>
             <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start gap-2.5">
