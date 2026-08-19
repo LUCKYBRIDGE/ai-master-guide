@@ -373,7 +373,22 @@ Follow the shared project instructions in \`AGENTS.md\`.
       }
     });
 
-    // 5. Skill files (.agents/skills/...)
+    // 5. Claude-specific Skill pointer (.claude/skills/...)
+    list.push({
+      key: '.claude/skills/README.md',
+      filename: '.claude/skills/README.md',
+      path: '.claude/skills/README.md',
+      description: '클로드 코드 전용 스킬 디렉토리 및 공용 .agents/skills 연결 가이드',
+      content: `# Claude Code Skills (.claude/skills/)
+
+Claude Code uses this directory for Claude-specific CLI commands and procedural skills.
+
+- Universal shared procedural skills live under \`.agents/skills/\` and are referenced via \`CLAUDE.md\`.
+- To add Claude CLI-only slash commands, place them here as Markdown files or custom subroutines.
+- On macOS/Linux, you may optionally symlink this directory: \`ln -s ../.agents/skills .claude/skills\`.`
+    });
+
+    // 6. Skill files (.agents/skills/...)
     activeModules.forEach(m => {
       if (m.skillFile) {
         list.push({
@@ -548,9 +563,18 @@ Follow the shared project instructions in \`AGENTS.md\`.
             path: '.claude/rules/frontend.md',
             icon: '🟣',
             roleSummary: '클로드 프론트엔드 규칙: Tailwind 클래스 우선 적용 및 JSX 태그 닫힘 검증 오버라이드',
-            targetConsumers: ['Claude Code'],
+            targetConsumers: ['Claude Code CLI'],
             riskIfMissing: '클로드가 터미널에서 컴포넌트를 작성할 때 인라인 CSS 스타일을 생성할 위험',
             isDynamic: false
+          },
+          {
+            filename: '.claude/skills/ (Claude 전용 스킬)',
+            path: '.claude/skills/README.md',
+            icon: '⚡',
+            roleSummary: '클로드 CLI 전용 슬래시 명령어/스킬 저장소 (공용 스킬은 .agents/skills/ 자동 연동)',
+            targetConsumers: ['Claude Code CLI'],
+            riskIfMissing: '클로드 CLI 전용 슬래시 커맨드나 특화 스크립트를 격리해서 실행하지 못함',
+            isDynamic: true
           }
         ]
       },
@@ -770,8 +794,8 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
   ├── 📄 AGENTS.md        (프로젝트 단일 진실 공급원 헌법)
   ├── 🟣 CLAUDE.md        (@AGENTS.md 임포트 포인터)
   ├── 🔌 mcp.json         (외부 도구 연결: 브라우저, DB)
-  ├── 📁 .agents/rules/   (ui-design.md, testing.md, security_policy.md)
-  ├── 📁 .agents/skills/  (전문가 8대 핵심 스킬 + 맞춤 스킬)
+  ├── 📁 .agents/         (rules/ & skills/ 3대 AI 공용 스킬)
+  ├── 📁 .claude/         (rules/ & skills/ Claude 전용 스킬)
   └── 📁 docs/            (architecture/overview.md, design/tokens.md)`}</pre>
           </div>
 

@@ -1188,7 +1188,8 @@ export const NEW_PROJECT_SCAFFOLD_GUIDE: NewProjectScaffoldGuide = {
 │       └── skill-mcp-router/   [지능형 도구 라우터]
 │
 ├── .claude/                    [Claude Code 전용]
-│   └── rules/                  [Claude 전용 행동 오버라이드]
+│   ├── rules/                  [Claude 전용 행동 오버라이드]
+│   └── skills/                 [Claude CLI 전용 스킬 및 .agents/skills 연동]
 │
 └── docs/                       [영구 프로젝트 지식 베이스]
     ├── architecture/           [현재 시스템 아키텍처 (overview.md)]
