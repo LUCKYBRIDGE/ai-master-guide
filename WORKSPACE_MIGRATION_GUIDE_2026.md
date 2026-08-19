@@ -33,8 +33,9 @@ C:\ai_dev\                              [🌐 로컬 최상위 개발 작업실]
     │   │       ├── tdd-test-generator/SKILL.md
     │   │       └── skill-mcp-router/SKILL.md
     │   │
-    │   ├── .claude/                    (Claude Code 전용)
-    │   │   └── rules/                  (frontend.md)
+    │   ├── .claude/                    (Claude Code 전용 공간)
+    │   │   ├── rules/                  (frontend.md - Claude CLI 전용 동작 오버라이드)
+    │   │   └── skills/                 (Claude CLI 전용 슬래시 명령어/스킬 저장소)
     │   │
     │   └── docs/                       (영구 지식 & 디자인 보관소)
     │       ├── architecture/overview.md
@@ -65,6 +66,7 @@ C:\ai_dev\                              [🌐 로컬 최상위 개발 작업실]
    - 디자인 시스템 토큰은 루트에 방치하지 말고 `docs/design/tokens.md` 및 `.agents/rules/ui-design.md` 에 체계적으로 배치할 것.
    - `.agents/rules/` (ui-design.md, testing.md, security_policy.md)
    - `.agents/skills/` (plan-feature, implement-feature, debug, code-review, session-context-compactor, tdd-test-generator, skill-mcp-router)
+   - `.claude/rules/` (frontend.md) & `.claude/skills/` (Claude CLI 슬래시 커맨드 저장소)
    - `docs/` (architecture/overview.md, design/tokens.md, plans/, tasks/, decisions/, reference/)
 4. 상위 폴더(`C:\ai_dev\`)에 불필요한 규칙을 두지 않고, 각 프로젝트가 스스로 독립 빌드 및 테스트(`npm run build`)가 가능하도록 무결성을 검증하고 결과를 요약 보고해줄 것.
 ```
@@ -86,9 +88,10 @@ if (Test-Path "C:\ai_dev\apps") {
 ---
 
 ## 📋 4. 각 프로젝트별 체크리스트 (Clean Root Standard)
-새 프로젝트를 만들거나 기존 프로젝트를 점검할 때 다음 5가지만 확인하면 100% 완벽합니다:
+새 프로젝트를 만들거나 기존 프로젝트를 점검할 때 다음 6가지만 확인하면 100% 완벽합니다:
 - [ ] 루트에 `AGENTS.md`가 있고 빌드 명령어(`npm run build` 등)가 적혀있는가?
 - [ ] 루트에 `CLAUDE.md`가 있고 `@AGENTS.md`를 임포트하고 있는가?
+- [ ] `.claude/` 아래에 `rules/`와 `skills/` 디렉토리가 모두 구성되어 있는가?
 - [ ] 디자인 토큰이 `docs/design/tokens.md` 및 `.agents/rules/ui-design.md`에 정갈하게 보관되어 있는가?
 - [ ] `.agents/skills/` 폴더에 8대 핵심 스킬(`plan-feature`, `implement-feature` 등)이 들어있는가?
 - [ ] `docs/architecture/` 폴더가 존재하는가?
