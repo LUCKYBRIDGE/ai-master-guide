@@ -56,7 +56,9 @@ import {
   CheckCheck,
   Shield,
   Star,
-  PlusCircle
+  PlusCircle,
+  Globe,
+  Monitor
 } from 'lucide-react';
 
 interface SystemHarnessEngineeringViewProps {
@@ -634,7 +636,7 @@ Follow the shared project instructions in \`AGENTS.md\`.
 > 생성 일시: ${new Date().toLocaleDateString('ko-KR')}
 > 아키텍처: OpenAI Codex · Claude Code · Google Antigravity 3대 AI 통합 단일 진실 공급원(Single Source of Truth)
 > 지원 도구: 3대 AI 엔진 100% 동시 호환 (규칙 중복 제로)
-> 선택된 실무 기능 (${activeModules.length}개): ${activeModules.map(m => m.name).join(', ')}
+> 장착된 기능 (${activeModules.length}개): ${activeModules.map(m => m.name).join(', ')}
 
 ---
 
@@ -694,7 +696,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-              <strong>전문가 공인 핵심 기본 팩</strong>이 기본 장착되어 있으며, 필요한 <strong>선택형 실무 기능</strong>을 추가로 체크하여 나만의 맞춤형 개발환경 패키지를 원클릭 ZIP으로 다운로드할 수 있습니다.
+              <strong>실리콘밸리 전문가 공인 8대 핵심 필수 팩</strong>이 기본 장착되어 있으며, 필요한 <strong>선택형 실무 기능</strong>을 추가로 체크하여 나만의 맞춤형 개발환경 패키지를 원클릭 ZIP으로 다운로드할 수 있습니다.
             </p>
           </div>
 
@@ -733,6 +735,67 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
       </div>
 
       {/* ========================================================================= */}
+      {/* 🌟 2026 최종 권장 아키텍처 토폴로지 (글로벌 vs 개별 프로젝트 독립 패키지) */}
+      {/* ========================================================================= */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-slate-950 border border-indigo-500/40 space-y-6 shadow-2xl">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">
+              <Scale className="w-5 h-5" />
+            </span>
+            <h3 className="text-base sm:text-lg font-bold text-white">
+              🏛️ 2026 글로벌 탑 개발자 권장 아키텍처: [글로벌 프로필 vs 프로젝트 완전 독립체]
+            </h3>
+          </div>
+          <span className="text-[11px] font-mono text-emerald-400 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 font-bold">
+            Gold Standard Architecture
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+          {/* Topology Architecture Diagram */}
+          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 font-mono text-xs text-indigo-200 overflow-x-auto leading-relaxed">
+            <pre className="text-[11px] whitespace-pre-wrap">{`[ 🌐 내 PC 글로벌 프로필: ~/.claude/CLAUDE.md ]
+  ➔ 개인 공통 취향 1회 설정 ("모든 답변은 한국어로", "친절한 어조")
+                         │
+                         ▼ (자동 상속)
+[ 📦 각 프로젝트 폴더 (C:\\ai_dev\\apps\\STUDY\\) - 100% 완전 독립체 ]
+  ├── 📄 AGENTS.md        (프로젝트 단일 진실 공급원 헌법)
+  ├── 🟣 CLAUDE.md        (@AGENTS.md 임포트 포인터)
+  ├── 🎨 DESIGN.md        (디자인 토큰: 색상, 폰트, 여백)
+  ├── 🔌 mcp.json         (외부 도구 연결: 브라우저, DB)
+  ├── 📁 .agents/skills/  (전문가 8대 핵심 스킬 + 맞춤 스킬)
+  └── 📁 docs/            (영구 아키텍처 & ADR 보관소)`}</pre>
+          </div>
+
+          {/* 4 Core Architectural Principles */}
+          <div className="space-y-2.5 text-xs text-slate-300">
+            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start gap-2.5">
+              <Globe className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white block">1. 상위 폴더 탐색 제한(Traversal Blindspot) 해결</strong>
+                <span className="text-slate-400 text-[11px]">AI가 프로젝트 폴더에 진입했을 때 상위 폴더를 못 읽는 문제를 막기 위해, 프로젝트마다 완전체 하네스를 탑재합니다.</span>
+              </div>
+            </div>
+            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white block">2. 100% 저장소 독립성 (Self-Contained Portability)</strong>
+                <span className="text-slate-400 text-[11px]">프로젝트 폴더만 압축해 다른 PC로 옮기거나 깃허브/Vercel에 올려도 단 1줄의 경로 깨짐 없이 즉시 구동됩니다.</span>
+              </div>
+            </div>
+            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white block">3. 스킬 비대화(Skill Bloat) & 토큰 낭비 원천 차단</strong>
+                <span className="text-slate-400 text-[11px]">스킬 50개를 마구잡이로 넣어 AI가 느려지는 것을 막고, 전문가 검증 8대 핵심 스킬만 기본 탑재합니다.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
       {/* 🌟 1. [기본 장착 필수 팩] 전문가 추천 핵심 스킬 & 하네스 (항상 기본 포함) */}
       {/* ========================================================================= */}
       <div className="p-6 sm:p-8 rounded-3xl bg-slate-950 border border-indigo-500/40 space-y-6 shadow-2xl">
@@ -743,11 +806,11 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
                 <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
               </span>
               <h3 className="text-base sm:text-lg font-extrabold text-white flex items-center gap-2">
-                🌟 [기본 장착 필수 팩] 전문가 공인 핵심 표준 스킬 & 하네스 ({coreModules.length}개)
+                🌟 [기본 장착 필수 팩] 전문가 공인 8대 핵심 표준 스킬 & 하네스 ({coreModules.length}개)
               </h3>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed max-w-4xl">
-              스킬이 너무 많으면 AI가 혼란을 겪고 토큰이 낭비됩니다. 따라서 <strong>기획/구현/디버깅/코드리뷰 4대 표준, Claude 긴 세션 압축기, TDD 선행 테스트기, 영구 지식 베이스</strong> 등 실리콘밸리 전문가들이 검증한 최정예 핵심 스킬만 <strong>기본으로 안전하게 내장</strong>되어 있습니다.
+              스킬이 너무 많으면 AI가 혼란을 겪고 토큰이 낭비됩니다. 따라서 <strong>기획/구현/디버깅/코드리뷰 4대 표준, 스마트 라우터, Claude 긴 세션 압축기, TDD 선행 테스트기, 영구 지식 베이스</strong> 등 실리콘밸리 전문가들이 검증한 최정예 핵심 스킬만 <strong>기본으로 안전하게 내장</strong>되어 있습니다.
             </p>
           </div>
 
