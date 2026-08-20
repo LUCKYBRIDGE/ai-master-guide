@@ -1,67 +1,45 @@
-# 🚀 AI Master Guide & Knowledge Hub (AI 마스터 가이드)
-> **Universal Tri-IDE AI Engineering Platform** (OpenAI Codex · Claude Code · Google Antigravity · Cursor)  
-> **2026 Gold Standard Architecture** · 교사/교육자 실무 특화 도구 · 8대 핵심 표준 스킬
+# AI Master Guide & Knowledge Hub
 
----
+AI 모델 비교, 실제 산출물 평가, 디자인·개발 작업 가이드와 AI 프로젝트 템플릿을 한곳에서 살펴보는 React 웹사이트입니다.
 
-## 🌟 프로젝트 소개 (Overview)
+## 콘텐츠 원칙
 
-**AI Master Guide**는 프론트엔드/풀스택 엔지니어링과 초·중·고 교사 및 교육자를 위한 **올인원 AI 에이전트 개발 & 실무 지원 웹 플랫폼**입니다.
+- 모델 사양·가격은 제공사 공식 문서를 우선합니다.
+- 벤치마크 수치는 측정 주체, 모델 버전, 평가 조건, 원문 링크를 함께 표시합니다.
+- 제작사 평가와 독립 평가를 구분하고 서로 다른 벤치마크 점수를 합산하지 않습니다.
+- 실제 산출물 평가는 재현 가능한 입력·평가표·한계를 명시합니다.
+- MCP·AI 도구 설정은 버전에 따라 달라질 수 있으므로 현재 공식 문서로 재확인합니다.
+- 테스트 성공이나 AI 생성 결과를 “무결점”, “100% 정확”, “완벽 호환”으로 표현하지 않습니다.
 
-- **출처가 확인되는 모델 비교**: 제공사 공식 사양·요금, Artificial Analysis 독립 측정, 공개 모델 카드와 실제 PowerPoint·Excel 산출물 평가를 출처·조건별로 분리
-- **2026 골드 스탠다드 개발 환경 구축**: 3대 AI 통합 하네스(AGENTS.md, CLAUDE.md, .agents/skills/, mcp.json) 원클릭 맞춤 ZIP 다운로드
-- **교사/교육자 실무 특화 모듈**: 생기부(과세특/행특) 나이스 금지어 자동 검사기, 차시별 지도안 & 루브릭, 초중고 교과 활동지, 학급 칭찬 룰렛 & N분의 1 정산기
-- **영구 지식 보관소 (docs/)**: 시스템 아키텍처 개요서 및 디자인 시스템 토큰 규격
+검증 기준과 주요 출처는 [콘텐츠 감사 기록](docs/reference/content-audit-sources.md)에 정리합니다.
 
----
+## 주요 기능
 
-## 🏛️ 2026 AI IDE 통합 골드 스탠다드 아키텍처
+- 출처 기반 AI 모델 비교: 공식 사양·요금, 독립 벤치마크, 공개 모델 카드 분리
+- 실제 PowerPoint·Excel 산출물 평가: 평가 기준과 관찰 결과를 정량 점수와 함께 공개
+- 공식·유지관리 서버 중심 MCP 가이드: 설치 전제조건, 권한, 보안 주의사항 표시
+- 프로젝트 템플릿 ZIP: 공통 지침과 도구별 설정 차이를 설명하는 검토용 예시
+- 디자인·개발·인프라 로드맵: 보편 법칙이 아닌 조건부 의사결정 가이드
 
-`	ext
-my-project/ (Clean & Minimalist Root)
-├── 📄 AGENTS.md                   [1. 최상위 마스터 헌법: 빌드/테스트 명령, DoD, 룰 링크]
-├── 🟣 CLAUDE.md                   [2. @AGENTS.md 임포트 포인터 (Claude Code용)]
-├── 🔌 mcp.json                    [3. 외부 도구 연결 명세서 (Puppeteer, DB)]
-├── 🔑 .env.example                [4. 환경변수 및 비밀키 템플릿]
-│
-├── 📁 .agents/                    [Antigravity & Codex & Claude 3대 AI 공용]
-│   ├── 📜 rules/                  (ui-design.md, testing.md, security_policy.md)
-│   └── ⚡ skills/                 (전문가 8대 핵심 스킬 + 맞춤 스킬)
-│
-├── 📁 .claude/                    [Claude Code CLI 전용 공간]
-│   ├── 📜 rules/                  (frontend.md: 클로드 CLI 전용 동작 오버라이드)
-│   └── ⚡ skills/                 (클로드 CLI 전용 슬래시 명령어/스킬 저장소)
-│
-└── 📁 docs/                       [영구 프로젝트 지식 & 디자인 보관소]
-    ├── architecture/overview.md   (시스템 구조도 및 컴포넌트 책임)
-    ├── design/tokens.md           (🎨 디자인 시스템 토큰: 색상, 폰트, 여백 규격)
-    ├── plans/                     (대형 기능 구현 계획서)
-    ├── tasks/                     (지속적 태스크 추적)
-    ├── decisions/                 (ADR 아키텍처 의사결정 기록)
-    └── reference/                 (교육부 생기부 기재요령 등 레퍼런스)
-`
+ZIP 템플릿은 Codex, Claude Code, Google Antigravity의 완전한 상호 호환을 보증하지 않습니다. 규칙·스킬·MCP 경로와 지원 범위는 제품별 공식 문서와 설치 버전에서 확인해야 합니다.
 
----
+## 로컬 실행
 
-## ⚡ 빠른 시작 (Quick Start)
-
-### 1. 패키지 설치
-`ash
+```bash
 npm install
-`
-
-### 2. 로컬 개발 서버 실행
-`ash
 npm run dev
-`
-브라우저에서 http://localhost:3000 으로 접속합니다.
+```
 
-### 3. 무결성 빌드 검증
-`ash
+기본 개발 서버 주소는 `http://localhost:3000`입니다.
+
+프로덕션 빌드:
+
+```bash
 npm run build
-`
+```
 
----
+현재 `package.json`에는 별도의 `test`·`lint` 스크립트가 없습니다. 자동 테스트나 린트를 실행했다고 보고하지 마세요.
 
-## 📄 라이선스 (License)
-MIT License. 자유롭게 수정 및 활용하실 수 있습니다.
+## 라이선스
+
+MIT License

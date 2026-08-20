@@ -213,28 +213,26 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
       .join('\n\n');
   }, [activeModules]);
 
-  // Dynamically assemble AGENTS.md (Single Source of Truth Constitution for ALL 3 AI engines)
+  // Dynamically assemble a project instruction source; each agent still needs its supported adapter/path.
   const dynamicAgentsMd = useMemo(() => {
-    return `# AGENTS.md - Unified Project Constitution & Single Source of Truth
-> Standard AI Engines: OpenAI Codex · Claude Code · Google Antigravity (Universal Tri-IDE Support)
+    return `# AGENTS.md - Project Working Agreements
+> This file is the human-maintained source for shared project guidance. Confirm how each AI client discovers or imports it.
 
 ## 1. Project Overview & Technology Stack
-- Framework: React 18+ (Vite) / TypeScript Strict Mode
-- Styling: Tailwind CSS v3 / Icons: lucide-react (See \`docs/design/tokens.md\` & \`.agents/rules/ui-design.md\`)
-- State Management: Zustand (Global) & useState (Local UI)
+- Inspect the repository and record the actual framework, runtime, package manager, and source-of-truth files here.
+- Do not assume React, Tailwind, Zustand, or a particular test runner unless the project uses them.
 
 ## 2. Essential Commands
-- Dev Server: \`npm run dev\`
-- Verification Build: \`npm run build\`
-- Unit Tests: \`npm test\`
-- Lint & Format: \`npm run lint\`
+- Read the package manifest or build files before listing commands.
+- Run only commands that are actually defined for this repository.
+- Record unavailable checks instead of inventing a passing result.
 
 ## 3. Development Principles & Safety Rules
 - **Smallest Coherent Change**: Prefer small, focused changes over broad speculative rewrites.
 - **Component & Pattern Reuse**: Inspect existing components and utilities before creating new ones.
 - **Single Source of Truth**: Durable project instructions live centrally in \`AGENTS.md\`. Do not duplicate in \`docs/rules/\`.
-- **Zero Regression**: Verify behavior, not just compilation. Never delete working functionality.
-- **Autonomous Execution**: Allowed to edit code, install packages (\`npm i\`), and run builds/tests.
+- **Regression Risk**: Verify affected behavior, not just compilation, and preserve unrelated functionality.
+- **Scoped Execution**: Edit only requested files; add dependencies only when necessary and authorized.
 - **User Approval Required**: Database destruction commands (\`DROP TABLE\`, unbounded \`DELETE\`), force push (\`git push -f\`), external paid API calls.
 
 ## 4. Active Task Guidelines & Skill Directives
@@ -250,10 +248,10 @@ Project persistent knowledge lives under \`/docs\`:
 - \`docs/reference/\`: Project reference materials and policies.
 
 ## 6. Definition of Done
-A task is complete ONLY when:
+A task is complete when the applicable items below are evidenced:
 1. The requested behavior is fully implemented.
-2. \`npm run build\` passes with 0 TypeScript/Lint errors.
-3. Relevant tests pass and regressions are checked.
+2. The repository's actual build/type/lint checks have been run, or unavailable checks are named.
+3. Relevant tests and representative user flows have been checked where practical.
 4. No unnecessary unrelated files were modified.
 5. Persistent documentation under \`docs/\` is updated if persistent behavior changed.`;
   }, [rulesSections]);
@@ -267,12 +265,12 @@ A task is complete ONLY when:
 Follow the shared project instructions in \`AGENTS.md\`.
 
 - Follow applicable Claude-specific rules under \`.claude/rules/\`.
-- Use shared procedural skills under \`.agents/skills/\` or \`.claude/skills/\`.
+- Use only skills that Claude Code can discover from its currently documented paths; treat \`.agents/skills/\` as a portable source, not automatic compatibility.
 - Consult persistent project documentation under \`/docs\` when relevant.
 - Do not duplicate shared rules here unless Claude Code requires tool-specific behavioral overrides.`;
   }, []);
 
-  // Dynamically assemble mcp.json based on selected modules
+  // Dynamically assemble an Antigravity workspace MCP config example.
   const dynamicMcpJson = useMemo(() => {
     const servers: Record<string, any> = {};
     activeModules.forEach(m => {
@@ -295,12 +293,6 @@ Follow the shared project instructions in \`AGENTS.md\`.
     if (activeModules.some(m => m.id === 'mod-postgres-db')) {
       envVars.push('# [PostgreSQL MCP 연동]');
       envVars.push('DATABASE_URL="postgresql://user:password@localhost:5432/my_database"');
-      envVars.push('');
-    }
-
-    if (activeModules.some(m => m.id === 'mod-git-pr-skill')) {
-      envVars.push('# [GitHub MCP 연동 - Personal Access Token]');
-      envVars.push('GITHUB_PERSONAL_ACCESS_TOKEN="ghp_your_github_token_here"');
       envVars.push('');
     }
 
@@ -328,7 +320,7 @@ Follow the shared project instructions in \`AGENTS.md\`.
       key: 'AGENTS.md',
       filename: 'AGENTS.md',
       path: 'AGENTS.md',
-      description: '통합 마스터 헌법 (Codex · Claude · Antigravity 3대 AI 공용 단일 진실 공급원)',
+      description: '사람이 관리하는 공통 프로젝트 지침 원본. 각 AI 도구의 자동 발견·import 지원은 별도 확인',
       content: dynamicAgentsMd
     });
 
@@ -340,17 +332,20 @@ Follow the shared project instructions in \`AGENTS.md\`.
       content: dynamicClaudeMd
     });
 
-    // 2. mcp.json
+    // 2. Antigravity MCP config example
     list.push({
-      key: 'mcp.json',
-      filename: 'mcp.json',
-      path: 'mcp.json',
-      description: `선택된 ${counts.mcps}개 전용 MCP 서버 설정 (무설정 ${counts.zeroConfigMcps}개 + 키필요 ${counts.authRequiredMcps}개)`,
+      key: '.agents/mcp_config.json',
+      filename: '.agents/mcp_config.json',
+      path: '.agents/mcp_config.json',
+      description: `Antigravity workspace용 MCP 설정 예시 ${counts.mcps}개 (로컬 실행 ${counts.zeroConfigMcps}개 + 인증 필요 ${counts.authRequiredMcps}개). 다른 클라이언트는 설정 형식을 변환해야 함`,
       content: dynamicMcpJson
     });
 
     // 3. .env.example (if any auth-required MCP is chosen)
-    if (counts.authRequiredMcps > 0 || activeModules.some(m => m.id === 'mod-security-auth')) {
+    if (
+      counts.authRequiredMcps > 0 ||
+      activeModules.some(m => ['mod-security-auth', 'mod-postgres-db', 'mod-payment-idempotency'].includes(m.id))
+    ) {
       list.push({
         key: '.env.example',
         filename: '.env.example',
@@ -378,14 +373,14 @@ Follow the shared project instructions in \`AGENTS.md\`.
       key: '.claude/skills/README.md',
       filename: '.claude/skills/README.md',
       path: '.claude/skills/README.md',
-      description: '클로드 코드 전용 스킬 디렉토리 및 공용 .agents/skills 연결 가이드',
+      description: '클로드 코드 전용 스킬 디렉토리와 도구별 경로 차이 안내',
       content: `# Claude Code Skills (.claude/skills/)
 
 Claude Code uses this directory for Claude-specific CLI commands and procedural skills.
 
-- Universal shared procedural skills live under \`.agents/skills/\` and are referenced via \`CLAUDE.md\`.
-- To add Claude CLI-only slash commands, place them here as Markdown files or custom subroutines.
-- On macOS/Linux, you may optionally symlink this directory: \`ln -s ../.agents/skills .claude/skills\`.`
+- Reusable source procedures are included under \`.agents/skills/\`, but automatic discovery is not guaranteed across clients.
+- Copy or adapt only the required procedures into the path supported by your installed Claude Code version.
+- Check Claude Code's current official documentation before relying on slash-command or skill metadata.`
     });
 
     // 6. Skill files (.agents/skills/...)
@@ -425,33 +420,33 @@ Claude Code uses this directory for Claude-specific CLI commands and procedural 
         folderName: '루트 최상위 (Clean & Minimalist Root)',
         badge: '단일 진실 공급원 헌법 구역',
         badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-        targetEngines: 'Codex · Claude Code · Antigravity 전체 공용',
-        whyNeeded: '루트 디렉토리를 최대한 깔끔하게 유지하여, AI가 진입하자마자 최상위 헌법(AGENTS.md)과 도구 설정만 정확히 읽도록 만듭니다.',
+        targetEngines: '공통 문서 + 도구별 설정 파일',
+        whyNeeded: '사람이 관리하는 공통 규칙과 각 AI 도구가 실제로 읽는 설정 파일을 구분합니다. 자동 발견 경로는 제품 문서와 설치 버전에서 확인해야 합니다.',
         files: [
           {
             filename: 'AGENTS.md',
             path: 'AGENTS.md',
             icon: '📄',
-            roleSummary: '프로젝트 단일 진실 공급원(헌법): 빌드/테스트 명령어, 코딩 표준, 완료 판정(Definition of Done) 명시',
-            targetConsumers: ['OpenAI Codex', 'Google Antigravity', 'Claude Code'],
-            riskIfMissing: 'AI들이 서로 다른 코딩 스타일로 작성하여 충돌하거나, 빌드 검증 없이 작업을 끝냈다고 거짓 보고함',
+            roleSummary: '사람이 관리하는 공통 프로젝트 지침: 실제 빌드/테스트 명령, 범위, 완료 기준을 기록',
+            targetConsumers: ['OpenAI Codex', '명시적으로 가져오도록 설정한 도구'],
+            riskIfMissing: '도구별 지침이 달라지거나 실제 검증 명령을 확인하지 않고 작업할 위험이 커짐',
             isDynamic: true
           },
           {
             filename: 'CLAUDE.md',
             path: 'CLAUDE.md',
             icon: '🟣',
-            roleSummary: '@AGENTS.md를 임포트하는 클로드 코드 전용 3줄 포인터 (규칙 복사-붙여넣기 중복 원천 차단)',
+            roleSummary: 'Claude Code가 지원하는 @import 형식으로 AGENTS.md를 참조하는 도구별 어댑터',
             targetConsumers: ['Claude Code CLI'],
-            riskIfMissing: 'Claude Code가 공통 헌법을 인식하지 못하고 독자적인 스타일로 코드를 파괴할 수 있음',
+            riskIfMissing: 'Claude Code가 공통 프로젝트 지침을 읽지 않아 다른 규칙으로 변경할 수 있음',
             isDynamic: true
           },
           {
-            filename: 'mcp.json',
-            path: 'mcp.json',
+            filename: '.agents/mcp_config.json',
+            path: '.agents/mcp_config.json',
             icon: '🔌',
-            roleSummary: '외부 도구 연결 명세서: 브라우저(Puppeteer), PostgreSQL DB, GitHub PR 자동화 MCP 서버 등록',
-            targetConsumers: ['Google Antigravity', 'Claude Desktop'],
+            roleSummary: 'Antigravity workspace용 외부 도구 연결 예시. Playwright와 공식 GitHub MCP 등 현재 서버만 사용',
+            targetConsumers: ['Google Antigravity'],
             riskIfMissing: 'AI가 외부 DB를 직접 확인하거나 브라우저 화면 캡처 검사를 수행하지 못함',
             isDynamic: true
           },
@@ -461,7 +456,7 @@ Claude Code uses this directory for Claude-specific CLI commands and procedural 
             icon: '🔑',
             roleSummary: '환경변수 보안 템플릿: GitHub 토큰, DB 접속 URL, JWT 비밀키 형식 가이드 (Git 커밋 금지)',
             targetConsumers: ['개발자 & 시스템 런타임'],
-            riskIfMissing: '소스코드 안에 비밀키(API Key)를 하드코딩하여 깃허브로 유출되는 치명적 사고 발생',
+            riskIfMissing: '비밀키를 소스에 넣어 원격 저장소나 빌드 로그에 노출할 위험이 커짐',
             isDynamic: true
           }
         ]
@@ -469,11 +464,11 @@ Claude Code uses this directory for Claude-specific CLI commands and procedural 
       {
         id: 'zone-agents',
         folderPath: '.agents/',
-        folderName: '.agents/ (Antigravity & Codex 공용)',
-        badge: '공용 스킬 & 정책 구역',
+        folderName: '.agents/ (이식 가능한 작업 지침 원본)',
+        badge: '도구별 지원 확인 필요',
         badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-        targetEngines: 'Antigravity · Codex · Claude 공용',
-        whyNeeded: '반복 가능한 작업 절차(SOP)와 UI 디자인·테스트 안전 정책을 저장하여 3대 AI 도구가 100% 공유하도록 만듭니다.',
+        targetEngines: 'Antigravity · 지원 경로로 변환한 다른 도구',
+        whyNeeded: '반복 가능한 작업 절차와 정책을 한곳에서 관리합니다. 같은 파일이 모든 AI 도구에서 자동 로딩되거나 동일하게 실행된다는 보장은 없습니다.',
         files: [
           {
             filename: '.agents/skills/plan-feature/SKILL.md',
@@ -517,7 +512,7 @@ Claude Code uses this directory for Claude-specific CLI commands and procedural 
             icon: '📐',
             roleSummary: 'UI 디자인 규칙: 일관된 인터랙션 패턴 및 반응형 UI 레이아웃 검증 (docs/design/tokens.md 참조)',
             targetConsumers: ['Antigravity', 'Codex', 'Claude Code'],
-            riskIfMissing: '페이지마다 제각각 다른 색상과 스타일을 마구잡이로 작성함',
+            riskIfMissing: '페이지별 색상·간격·상호작용 규칙이 달라질 가능성이 커짐',
             isDynamic: true
           },
           {
@@ -542,7 +537,7 @@ Claude Code uses this directory for Claude-specific CLI commands and procedural 
             filename: '.agents/skills/tdd-test-generator/SKILL.md',
             path: '.agents/skills/tdd-test-generator/SKILL.md',
             icon: '🧪',
-            roleSummary: 'TDD 선행 테스트: 구현 전에 tests/ 에 실패하는 단위 테스트를 먼저 작성하여 무결점 검증',
+            roleSummary: 'TDD가 적합한 변경에는 실패 테스트를 먼저 작성하고, 프로젝트의 실제 테스트 명령으로 관련 동작 검증',
             targetConsumers: ['Claude Code', 'Codex', 'Antigravity'],
             riskIfMissing: '테스트 없이 코드를 짜다가 숨겨진 버그가 배포 이후에 발견됨',
             isDynamic: true
@@ -571,7 +566,7 @@ Claude Code uses this directory for Claude-specific CLI commands and procedural 
             filename: '.claude/skills/ (Claude 전용 스킬)',
             path: '.claude/skills/README.md',
             icon: '⚡',
-            roleSummary: '클로드 CLI 전용 슬래시 명령어/스킬 저장소 (공용 스킬은 .agents/skills/ 자동 연동)',
+            roleSummary: 'Claude Code 전용 스킬·명령 경로. .agents/skills의 절차는 필요할 때 지원 형식으로 복사·변환',
             targetConsumers: ['Claude Code CLI'],
             riskIfMissing: '클로드 CLI 전용 슬래시 커맨드나 특화 스크립트를 격리해서 실행하지 못함',
             isDynamic: true
@@ -602,7 +597,7 @@ Claude Code uses this directory for Claude-specific CLI commands and procedural 
             icon: '🎨',
             roleSummary: '디자인 시스템 토큰: 브랜드 메인/서브 컬러(#3182F6), 폰트, 버튼 곡률(12px), 4px 여백 그리드 강제',
             targetConsumers: ['프론트엔드 에이전트 전체'],
-            riskIfMissing: '페이지마다 조잡한 무지개색 인라인 스타일이나 들쭉날쭉한 여백이 마구잡이로 생성됨',
+            riskIfMissing: '화면별 색상과 여백이 일관되지 않을 가능성이 커짐',
             isDynamic: true
           },
           {
@@ -663,10 +658,10 @@ Claude Code uses this directory for Claude-specific CLI commands and procedural 
       });
 
       // Add a helpful README.md for the downloaded package
-      const readmeContent = `# 맞춤형 AI 개발 & 교육 통합 하네스 패키지 (Universal AI Development & Education Harness)
+      const readmeContent = `# 맞춤형 AI 개발 & 교육 프로젝트 템플릿
 > 생성 일시: ${new Date().toLocaleDateString('ko-KR')}
-> 아키텍처: OpenAI Codex · Claude Code · Google Antigravity 3대 AI 통합 단일 진실 공급원(Single Source of Truth)
-> 지원 도구: 3대 AI 엔진 100% 동시 호환 (규칙 중복 제로)
+> 구성: 공통 프로젝트 지침 + 도구별 연결 파일 예시
+> 주의: Codex · Claude Code · Google Antigravity의 규칙/스킬/MCP 경로는 서로 다르며 버전에 따라 바뀔 수 있습니다. 사용 전 각 공식 문서와 로컬 설정에서 확인하세요.
 > 장착된 기능 (${activeModules.length}개): ${activeModules.map(m => m.name).join(', ')}
 
 ---
@@ -677,9 +672,10 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
 ---
 
 ## 🚀 사용 방법
-1. 압축을 풀고 이 파일들을 내 프로젝트 **루트(최상위) 폴더**에 덮어씌웁니다.
-2. 만약 \`.env.example\` 파일이 있다면, \`.env\` 로 이름을 바꾸고 본인의 GitHub 토큰이나 DB 주소를 입력합니다.
-3. 터미널에서 Claude Code (\`claude\`), Google Antigravity, 또는 OpenAI Codex를 실행하면 자동으로 단일 헌법(AGENTS.md)과 .agents/skills/ 스킬이 적용됩니다!`;
+1. 기존 프로젝트에 덮어쓰기 전에 파일별 diff를 검토하고, 실제 기술 스택과 명령에 맞게 수정합니다.
+2. \`.env.example\`은 변수 이름의 예시일 뿐입니다. 실제 시크릿은 Git에 커밋하지 말고 배포 환경의 시크릿 저장소를 사용합니다.
+3. 각 AI 클라이언트의 공식 문서에서 프로젝트 규칙·스킬·MCP 설정 경로를 확인하고 필요한 파일만 설치합니다.
+4. package.json 또는 빌드 파일에 실제로 정의된 검증 명령을 실행하고 결과를 기록합니다.`;
 
       zip.file('README.md', readmeContent);
 
@@ -723,11 +719,11 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
                 <FolderArchive className="w-6 h-6" />
               </span>
               <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-                Codex · Claude · Antigravity 통합 개발환경 & ZIP 패키지 다운로드
+                Codex · Claude · Antigravity용 프로젝트 템플릿 ZIP
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-              <strong>실리콘밸리 전문가 공인 8대 핵심 필수 팩</strong>이 기본 장착되어 있으며, 필요한 <strong>선택형 실무 기능</strong>을 추가로 체크하여 나만의 맞춤형 개발환경 패키지를 원클릭 ZIP으로 다운로드할 수 있습니다.
+              이 사이트가 제공하는 <strong>8개 기본 작업 템플릿</strong>과 선택형 예시를 조합해 ZIP으로 받을 수 있습니다. 특정 회사·전문가 집단의 공인 표준이 아니며, 실제 프로젝트와 각 도구의 현재 공식 설정에 맞게 검토해야 합니다.
             </p>
           </div>
 
@@ -737,7 +733,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
             className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-sm shadow-xl shadow-emerald-900/40 transition-all scale-102 shrink-0 self-start md:self-auto border border-emerald-400/40"
           >
             {isZipping ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
-            <span>통합 환경 ZIP 일괄 다운로드 ({dynamicFilesList.length}개 파일)</span>
+            <span>프로젝트 템플릿 ZIP 다운로드 ({dynamicFilesList.length}개 파일)</span>
           </button>
         </div>
 
@@ -756,7 +752,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
             <Check className="w-3.5 h-3.5 text-emerald-400" />
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-300 font-mono">
-            <span>기본 필수 <strong className="text-indigo-400">{coreModules.length}개</strong></span>
+            <span>기본 선택 <strong className="text-indigo-400">{coreModules.length}개</strong></span>
             <span>+</span>
             <span>추가 선택 <strong className="text-emerald-400">{activeModules.length - coreModules.length}개</strong></span>
             <span>=</span>
@@ -766,7 +762,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
       </div>
 
       {/* ========================================================================= */}
-      {/* 🌟 2026 최종 권장 아키텍처 토폴로지 (Clean Root & docs/design 표준) */}
+      {/* Portable project guidance topology */}
       {/* ========================================================================= */}
       <div className="p-6 sm:p-8 rounded-3xl bg-slate-950 border border-indigo-500/40 space-y-6 shadow-2xl">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
@@ -775,11 +771,11 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
               <Scale className="w-5 h-5" />
             </span>
             <h3 className="text-base sm:text-lg font-bold text-white">
-              🏛️ 2026 글로벌 탑 개발자 권장 아키텍처: [Clean Root & docs/design/tokens.md]
+              🏛️ 공통 지침과 도구별 설정을 분리하는 프로젝트 구성 예시
             </h3>
           </div>
           <span className="text-[11px] font-mono text-emerald-400 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 font-bold">
-            Gold Standard Architecture
+            Project Template
           </span>
         </div>
 
@@ -789,12 +785,12 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
             <pre className="text-[11px] whitespace-pre-wrap">{`[ 🌐 내 PC 글로벌 프로필: ~/.claude/CLAUDE.md ]
   ➔ 개인 공통 취향 1회 설정 ("모든 답변은 한국어로", "친절한 어조")
                          │
-                         ▼ (자동 상속)
+                         ▼ (Claude Code에서 지원 여부 확인 후 import)
 [ 📦 각 프로젝트 폴더 (C:\\ai_dev\\projects\\STUDY\\) - Clean Root ]
   ├── 📄 AGENTS.md        (프로젝트 단일 진실 공급원 헌법)
   ├── 🟣 CLAUDE.md        (@AGENTS.md 임포트 포인터)
-  ├── 🔌 mcp.json         (외부 도구 연결: 브라우저, DB)
-  ├── 📁 .agents/         (rules/ & skills/ 3대 AI 공용 스킬)
+  ├── 🔌 .agents/mcp_config.json (Antigravity workspace MCP 예시)
+  ├── 📁 .agents/         (지원 도구용 rules/ & skills/ 원본)
   ├── 📁 .claude/         (rules/ & skills/ Claude 전용 스킬)
   └── 📁 docs/            (architecture/overview.md, design/tokens.md)`}</pre>
           </div>
@@ -811,15 +807,15 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
             <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
               <div>
-                <strong className="text-white block">2. 100% 저장소 독립성 (Self-Contained Portability)</strong>
-                <span className="text-slate-400 text-[11px]">프로젝트 폴더만 압축해 다른 PC로 옮기거나 깃허브/Vercel에 올려도 단 1줄의 경로 깨짐 없이 즉시 구동됩니다.</span>
+                <strong className="text-white block">2. 이식성 점검 (Portability Review)</strong>
+                <span className="text-slate-400 text-[11px]">상대 경로와 예시 설정은 이동에 도움이 되지만, 런타임·환경변수·운영체제·클라이언트 버전 차이는 별도로 확인해야 합니다.</span>
               </div>
             </div>
             <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start gap-2.5">
               <ShieldCheck className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
               <div>
-                <strong className="text-white block">3. 스킬 비대화(Skill Bloat) & 토큰 낭비 원천 차단</strong>
-                <span className="text-slate-400 text-[11px]">스킬 50개를 마구잡이로 넣어 AI가 느려지는 것을 막고, 전문가 검증 8대 핵심 스킬만 기본 탑재합니다.</span>
+                <strong className="text-white block">3. 필요한 작업 지침만 선택</strong>
+                <span className="text-slate-400 text-[11px]">스킬 수와 성능의 단순한 인과관계는 입증되지 않았습니다. 현재 작업에 필요한 지침만 활성화하고 실제 컨텍스트 사용량을 측정하세요.</span>
               </div>
             </div>
           </div>
@@ -827,7 +823,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
       </div>
 
       {/* ========================================================================= */}
-      {/* 🌟 1. [기본 장착 필수 팩] 전문가 추천 핵심 스킬 & 하네스 (항상 기본 포함) */}
+      {/* Project-provided default templates */}
       {/* ========================================================================= */}
       <div className="p-6 sm:p-8 rounded-3xl bg-slate-950 border border-indigo-500/40 space-y-6 shadow-2xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
@@ -837,17 +833,17 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
                 <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
               </span>
               <h3 className="text-base sm:text-lg font-extrabold text-white flex items-center gap-2">
-                🌟 [기본 장착 필수 팩] 전문가 공인 8대 핵심 표준 스킬 & 하네스 ({coreModules.length}개)
+                🌟 이 프로젝트가 제공하는 기본 작업 템플릿 ({coreModules.length}개)
               </h3>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed max-w-4xl">
-              스킬이 너무 많으면 AI가 혼란을 겪고 토큰이 낭비됩니다. 따라서 <strong>기획/구현/디버깅/코드리뷰 4대 표준, 스마트 라우터, Claude 긴 세션 압축기, TDD 선행 테스트기, 영구 지식 베이스</strong> 등 실리콘밸리 전문가들이 검증한 최정예 핵심 스킬만 <strong>기본으로 안전하게 내장</strong>되어 있습니다.
+              기획·구현·디버깅·코드리뷰·세션 요약·테스트·문서화 예시를 기본으로 포함합니다. 모두에게 필요한 표준은 아니며, <strong>현재 도구가 해당 형식을 지원하는지와 프로젝트 명령이 맞는지 확인한 뒤</strong> 불필요한 항목을 제외하세요.
             </p>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-500/30 shrink-0">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>기본 탑재 완료 (자동 포함)</span>
+            <span>ZIP 생성 시 기본 선택</span>
           </div>
         </div>
 
@@ -909,7 +905,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
               </h4>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              기본 필수 팩 위에 <strong>교사 생기부/지도안, 교과 활동지, 학급 도구, DB, 브라우저 검증</strong> 등 원하는 도메인 기능만 쏙쏙 골라 확장할 수 있습니다.
+              기본 템플릿에 <strong>교사 생기부/지도안, 교과 활동지, 학급 도구, DB, 브라우저 검증</strong> 등 필요한 도메인 예시를 선택해 추가할 수 있습니다. 교육 기록과 개인정보 관련 결과물은 최신 공식 지침과 담당자의 검토가 필요합니다.
             </p>
           </div>
 
@@ -1042,7 +1038,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
                           ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
                           : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                       }`}>
-                        {module.detailedImpact.mcpType === 'zero-config' ? '🟢 즉시 동작' : '🔑 .env 키 필요'}
+                        {module.detailedImpact.mcpType === 'zero-config' ? '🟢 API 키 불필요' : '🔑 인증 정보 필요'}
                       </span>
                     </div>
                   )}
@@ -1074,7 +1070,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
               </h3>
             </div>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-4xl">
-              어떤 폴더가 왜 존재하고, 그 아래의 파일들이 <strong>어떤 AI에게 무엇을 지시하며, 미작성 시 어떤 치명적 사고(위험)가 발생하는지</strong> 한눈에 파악할 수 있는 시각적 지도입니다.
+              각 폴더의 역할, 대상 도구, 누락 시 예상되는 <strong>운영상 위험</strong>을 정리한 구성 지도입니다. 실제 자동 발견 여부는 제품별 공식 설정에서 확인하세요.
             </p>
           </div>
 
@@ -1239,7 +1235,7 @@ ${dynamicFilesList.map(f => `- **${f.path}**: ${f.description}`).join('\n')}
               </h3>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              기본 필수 팩과 내가 체크한 추가 기능들이 실시간으로 조립된 실제 파일 내용을 직접 확인하고 개별 복사할 수 있습니다.
+              기본 템플릿과 선택한 추가 기능으로 조립될 파일 내용을 미리 확인하고 개별 복사할 수 있습니다.
             </p>
           </div>
 

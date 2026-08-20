@@ -612,7 +612,7 @@ export const CoreAiConceptsGuide: React.FC<CoreAiConceptsGuideProps> = ({ onCopy
               <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
                 <span className="font-bold text-blue-400 text-sm block">2. 구글 스티치 (Stitch)</span>
                 <p className="text-slate-300 leading-relaxed">
-                  디자이너 없이 말이나 낙서 스케치로 10초 만에 화면 시안과 DESIGN.md를 뽑을 때 씁니다.
+                  텍스트나 스케치 이미지로 화면 시안 초안을 만들고, 지원되는 경우 DESIGN.md 디자인 시스템을 가져오거나 내보낼 때 씁니다. 결과는 직접 검토해야 합니다.
                 </p>
               </div>
 

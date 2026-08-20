@@ -46,11 +46,31 @@ Artificial Analysis의 Intelligence Index v4.1.1 모델 페이지에서 다음 �
 
 ### OpenAI GPT-5.6 공개 평가표
 
-[GPT-5.6 공개 발표](https://openai.com/index/gpt-5-6/)의 한 표에 함께 실린 GPT-5.6 Sol·Terra·Luna와 Claude Fable 5 결과를 옮겼다. 2026년 8월 Grok 모델 카드의 갱신된 수치와는 시점·버전·하네스가 달라 별도 표로 유지한다.
+[GPT-5.6 공개 발표](https://openai.com/index/gpt-5-6/)의 원문 표에 함께 실린 결과를 분야별로 옮겼다. 기존 화면은 Sol·Terra·Luna·Fable 5 네 열만 표시했지만, 현재 화면은 원문에 수치가 있는 비교 모델을 누락하지 않도록 다음 범위를 제공한다.
+
+- 전문 업무·종합 지능: 8개 모델, 3개 공개 평가
+- 코딩 에이전트: 10개 모델, 4개 공개 평가
+- 컴퓨터 사용·웹 탐색·CAD: 9개 모델, 4개 공개 평가
+
+원문이 대시(`—`)로 둔 값은 `미보고`로 표시한다. 이는 0점이나 실패가 아니며 다른 출처의 숫자로 보충하지 않는다. 2026년 8월 Grok 모델 카드의 갱신된 수치와는 시점·버전·하네스가 달라 별도 표로 유지한다.
+
+쉬운 설명은 다음 벤치마크 소유자·연구진의 방법론을 바탕으로 작성했다.
+
+- [Agents' Last Exam 문서](https://agents-last-exam.org/docs/ale/index.html): 55개 전문 분야의 장기 실제 업무
+- [Artificial Analysis Intelligence 방법론](https://artificialanalysis.ai/methodology/intelligence-benchmarking): GDPval-AA v2와 Intelligence Index 구성·채점
+- [Artificial Analysis Coding Agent Index 방법론](https://artificialanalysis.ai/methodology/coding-agents-benchmarking): DeepSWE·Terminal-Bench·저장소 질의 평가와 pass@1
+- [Scale AI SWE-Bench Pro](https://labs.scale.com/leaderboard/swe_bench_pro_public): 실제 저장소 이슈와 재현 가능한 테스트 환경
+- [OpenAI SWE-Bench Pro 데이터 감사](https://openai.com/index/separating-signal-from-noise-coding-evaluations/): 과제 약 30%가 깨졌다는 추정과 해석 주의
+- [Terminal-Bench 2.1](https://www.tbench.ai/news/terminal-bench-2-1): 터미널 과제의 갱신·수정 범위
+- [OSWorld 2.0 논문](https://arxiv.org/abs/2606.29537): 108개 장기 컴퓨터 사용 워크플로
+- [BrowseComp](https://openai.com/index/browsecomp/): 찾기 어렵고 검증하기 쉬운 1,266개 웹 탐색 문제
+- [BenchCAD](https://benchcad.com/): 실행 검증된 산업용 CadQuery 부품과 3D 공간 추론
 
 ### Model ML 문서·스프레드시트 제작 평가
 
 [Model ML Composite 사례](https://openai.com/index/model-ml/)에 공개된 에이전트의 네이티브 PowerPoint·Excel 제작 결과를 옮겼다. 단순 질의응답이 아니라 파일을 실제 생성하고 품질, 정답성, 파일 생성 성공률, 토큰, 소요 시간을 측정한 자료다. 다만 Model ML의 자체 벤치마크가 OpenAI 고객 사례에 게시된 것이므로 독립 연구기관 결과로 표현하지 않는다.
+
+이 자료가 공개한 비교 대상은 GPT-5.6 Sol, Claude Opus 5, Claude Fable 5, GPT-5.6 Terra 네 모델이다. 나머지 모델 칸은 비교 대상이 아니므로 추가하지 않으며, 각 영문 측정 항목 아래에 한국어 쉬운 뜻을 함께 표시한다.
 
 ## 4. 수록하지 않는 데이터
 

@@ -49,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
       id: 'system-engineering' as TabType,
       number: '3',
       label: '개발 환경 & 맞춤 ZIP 다운',
-      subtitle: '4대 도구 · 에이전트 · 스킬',
+      subtitle: '도구별 지침 · 에이전트 · 스킬',
       icon: Terminal,
       color: 'text-emerald-400',
       activeGradient: 'from-emerald-600 to-teal-700'
@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
       id: 'mcp-hub' as TabType,
       number: '4',
       label: 'MCP 도구 연결 허브',
-      subtitle: 'Postgres · 브라우저 · GitHub',
+      subtitle: 'Playwright · 파일 · GitHub',
       icon: Plug,
       color: 'text-teal-400',
       activeGradient: 'from-teal-600 to-emerald-700'

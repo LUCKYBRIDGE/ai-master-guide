@@ -1,3 +1,8 @@
+/**
+ * @deprecated Unpublished legacy cross-tool templates. This file is not rendered by the
+ * current app. Do not imply that agents, skills, paths, or metadata are portable across
+ * products without verifying each product's current official specification.
+ */
 export interface CustomSkillTemplate {
   id: string;
   name: string;

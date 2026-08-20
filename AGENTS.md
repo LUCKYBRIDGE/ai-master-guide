@@ -1,28 +1,33 @@
-# AGENTS.md - Unified Project Constitution & Single Source of Truth
-> Standard AI Engines: OpenAI Codex · Claude Code · Google Antigravity (Universal Tri-IDE Standard)
-> Project: STUDY (AI Master Guide)
+# AI Master Guide Working Agreements
 
-## 1. Essential Commands
-- Dev Server: `npm run dev`
-- Verification Build: `npm run build`
-- Unit Tests: `npm test`
-- Lint & Format: `npm run lint`
+## Project state and scope
 
-## 2. Development Principles & Safety Rules
-- **Smallest Coherent Change**: Prefer small, focused changes over broad speculative rewrites.
-- **Component & Pattern Reuse**: Inspect existing components and utilities before creating new ones.
-- **Single Source of Truth**: Durable project instructions live centrally in `AGENTS.md`. Do not duplicate.
-- **Zero Regression**: Verify behavior, not just compilation. Never delete working functionality.
-- **Autonomous Execution**: Allowed to edit code, install packages (`npm i`), and run builds/tests.
-- **User Approval Required**: Database destruction commands (`DROP TABLE`), force push (`git push -f`).
+- State: active
+- Root: `/Volumes/WAN2/apps/ai-master-guide`
+- Scope: React/Vite website containing AI model comparisons, measured artifact reviews, and AI development guides.
+- Source of truth: `src/` for website content and behavior. `dist/` is generated output and is not edited directly.
+- Public release target: GitHub `main` branch and GitHub Pages workflow. Commit, push, or deploy only when the user explicitly requests it.
 
-## 3. Documentation & Design Architecture
-- Design System: Follow `docs/design/tokens.md` and `.agents/rules/ui-design.md`.
-- Architecture & ADRs: Persistent knowledge lives under `docs/architecture/` and `docs/decisions/`.
-- Active Skills: Reusable procedural workflows live under `.agents/skills/`.
+## Commands
 
-## 4. Definition of Done
-A task is complete ONLY when:
-1. The requested behavior is fully implemented.
-2. `npm run build` passes with 0 TypeScript/Lint/Bundle errors.
-3. Tests pass and persistent docs under `docs/` are updated if persistent behavior changed.
+- Development server: `npm run dev`
+- Production build and TypeScript check: `npm run build`
+- Built-site preview: `npm run preview`
+- No test or lint script is currently defined in `package.json`. Do not claim either check ran.
+
+## Content accuracy
+
+- Prefer provider documentation, official repositories, standards bodies, and benchmark owners as primary sources.
+- Separate provider-reported results, independent benchmarks, and this project's own artifact evaluations.
+- Every numerical performance claim needs a named source, model/version, evaluation condition, and date or snapshot context.
+- Do not present invented composite scores, estimated timings, popularity rankings, or unsupported labels such as “gold standard”, “expert-certified”, “perfect”, or “100% compatible”.
+- Product features, pricing, model names, package names, commands, laws, and education policies must be checked against current authoritative sources before publication.
+- Tests show evidence for the tested scope; they do not prove that software or AI output is bug-free.
+- Files marked `@deprecated` are unpublished legacy content and must not be reconnected until their factual claims satisfy the source requirements above.
+
+## Implementation and verification
+
+- Make narrow changes in source files and preserve unrelated work.
+- For visible changes, run `npm run build` and check the affected flows in a real browser at desktop and mobile widths.
+- Review the final diff for stale generated files, secrets, unsupported claims, and broken official links.
+- Keep durable source notes in `docs/reference/content-audit-sources.md` when factual claims or source policy changes.

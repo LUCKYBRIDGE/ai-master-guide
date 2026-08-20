@@ -1,3 +1,8 @@
+/**
+ * @deprecated Unpublished legacy product catalog containing unverified feature and model
+ * claims. This file is not rendered by the current app. Revalidate every entry against
+ * current official product documentation before any future use.
+ */
 import { AITool } from '../types/ai';
 
 export const AI_TOOLS_DATA: AITool[] = [

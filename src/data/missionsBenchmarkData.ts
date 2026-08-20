@@ -1,3 +1,8 @@
+/**
+ * @deprecated Unpublished synthetic benchmark dataset. This file is not rendered by
+ * the current app. Do not reconnect it unless the prompts, environments, raw outputs,
+ * scoring rubric, model versions, run dates, and repeat results are published.
+ */
 import { HeadToHeadMission } from '../types/ai';
 
 export const HEAD_TO_HEAD_MISSIONS_DATA: HeadToHeadMission[] = [

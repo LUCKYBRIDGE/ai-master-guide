@@ -29,7 +29,7 @@ export const DEV_ROADMAP_STAGES: DevRoadmapStage[] = [
 # 프로젝트 개발 가이드라인
 - 기술 스택: React 18, TypeScript (Strict 모드), Tailwind CSS, Vite
 - 코딩 규칙: 함수형 컴포넌트 작성, any 타입 사용 금지, 세미콜론 필수
-- 실행 명령어: npm run dev (개발), npm run build (빌드), npm test (테스트)`,
+- 실행 명령어: package.json에 실제로 정의된 명령만 기록`,
     practicalActionChecklist: [
       '사용자 스토리 및 핵심 기능 요구사항(기능 명세서) 정리',
       '기술 스택(React, TypeScript, Tailwind) 및 코딩 컨벤션 정의',
@@ -38,7 +38,7 @@ export const DEV_ROADMAP_STAGES: DevRoadmapStage[] = [
     universalPromptTemplate: `[목표] 프로젝트 요구사항 명세서 및 기본 개발 규칙 가이드(CLAUDE.md)를 작성해줘.
 [프로젝트] 인터랙티브 웹 애플리케이션
 [기술 스택] React 18, TypeScript, Tailwind CSS, Vite
-[포함 내용] 1) 핵심 기능 목록 2) TypeScript strict 규칙 3) 폴더 구조 컨벤션 4) 빌드 및 테스트 명령어.`
+[포함 내용] 1) 핵심 기능 목록 2) 현재 프로젝트의 타입 규칙 3) 기존 폴더 구조 컨벤션 4) 저장소에서 확인한 실제 빌드·테스트 명령어. 존재하지 않는 명령은 만들지 말고 미구성으로 표시해줘.`
   },
 
   // 2단계: UI/UX 화면 설계 & 스타일 가이드
@@ -90,8 +90,9 @@ export const DEV_ROADMAP_STAGES: DevRoadmapStage[] = [
 - [NEW] src/store/useAppStore.ts
 - [NEW] src/types/data.ts
 ## 3. 품질 검증 계획
-- TypeScript 컴파일 무결점 검증 (npm run build)
-- 단위 테스트 100% 통과 (npm test)`,
+- package.json에 정의된 빌드·타입 검사 실행
+- 변경 범위에 맞는 자동 테스트와 실제 화면 검증 계획
+- 실행할 수 없는 검증과 남은 위험 기록`,
     practicalActionChecklist: [
       '컴포넌트 계층도 및 데이터 흐름(단방향 데이터 플로우) 설계',
       '생성할 파일 목록과 인터페이스 명세를 implementation_plan.md에 작성',
@@ -111,7 +112,7 @@ export const DEV_ROADMAP_STAGES: DevRoadmapStage[] = [
     badge: '프론트엔드 컴포넌트 개발',
     badgeColor: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30',
     whatYouDo: 'DESIGN.md의 규격을 정확히 준수하여 React 컴포넌트를 개발하고, 단일 책임 원칙에 따라 재사용 가능한 하위 컴포넌트로 깔끔하게 모듈화합니다.',
-    whyThisStepIsCritical: '컴포넌트 분리 없이 하나의 파일에 1,000줄 이상의 코드를 몰아넣으면 유지보수가 불가능해지고 중복 코드가 양산됩니다.',
+    whyThisStepIsCritical: '서로 다른 책임과 변경 이유를 한 컴포넌트에 계속 쌓으면 검토·테스트·재사용이 어려워질 수 있습니다. 다만 파일 길이만으로 품질을 판정할 수는 없습니다.',
     primaryDeliverable: '모듈화된 프론트엔드 컴포넌트 소스코드 (src/components/)',
     deliverableFileExample: `src/components/
 ├── Dashboard/
@@ -123,7 +124,7 @@ export const DEV_ROADMAP_STAGES: DevRoadmapStage[] = [
     └── Modal.tsx          # 팝업 모달`,
     practicalActionChecklist: [
       './DESIGN.md 규격을 준수하여 일관된 색상 및 여백 적용',
-      '대형 컴포넌트를 200줄 이내의 재사용 가능한 단위로 분리',
+      '책임·변경 이유·테스트 경계를 기준으로 컴포넌트 분리 여부 판단',
       'TypeScript Props 인터페이스를 명시적으로 선언'
     ],
     universalPromptTemplate: `[목표] ./DESIGN.md 규격을 준수하여 프론트엔드 UI 컴포넌트를 구현해줘.
@@ -172,28 +173,25 @@ export const useAppStore = create<AppState>((set) => ({
   {
     stageNumber: 6,
     stageName: '6. 품질 검증(테스트·QA) & 빌드 · 클라우드 배포',
-    stageSubtitle: '코드 린트, 단위·통합 테스트 무결점 검증, 최적화 빌드 및 배포(CI/CD)',
+    stageSubtitle: '사용 가능한 정적 검사·자동 테스트·실제 화면 QA와 배포 확인',
     iconName: 'ShieldCheck',
     badge: '품질 검증 & 프로덕션 배포',
     badgeColor: 'bg-teal-500/10 text-teal-300 border-teal-500/30',
-    whatYouDo: 'TypeScript 타입 검사, 린트 검사, 단위 및 통합 테스트(npm test)를 자동 실행하여 버그를 완벽히 해결하고, 프로덕션 최적화 빌드(npm run build) 후 Vercel, AWS, Cloudflare 등에 배포합니다.',
+    whatYouDo: '저장소에 실제로 정의된 타입 검사·린트·테스트·빌드를 실행하고, 대표 사용자 흐름을 실제 환경에서 확인합니다. 통과한 테스트는 확인한 범위의 근거이지 버그가 없다는 보증이 아닙니다.',
     whyThisStepIsCritical: '테스트와 빌드 검증을 거치지 않고 배포하면 사용자 환경에서 치명적인 런타임 에러나 결제 오류가 발생하여 서비스 신뢰도가 실추됩니다.',
-    primaryDeliverable: '0 에러 빌드 검증 보고서 & 프로덕션 배포 완료 URL',
-    deliverableFileExample: `$ npm test
-✓ tests/logic.test.ts (8 tests passed)
-✓ tests/api.test.ts (5 tests passed)
-
-$ npm run build
-✓ 1609 modules transformed.
-dist/index.html                   1.10 kB
-dist/assets/index-Dk9.js        430.82 kB
-✓ built in 2.78s (0 errors)`,
+    primaryDeliverable: '실제 명령·결과·수동 QA·미검증 범위를 포함한 검증 기록과 배포 상태',
+    deliverableFileExample: `검증 기록 예시
+- 실행: package.json에서 확인한 build 명령 → 성공/실패 원문 요약
+- 자동 테스트: 관련 테스트 파일과 결과
+- 실제 화면: 확인한 URL·뷰포트·사용자 흐름
+- 미검증: 계정, 외부 API, 운영 데이터 등 확인하지 못한 범위
+- 배포: 대상 환경, 배포 시각, 라이브 URL smoke test 결과`,
     practicalActionChecklist: [
-      'npm run build를 실행하여 TypeScript 컴파일 에러 0건 확인',
-      '핵심 비즈니스 로직 단위 테스트(npm test) 통과 확인',
-      'Git 커밋 및 GitHub Actions CI/CD 파이프라인 배포'
+      'package.json·빌드 파일에서 실제 검증 명령 확인 후 실행',
+      '변경 범위에 맞는 자동 테스트와 대표 사용자 흐름 확인',
+      '배포가 요청된 경우에만 대상 환경·브랜치·라이브 URL을 확인'
     ],
-    universalPromptTemplate: `[목표] 프로젝트 전체 빌드(npm run build) 및 단위 테스트(npm test)를 실행하여 무결성을 검증해줘.
-[요구사항] 1) TypeScript 타입 에러나 린트 경고가 있다면 즉시 수정해줘 2) 모든 테스트가 100% 통과하는 것을 확인한 후 배포 가능한 상태로 완료해줘.`
+    universalPromptTemplate: `[목표] 이 저장소의 실제 검증·배포 경로를 확인하고 변경된 동작을 검증해줘.
+[요구사항] 1) package.json과 CI 설정에서 존재하는 명령만 실행 2) 실패하면 원인과 수정 범위를 먼저 보고 3) 자동 테스트 외에 대표 사용자 흐름을 실제 브라우저에서 확인 4) 실행 결과와 미검증 범위를 분리해 기록 5) 배포·푸시 같은 외부 상태 변경은 명시적으로 승인된 경우에만 수행.`
   }
 ];

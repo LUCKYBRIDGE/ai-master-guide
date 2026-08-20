@@ -1,3 +1,8 @@
+/**
+ * @deprecated Unpublished legacy prompt library containing absolute quality claims.
+ * This file is not rendered by the current app. Review safety, tool compatibility, and
+ * verification language before any prompt is published again.
+ */
 import { PromptTemplate } from '../types/ai';
 
 export const PROMPT_LIBRARY_DATA: PromptTemplate[] = [

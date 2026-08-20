@@ -1,3 +1,8 @@
+/**
+ * @deprecated Unpublished legacy pricing and quota estimates. This file is not rendered
+ * by the current app. Do not reconnect it without current provider documentation,
+ * region/currency context, effective dates, and clearly labeled calculations.
+ */
 import { 
   AccountBankSummary, 
   ModelWeightItem, 

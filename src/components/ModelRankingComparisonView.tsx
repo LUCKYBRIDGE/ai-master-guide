@@ -16,13 +16,16 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import {
+  BENCHMARK_EXPLANATION_SOURCES,
   EVIDENCE_RULES,
   EXCEL_ARTIFACT_BENCHMARK,
+  INDEPENDENT_METHODOLOGY_SOURCE,
   INDEPENDENT_MEASUREMENTS,
+  INDEPENDENT_UNAVAILABLE_MODELS,
   MODEL_DATA_SNAPSHOT,
   MODEL_ML_BENCHMARK_SOURCE,
   OPENAI_BENCHMARK_SOURCE,
-  OPENAI_PUBLISHED_BENCHMARKS,
+  OPENAI_PUBLISHED_BENCHMARK_GROUPS,
   POWERPOINT_ARTIFACT_BENCHMARK,
   PUBLISHED_BENCHMARKS,
   REPRODUCIBLE_LAB_REQUIREMENTS,
@@ -43,24 +46,37 @@ const VIEW_OPTIONS: Array<{ id: ViewId; label: string; hint: string; icon: React
 
 const INDEPENDENT_METRICS: Record<
   IndependentMetric,
-  { label: string; unit: string; description: string; lowerIsBetter: boolean }
+  {
+    label: string;
+    unit: string;
+    description: string;
+    easyExplanation: string;
+    interpretation: string;
+    lowerIsBetter: boolean;
+  }
 > = {
   intelligenceIndex: {
     label: 'Intelligence Index',
     unit: '점',
     description: 'Artificial Analysis Intelligence Index v4.1.1의 종합 지표',
+    easyExplanation: '전문 업무·도구 사용·터미널·과학 추론·지식·긴 문맥 등 9개 시험 결과를 하나로 묶은 점수입니다.',
+    interpretation: '높을수록 이 평가 묶음에서는 강합니다. 모든 실제 업무의 성공률이나 모델의 절대 IQ를 뜻하지 않습니다.',
     lowerIsBetter: false,
   },
   outputTokensPerSecond: {
     label: '출력 속도',
     unit: 'tokens/s',
     description: '동일 기관이 first-party API에서 측정한 출력 토큰 속도',
+    easyExplanation: '답변이 나오기 시작한 뒤 1초에 텍스트를 얼마나 빠르게 생성하는지 잽니다.',
+    interpretation: '높을수록 생성은 빠르지만, 첫 답이 나오기까지의 대기 시간과 전체 작업 시간은 별도입니다.',
     lowerIsBetter: false,
   },
   costPerIndexTaskUsd: {
     label: '평가 과제당 비용',
     unit: 'USD',
     description: 'Intelligence Index 평가 과제 1건의 측정 비용',
+    easyExplanation: '9개 평가를 돌릴 때 실제 사용한 입력·캐시·추론·출력 토큰을 가격표에 적용한 과제당 평균 비용입니다.',
+    interpretation: '낮을수록 같은 평가를 싸게 수행한 것입니다. 월 구독료나 일반 사용자 질문 1회의 고정 가격은 아닙니다.',
     lowerIsBetter: true,
   },
 };
@@ -296,6 +312,17 @@ const IndependentView = () => {
           </div>
         </div>
 
+        <div className="mt-5 grid gap-3 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4 md:grid-cols-2">
+          <div>
+            <p className="text-xs font-black text-cyan-300">쉽게 말하면</p>
+            <p className="mt-1 text-sm leading-6 text-slate-300">{meta.easyExplanation}</p>
+          </div>
+          <div>
+            <p className="text-xs font-black text-cyan-300">점수를 읽는 법</p>
+            <p className="mt-1 text-sm leading-6 text-slate-300">{meta.interpretation}</p>
+          </div>
+        </div>
+
         <div className="mt-6 rounded-xl border border-slate-800 bg-slate-950/70 p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -315,6 +342,14 @@ const IndependentView = () => {
                     <span className="w-5 font-mono text-xs text-slate-600">{index + 1}</span>
                     <span className="truncate font-bold text-slate-200">{row.modelName}</span>
                     <span className="hidden text-[11px] text-slate-500 sm:inline">{row.effort}</span>
+                    <a
+                      href={row.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hidden items-center gap-1 text-[10px] font-bold text-cyan-400 hover:text-cyan-300 sm:inline-flex"
+                    >
+                      원문 <ExternalLink className="h-3 w-3" />
+                    </a>
                   </div>
                   <span className="shrink-0 font-mono font-black text-white">{formatMetric(row[metric])}</span>
                 </div>
@@ -329,19 +364,36 @@ const IndependentView = () => {
           </div>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3 rounded-xl border border-slate-800 bg-slate-950/50 p-4 text-xs leading-5 text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            Grok 4.6과 Gemini 3.7 Flash는 이 스냅샷에서 동일 조건 모델 페이지를 확인하지 못해 표에서
-            제외했습니다. 0점이나 추정값으로 채우지 않았습니다.
-          </p>
-          <a
-            href={INDEPENDENT_MEASUREMENTS[0].sourceUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex shrink-0 items-center gap-1 font-bold text-cyan-300 hover:text-cyan-200"
-          >
-            원문 예시 <ExternalLink className="h-3 w-3" />
-          </a>
+        <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-black text-white">전체 비교 대상의 측정 상태</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                수치가 없는 모델도 숨기지 않습니다. 미확인 값은 0점이 아니며 순위 계산에서 제외합니다.
+              </p>
+            </div>
+            <a
+              href={INDEPENDENT_METHODOLOGY_SOURCE.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-cyan-300 hover:text-cyan-200"
+            >
+              측정 방법 원문 <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {INDEPENDENT_UNAVAILABLE_MODELS.map((model) => (
+              <div key={model.modelId} className="rounded-lg border border-slate-800 bg-slate-900/70 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-bold text-slate-300">{model.modelName}</p>
+                  <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+                    동일조건 미확인
+                  </span>
+                </div>
+                <p className="mt-1 text-[11px] leading-5 text-slate-500">{model.reason}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>
@@ -378,10 +430,13 @@ const ArtifactTable: React.FC<{
             return (
               <tr key={row.metric}>
                 <td className="px-4 py-3 font-medium text-slate-300">
-                  {row.metric}
-                  <span className="ml-2 text-[10px] text-slate-600">
-                    {row.higherIsBetter ? '↑' : '↓'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span>{row.metric}</span>
+                    <span className="text-[10px] text-slate-600">{row.higherIsBetter ? '↑' : '↓'}</span>
+                  </div>
+                  <p className="mt-1 max-w-[260px] text-[11px] font-normal leading-4 text-slate-500">
+                    {row.easyExplanation}
+                  </p>
                 </td>
                 {[row.sol, row.opus, row.fable, row.terra].map((value, index) => (
                   <td
@@ -404,9 +459,14 @@ const ArtifactTable: React.FC<{
 
 const PublishedView = () => {
   const [benchmarkId, setBenchmarkId] = useState(PUBLISHED_BENCHMARKS[0].id);
+  const [comparisonGroupId, setComparisonGroupId] = useState(OPENAI_PUBLISHED_BENCHMARK_GROUPS[0].id);
   const benchmark = PUBLISHED_BENCHMARKS.find((item) => item.id === benchmarkId) ?? PUBLISHED_BENCHMARKS[0];
+  const comparisonGroup =
+    OPENAI_PUBLISHED_BENCHMARK_GROUPS.find((item) => item.id === comparisonGroupId) ??
+    OPENAI_PUBLISHED_BENCHMARK_GROUPS[0];
   const reportedResults = benchmark.results.filter((result) => result.score !== null);
   const maxValue = Math.max(...reportedResults.map((result) => result.score ?? 0));
+  const missingResults = benchmark.results.length - reportedResults.length;
 
   return (
     <div className="space-y-6">
@@ -463,6 +523,20 @@ const PublishedView = () => {
                 <dd className="mt-1 font-bold text-slate-300">{benchmark.sampleInfo}</dd>
               </div>
             </dl>
+            <div className="mt-4 grid gap-3 rounded-xl border border-orange-500/20 bg-orange-500/5 p-4 lg:grid-cols-3">
+              <div>
+                <p className="text-xs font-black text-orange-300">쉽게 말하면</p>
+                <p className="mt-1 text-xs leading-5 text-slate-300">{benchmark.easyExplanation}</p>
+              </div>
+              <div>
+                <p className="text-xs font-black text-orange-300">예시 과제</p>
+                <p className="mt-1 text-xs leading-5 text-slate-300">{benchmark.exampleTask}</p>
+              </div>
+              <div>
+                <p className="text-xs font-black text-orange-300">점수를 읽는 법</p>
+                <p className="mt-1 text-xs leading-5 text-slate-300">{benchmark.scoreMeaning}</p>
+              </div>
+            </div>
             <div className="mt-5 space-y-3">
               {benchmark.results.map((result) => (
                 <div key={result.modelId} className="grid grid-cols-[minmax(130px,220px)_1fr_auto] items-center gap-3">
@@ -478,12 +552,19 @@ const PublishedView = () => {
                       />
                     )}
                   </div>
-                  <span className={`w-16 text-right font-mono text-sm font-black ${result.score === null ? 'text-slate-600' : 'text-white'}`}>
-                    {result.score === null ? '미보고' : result.score}
+                  <span
+                    className={`w-20 text-right font-mono text-sm font-black ${result.score === null ? 'text-amber-400/70' : 'text-white'}`}
+                    title={result.score === null ? '이 원문의 같은 버전 표에 수치가 없습니다. 0점이 아닙니다.' : undefined}
+                  >
+                    {result.score === null ? '— 미보고' : result.score}
                   </span>
                 </div>
               ))}
             </div>
+            <p className="mt-4 text-[11px] leading-5 text-slate-500">
+              원문 보고 {reportedResults.length}/{benchmark.results.length}개 모델
+              {missingResults > 0 && ` · 미보고 ${missingResults}개는 성능 0점이 아니라 이 원문에 비교 가능한 수치가 없다는 뜻입니다.`}
+            </p>
             <p className="mt-5 rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-xs leading-5 text-amber-100/80">
               {benchmark.warning}
             </p>
@@ -492,50 +573,103 @@ const PublishedView = () => {
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60">
-        <div className="flex flex-col gap-3 border-b border-slate-800 p-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-4 border-b border-slate-800 p-5 xl:flex-row xl:items-start xl:justify-between">
           <div>
-            <p className="text-xs font-bold text-emerald-300">2026-07-09 공개 당시의 실제 평가표</p>
-            <h2 className="mt-1 font-black text-white">OpenAI GPT-5.6 계열 비교</h2>
+            <p className="text-xs font-bold text-emerald-300">2026-07-09 제공사 보고 · 원문 전체 비교 열 반영</p>
+            <h2 className="mt-1 font-black text-white">OpenAI 공개 평가표 상세 보기</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-              OpenAI 발표 자료 한 표에 함께 실린 결과입니다. 위의 2026년 8월 모델 카드 수치와는 버전·하네스가
-              달라 직접 병합하지 않습니다.
+              기존 화면은 원문에 있는 8~10개 모델 중 4개 열만 보였습니다. 이제 선택한 분야의 공개 모델 열을
+              빠짐없이 옮기고, 원문이 비워 둔 값만 ‘미보고’로 남깁니다. 위 2026년 8월 모델 카드와는
+              버전·하네스가 달라 직접 병합하지 않습니다.
             </p>
           </div>
-          <SourceLink source={OPENAI_BENCHMARK_SOURCE} />
+          <div className="flex flex-col items-start gap-3 xl:items-end">
+            <SourceLink source={OPENAI_BENCHMARK_SOURCE} />
+            <div className="flex flex-wrap gap-2">
+              {OPENAI_PUBLISHED_BENCHMARK_GROUPS.map((group) => (
+                <button
+                  key={group.id}
+                  type="button"
+                  onClick={() => setComparisonGroupId(group.id)}
+                  className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ${
+                    comparisonGroup.id === group.id
+                      ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200'
+                      : 'border-slate-700 bg-slate-950 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {group.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="border-b border-slate-800 bg-slate-950/30 px-5 py-4">
+          <p className="text-sm font-black text-white">{comparisonGroup.title}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">{comparisonGroup.description}</p>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-[760px] w-full text-sm">
+          <table
+            className="w-full text-sm"
+            style={{ minWidth: `${Math.max(900, comparisonGroup.columns.length * 142 + 350)}px` }}
+          >
             <thead className="bg-slate-950/50 text-xs text-slate-500">
               <tr>
-                <th className="px-5 py-3 text-left">벤치마크</th>
-                <th className="px-3 py-3 text-right">GPT-5.6 Sol</th>
-                <th className="px-3 py-3 text-right">GPT-5.6 Terra</th>
-                <th className="px-3 py-3 text-right">GPT-5.6 Luna</th>
-                <th className="px-5 py-3 text-right">Claude Fable 5</th>
+                <th className="sticky left-0 z-20 w-[350px] bg-slate-950 px-5 py-3 text-left">무엇을 테스트하나</th>
+                {comparisonGroup.columns.map((column) => (
+                  <th key={column.id} className="min-w-[138px] px-3 py-3 text-right">
+                    {column.label}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {OPENAI_PUBLISHED_BENCHMARKS.map((row) => {
-                const best = Math.max(row.sol, row.terra, row.luna, row.fable);
+              {comparisonGroup.rows.map((row) => {
+                const reportedValues = comparisonGroup.columns
+                  .map((column) => row.values[column.id])
+                  .filter((value): value is number => value !== null && value !== undefined);
+                const best = Math.max(...reportedValues);
                 return (
                   <tr key={row.benchmark}>
-                    <td className="px-5 py-3 font-bold text-slate-300">
-                      {row.benchmark} <span className="text-[10px] text-slate-600">({row.metric})</span>
+                    <td className="sticky left-0 z-10 bg-slate-950 px-5 py-4 align-top text-slate-300">
+                      <p className="font-black">
+                        {row.benchmark} <span className="text-[10px] text-slate-600">({row.metric})</span>
+                      </p>
+                      <p className="mt-1.5 text-[11px] font-normal leading-5 text-slate-400">{row.easyExplanation}</p>
+                      <p className="mt-1 text-[10px] font-normal leading-4 text-emerald-300/70">{row.scoreMeaning}</p>
+                      {row.caveat && (
+                        <p className="mt-2 rounded border border-amber-500/20 bg-amber-500/5 p-2 text-[10px] font-normal leading-4 text-amber-200/70">
+                          {row.caveat}
+                        </p>
+                      )}
                     </td>
-                    {[row.sol, row.terra, row.luna, row.fable].map((value, index) => (
-                      <td
-                        key={`${row.benchmark}-${index}`}
-                        className={`px-3 py-3 text-right font-mono ${value === best ? 'font-black text-emerald-300' : 'text-slate-300'}`}
-                      >
-                        {value}
-                      </td>
-                    ))}
+                    {comparisonGroup.columns.map((column) => {
+                      const value = row.values[column.id];
+                      return (
+                        <td
+                          key={`${row.benchmark}-${column.id}`}
+                          className={`px-3 py-4 text-right font-mono ${
+                            value === null || value === undefined
+                              ? 'text-amber-400/60'
+                              : value === best
+                                ? 'font-black text-emerald-300'
+                                : 'text-slate-300'
+                          }`}
+                          title={value === null || value === undefined ? '원문 미보고 · 0점 아님' : undefined}
+                        >
+                          {value === null || value === undefined ? '— 미보고' : value.toLocaleString('en-US')}
+                        </td>
+                      );
+                    })}
                   </tr>
                 );
               })}
             </tbody>
           </table>
         </div>
+        <p className="border-t border-slate-800 px-5 py-3 text-[11px] leading-5 text-slate-500">
+          초록색은 같은 행에서 가장 높은 ‘보고값’입니다. 제공사 발표표이므로 독립 재측정으로 간주하지 않으며,
+          미보고는 0점이나 실패가 아닙니다. 모델·에이전트 설정이 다르면 점수 차이에 하네스 영향도 포함됩니다.
+        </p>
       </section>
 
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 sm:p-6">
@@ -546,7 +680,8 @@ const PublishedView = () => {
             <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-400">
               Model ML의 에이전트 하네스로 문서와 워크북을 생성해 채점한 공개 결과입니다. PowerPoint는
               수백 개 덱과 세부 루브릭을 사용했습니다. OpenAI 고객 사례에 게시된 제3자 자체 평가이므로
-              독립 기관 점수와는 구분합니다.
+              독립 기관 점수와는 구분합니다. 이 원문이 공개한 비교 대상은 아래 4개 모델뿐이므로 다른 모델의
+              칸을 추정해 추가하지 않았습니다.
             </p>
           </div>
           <SourceLink source={MODEL_ML_BENCHMARK_SOURCE} />
@@ -564,6 +699,13 @@ const MethodologyView = () => {
   const sources = useMemo(() => {
     const allSources = [
       ...VERIFIED_MODEL_SPECS.flatMap((model) => model.sources),
+      ...INDEPENDENT_MEASUREMENTS.map((measurement): SourceReference => ({
+        title: `${measurement.modelName} 독립 측정`,
+        publisher: 'Artificial Analysis',
+        url: measurement.sourceUrl,
+      })),
+      INDEPENDENT_METHODOLOGY_SOURCE,
+      ...BENCHMARK_EXPLANATION_SOURCES,
       ...PUBLISHED_BENCHMARKS.map((benchmark) => benchmark.source),
       OPENAI_BENCHMARK_SOURCE,
       MODEL_ML_BENCHMARK_SOURCE,

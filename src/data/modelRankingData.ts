@@ -56,6 +56,9 @@ export interface PublishedBenchmark {
   category: '코딩' | '터미널' | '업무' | '에이전트' | '3D·게임';
   metric: string;
   description: string;
+  easyExplanation: string;
+  exampleTask: string;
+  scoreMeaning: string;
   evaluator: string;
   harness: string;
   sampleInfo: string;
@@ -64,17 +67,32 @@ export interface PublishedBenchmark {
   results: BenchmarkResult[];
 }
 
-export interface OpenAiPublishedBenchmarkRow {
+export interface PublishedComparisonColumn {
+  id: string;
+  label: string;
+}
+
+export interface PublishedComparisonRow {
   benchmark: string;
   metric: string;
-  sol: number;
-  terra: number;
-  luna: number;
-  fable: number;
+  easyExplanation: string;
+  scoreMeaning: string;
+  caveat?: string;
+  values: Record<string, number | null>;
+}
+
+export interface PublishedComparisonGroup {
+  id: string;
+  label: string;
+  title: string;
+  description: string;
+  columns: PublishedComparisonColumn[];
+  rows: PublishedComparisonRow[];
 }
 
 export interface ArtifactBenchmarkMetric {
   metric: string;
+  easyExplanation: string;
   unit: '%' | 'M tokens' | 'minutes';
   higherIsBetter: boolean;
   sol: number;
@@ -384,11 +402,30 @@ export const INDEPENDENT_MEASUREMENTS: IndependentMeasurement[] = [
   },
 ];
 
+export const INDEPENDENT_UNAVAILABLE_MODELS = [
+  {
+    modelId: 'grok-4-6',
+    modelName: 'Grok 4.6',
+    reason: 'v4.1.1 동일 조건의 완결된 모델 페이지를 확인하지 못함',
+  },
+  {
+    modelId: 'gemini-3-7-flash',
+    modelName: 'Gemini 3.7 Flash',
+    reason: 'v4.1.1 동일 조건의 완결된 모델 페이지를 확인하지 못함',
+  },
+] as const;
+
+export const INDEPENDENT_METHODOLOGY_SOURCE: SourceReference = {
+  title: 'Artificial Analysis Intelligence Benchmarking methodology',
+  publisher: 'Artificial Analysis',
+  url: 'https://artificialanalysis.ai/methodology/intelligence-benchmarking',
+};
+
 const noScore = (modelId: string, modelName: string): BenchmarkResult => ({
   modelId,
   modelName,
   score: null,
-  effort: '해당 원문에 미보고',
+  effort: '이 원문의 같은 버전 표에 미보고 · 0점 아님',
 });
 
 // 최신 세대 모델을 함께 싣고 있는 Grok 4.6 공식 모델 카드의 수치.
@@ -400,6 +437,9 @@ export const PUBLISHED_BENCHMARKS: PublishedBenchmark[] = [
     category: '코딩',
     metric: 'Extended score (%)',
     description: '오픈소스 유지관리자가 PR을 병합할 수 있는지 정확성·회귀·범위 준수·스타일·테스트로 평가합니다.',
+    easyExplanation: 'AI에게 실제 프로젝트의 버그 수정이나 기능 변경을 맡기고, 사람이 그 수정본을 실제로 병합해도 될 수준인지 봅니다.',
+    exampleTask: '여러 파일에 걸친 버그를 고치고 기존 테스트를 깨뜨리지 않도록 새 테스트까지 추가하기',
+    scoreMeaning: '정확성·회귀 방지·요구 범위·코드 품질을 합친 비율입니다. 높을수록 좋지만 하네스가 다르면 모델 자체 능력만의 차이는 아닙니다.',
     evaluator: 'Cognition',
     harness: 'Grok Build 및 각 모델 보고 설정',
     sampleInfo: 'Extended set 150 samples',
@@ -427,6 +467,9 @@ export const PUBLISHED_BENCHMARKS: PublishedBenchmark[] = [
     category: '코딩',
     metric: 'Pass@1 (%)',
     description: '오염 저항성을 중시한 장기 실행 소프트웨어 엔지니어링 작업의 종단 간 완료율입니다.',
+    easyExplanation: 'AI가 큰 코드 저장소를 직접 살펴보고, 오래 걸리는 개발 과제를 처음부터 끝까지 한 번에 해결할 수 있는지 시험합니다.',
+    exampleTask: '문제 원인을 찾고 여러 파일을 수정한 뒤 빌드와 테스트를 통과시키는 저장소 단위 작업',
+    scoreMeaning: 'Pass@1은 첫 번째 시도에서 검증을 통과한 비율입니다. 73%라면 평가 과제의 약 73%를 첫 시도에 통과했다는 뜻입니다.',
     evaluator: 'Datacurve',
     harness: 'Grok: mini-swe-agent · 타 모델: 모델 카드/평가기관 최고 보고치',
     sampleInfo: 'Pass@1',
@@ -454,6 +497,9 @@ export const PUBLISHED_BENCHMARKS: PublishedBenchmark[] = [
     category: '터미널',
     metric: 'Task success rate (%)',
     description: '컨테이너 안에서 소프트웨어·ML·과학·보안·운영 작업을 수행하는 터미널 에이전트 평가입니다.',
+    easyExplanation: 'AI에게 새 컴퓨터의 명령줄만 주고, 파일 편집·프로그램 실행·서버 설정 같은 일을 실제로 끝낼 수 있는지 봅니다.',
+    exampleTask: '오류가 난 프로그램을 조사하거나 데이터 파일을 변환하고, 최종 검증 명령까지 성공시키기',
+    scoreMeaning: '전체 터미널 과제 중 자동 검증을 통과한 비율입니다. 버전 2.1과 3.0은 과제 구성이 달라 숫자를 직접 비교하면 안 됩니다.',
     evaluator: 'Harbor',
     harness: 'Grok Build 및 평가기관 보고 하네스',
     sampleInfo: 'Terminal-Bench 3.0 refreshed task set',
@@ -481,6 +527,9 @@ export const PUBLISHED_BENCHMARKS: PublishedBenchmark[] = [
     category: '업무',
     metric: 'Elo',
     description: '문서·분석·전문 산출물 등 경제적 가치가 있는 지식 업무를 쌍대 비교로 평가합니다.',
+    easyExplanation: '두 AI에게 같은 회사 업무를 시킨 뒤, 어느 쪽 보고서나 분석 결과가 더 좋은지 서로 맞대결시켜 점수를 계산합니다.',
+    exampleTask: '시장 조사 자료를 읽고 의사결정에 쓸 수 있는 분석 문서나 표를 완성하기',
+    scoreMeaning: 'Elo는 승률을 반영한 상대 점수입니다. 1,800점이 1,700점보다 우세하다는 뜻이지, 업무를 80% 완료했다는 뜻은 아닙니다.',
     evaluator: 'Artificial Analysis',
     harness: 'Artificial Analysis GDPval-AA v2 harness',
     sampleInfo: 'Pairwise quality rating · Elo',
@@ -508,6 +557,9 @@ export const PUBLISHED_BENCHMARKS: PublishedBenchmark[] = [
     category: '에이전트',
     metric: 'Pass@1 (%)',
     description: '투자은행·컨설팅·기업 법무의 여러 앱을 오가는 장기 전문 업무를 모든 기준 통과 방식으로 평가합니다.',
+    easyExplanation: 'AI가 금융·컨설팅·법무 업무에서 여러 자료와 도구를 오가며 실제 직원처럼 긴 작업을 완성하는지 시험합니다.',
+    exampleTask: '자료를 조사하고 계산한 뒤 정해진 형식의 고객용 문서까지 만들어 모든 필수 조건 충족하기',
+    scoreMeaning: '모든 필수 기준을 한 번의 실행에서 충족한 과제 비율입니다. 기준 하나라도 빠지면 해당 과제는 실패로 처리됩니다.',
     evaluator: 'Mercor',
     harness: 'Mercor harness',
     sampleInfo: 'Expert binary rubrics · all criteria required',
@@ -535,6 +587,9 @@ export const PUBLISHED_BENCHMARKS: PublishedBenchmark[] = [
     category: '3D·게임',
     metric: 'Reward (%)',
     description: '코드로 엔진용 3D 자산을 만들고 실행 가능성과 형상 충실도를 평가하는 공개 연구 벤치마크입니다.',
+    easyExplanation: 'AI가 3D 물체를 만드는 코드를 작성했을 때, 그 코드가 실제로 실행되고 요구한 모양과 비슷한 결과가 나오는지 봅니다.',
+    exampleTask: '설명이나 참조 형상을 보고 엔진에서 열리는 3D 자산 생성 코드를 작성하기',
+    scoreMeaning: '실행 가능성과 형상 유사도를 합친 보상 점수입니다. 게임 프레임 속도나 일반 코딩 성공률을 뜻하지 않습니다.',
     evaluator: '3DCodeBench 연구진',
     harness: 'Grok Build 및 모델별 보고 설정',
     sampleInfo: 'Executability + shape fidelity',
@@ -560,12 +615,146 @@ export const PUBLISHED_BENCHMARKS: PublishedBenchmark[] = [
 
 // OpenAI의 2026-07-09 GPT-5.6 공개 자료에 실린 동일 표의 값.
 // 위 SpaceXAI 카드의 갱신된 벤치마크와 섞지 않고 별도 데이터셋으로 표시한다.
-export const OPENAI_PUBLISHED_BENCHMARKS: OpenAiPublishedBenchmarkRow[] = [
-  { benchmark: 'AA Coding Agent Index v1.1', metric: 'Index', sol: 80, terra: 77.4, luna: 74.6, fable: 77.2 },
-  { benchmark: 'SWE-Bench Pro', metric: '%', sol: 64.6, terra: 63.4, luna: 62.7, fable: 80 },
-  { benchmark: 'DeepSWE v1.1', metric: '%', sol: 72.7, terra: 69.6, luna: 67.2, fable: 69.7 },
-  { benchmark: 'Terminal-Bench 2.1', metric: '%', sol: 88.8, terra: 87.4, luna: 84.7, fable: 83.1 },
-  { benchmark: 'GDPval-AA v2', metric: 'Elo', sol: 1747.8, terra: 1593, luna: 1591.8, fable: 1759.6 },
+const openAiCoreColumns: PublishedComparisonColumn[] = [
+  { id: 'sol', label: 'GPT-5.6 Sol' },
+  { id: 'terra', label: 'GPT-5.6 Terra' },
+  { id: 'luna', label: 'GPT-5.6 Luna' },
+  { id: 'gpt55', label: 'GPT-5.5' },
+];
+
+export const OPENAI_PUBLISHED_BENCHMARK_GROUPS: PublishedComparisonGroup[] = [
+  {
+    id: 'professional',
+    label: '전문 업무',
+    title: '전문 업무·종합 지능',
+    description: '긴 실제 업무, 전문 산출물 비교, 여러 능력을 묶은 독립 종합지표를 서로 구분해 보여줍니다.',
+    columns: [
+      ...openAiCoreColumns,
+      { id: 'fable5', label: 'Claude Fable 5' },
+      { id: 'opus48', label: 'Claude Opus 4.8' },
+      { id: 'gemini31pro', label: 'Gemini 3.1 Pro Preview' },
+      { id: 'gemini35flash', label: 'Gemini 3.5 Flash' },
+    ],
+    rows: [
+      {
+        benchmark: "Agents' Last Exam",
+        metric: '%',
+        easyExplanation: '55개 전문 분야의 긴 실제 업무를 AI가 도구와 파일을 사용해 끝까지 완수하는지 봅니다.',
+        scoreMeaning: '검증 가능한 성공 조건을 충족한 과제 비율이며, 높을수록 좋습니다.',
+        values: { sol: 52.7, terra: 50.4, luna: 50.3, gpt55: 46.9, fable5: 40.5, opus48: 45.2, gemini31pro: 32.1, gemini35flash: null },
+      },
+      {
+        benchmark: 'GDPval-AA v2',
+        metric: 'Elo',
+        easyExplanation: '같은 전문 업무 산출물을 두 모델씩 맞대결해 어느 결과가 더 좋은지 평가합니다.',
+        scoreMeaning: '상대적인 Elo 점수입니다. 퍼센트가 아니며 같은 평가 풀 안에서만 비교해야 합니다.',
+        values: { sol: 1747.8, terra: 1593, luna: 1591.8, gpt55: 1493.7, fable5: 1759.6, opus48: 1600.1, gemini31pro: 962.3, gemini35flash: 1348.8 },
+      },
+      {
+        benchmark: 'AA Intelligence Index v4.1',
+        metric: 'Index',
+        easyExplanation: '도구 사용·터미널·과학 추론·지식·긴 문맥 등 9개 평가를 한 지표로 묶은 독립 측정입니다.',
+        scoreMeaning: 'Artificial Analysis가 같은 방법으로 산출한 종합 점수입니다. 실제 모든 업무의 성공률은 아닙니다.',
+        values: { sol: 58.9, terra: 55, luna: 51.2, gpt55: 54.8, fable5: 59.9, opus48: 55.7, gemini31pro: 46.5, gemini35flash: 50.2 },
+      },
+    ],
+  },
+  {
+    id: 'coding',
+    label: '코딩',
+    title: '코딩 에이전트 평가',
+    description: '코드 작성만 보는 것이 아니라 저장소 수정, 터미널 사용, 테스트 통과까지 포함한 결과입니다.',
+    columns: [
+      { id: 'sol', label: 'GPT-5.6 Sol' },
+      { id: 'solUltra', label: 'GPT-5.6 Sol Ultra' },
+      { id: 'terra', label: 'GPT-5.6 Terra' },
+      { id: 'luna', label: 'GPT-5.6 Luna' },
+      { id: 'gpt55', label: 'GPT-5.5' },
+      { id: 'mythos5', label: 'Claude Mythos 5' },
+      { id: 'mythosPreview', label: 'Claude Mythos Preview' },
+      { id: 'fable5', label: 'Claude Fable 5' },
+      { id: 'opus48', label: 'Claude Opus 4.8' },
+      { id: 'gemini31pro', label: 'Gemini 3.1 Pro Preview' },
+    ],
+    rows: [
+      {
+        benchmark: 'AA Coding Agent Index v1.1',
+        metric: 'Index',
+        easyExplanation: '장기 코드 수정, 터미널 작업, 저장소 질문처럼 서로 다른 코딩 에이전트 과제를 묶어 평가합니다.',
+        scoreMeaning: '여러 하위 평가를 합친 지수입니다. 개별 버그 해결률과 같은 단일 성공률은 아닙니다.',
+        values: { sol: 80, solUltra: null, terra: 77.4, luna: 74.6, gpt55: 76.4, mythos5: null, mythosPreview: null, fable5: 77.2, opus48: 72.5, gemini31pro: 42.7 },
+      },
+      {
+        benchmark: 'SWE-Bench Pro',
+        metric: '%',
+        easyExplanation: '실제 전문 코드 저장소의 이슈를 읽고 올바른 패치를 만들어 기존 기능을 깨뜨리지 않는지 봅니다.',
+        scoreMeaning: '검증 테스트를 통과한 과제 비율입니다. 실행 하네스와 데이터 부분집합이 같을 때만 직접 비교할 수 있습니다.',
+        caveat: 'OpenAI는 2026년 별도 감사에서 SWE-Bench Pro 과제 약 30%에 결함이 있다고 추정했으므로 절대적인 코딩 능력치로 해석하면 안 됩니다.',
+        values: { sol: 64.6, solUltra: null, terra: 63.4, luna: 62.7, gpt55: 59.4, mythos5: 80.3, mythosPreview: 77.8, fable5: 80, opus48: 69.2, gemini31pro: 54.2 },
+      },
+      {
+        benchmark: 'DeepSWE v1.1',
+        metric: '%',
+        easyExplanation: 'AI가 큰 저장소에서 오래 걸리는 개발 작업을 계획하고 수정·검증까지 끝내는지 시험합니다.',
+        scoreMeaning: '첫 시도에 자동 검증을 통과한 비율입니다.',
+        values: { sol: 72.7, solUltra: null, terra: 69.6, luna: 67.2, gpt55: 67, mythos5: null, mythosPreview: null, fable5: 69.7, opus48: 59, gemini31pro: 11.8 },
+      },
+      {
+        benchmark: 'Terminal-Bench 2.1',
+        metric: '%',
+        easyExplanation: '격리된 명령줄 환경에서 개발·운영·데이터·보안 과제를 실제 명령으로 해결하는지 봅니다.',
+        scoreMeaning: '자동 테스트를 통과한 터미널 과제 비율입니다. 에이전트 하네스와 반복 횟수의 영향을 받습니다.',
+        values: { sol: 88.8, solUltra: 91.9, terra: 87.4, luna: 84.7, gpt55: 85.6, mythos5: 88, mythosPreview: null, fable5: 83.1, opus48: 78.9, gemini31pro: 70.7 },
+      },
+    ],
+  },
+  {
+    id: 'computer',
+    label: '컴퓨터·웹',
+    title: '컴퓨터 사용·웹 탐색·CAD',
+    description: '데스크톱 조작, 어려운 웹 조사, 실행 가능한 3D CAD 코드 작성 능력을 나눠 측정합니다.',
+    columns: [
+      { id: 'sol', label: 'GPT-5.6 Sol' },
+      { id: 'solUltra', label: 'GPT-5.6 Sol Ultra' },
+      { id: 'terra', label: 'GPT-5.6 Terra' },
+      { id: 'luna', label: 'GPT-5.6 Luna' },
+      { id: 'gpt55', label: 'GPT-5.5' },
+      { id: 'mythos5', label: 'Claude Mythos 5' },
+      { id: 'mythosPreview', label: 'Claude Mythos Preview' },
+      { id: 'opus48', label: 'Claude Opus 4.8' },
+      { id: 'gemini31pro', label: 'Gemini 3.1 Pro Preview' },
+    ],
+    rows: [
+      {
+        benchmark: 'OSWorld 2.0',
+        metric: '%',
+        easyExplanation: '실제 데스크톱 앱을 조작해 여러 단계의 일상·전문 업무를 완성하는지 봅니다.',
+        scoreMeaning: '정해진 최종 상태에 도달한 컴퓨터 사용 과제 비율입니다.',
+        values: { sol: 62.6, solUltra: null, terra: 50.2, luna: 45.6, gpt55: 47.5, mythos5: null, mythosPreview: null, opus48: 54.8, gemini31pro: null },
+      },
+      {
+        benchmark: 'BrowseComp',
+        metric: '%',
+        easyExplanation: '웹 여러 곳에 흩어진 단서를 오래 탐색해 찾기 어렵지만 검증 가능한 짧은 답을 찾아내는지 봅니다.',
+        scoreMeaning: '정답을 찾은 문제 비율입니다. 일반적인 검색 질문이나 장문 보고서 품질 전체를 뜻하지는 않습니다.',
+        values: { sol: 90.4, solUltra: 92.2, terra: 87.5, luna: 83.3, gpt55: 84.4, mythos5: 88, mythosPreview: 87.9, opus48: 84.3, gemini31pro: 85.9 },
+      },
+      {
+        benchmark: 'BenchCAD',
+        metric: '%',
+        easyExplanation: '도면이나 설명을 이해해 실제로 실행되는 CadQuery 3D 부품 코드를 만들 수 있는지 시험합니다.',
+        scoreMeaning: 'OpenAI 원문이 보고한 벤치마크 백분율입니다. 세부 과제별 산식은 BenchCAD 원문을 함께 확인해야 합니다.',
+        values: { sol: 70.6, solUltra: null, terra: 62.3, luna: 63.1, gpt55: 44.4, mythos5: 38.4, mythosPreview: 35.5, opus48: 27.3, gemini31pro: null },
+      },
+      {
+        benchmark: 'BenchCAD + Python tool',
+        metric: '%',
+        easyExplanation: '같은 CAD 과제에서 Python 실행 도구를 허용해 계산과 코드 검증을 보조하게 합니다.',
+        scoreMeaning: '도구를 허용한 조건의 백분율입니다. 도구 없는 BenchCAD 결과와 조건이 다릅니다.',
+        values: { sol: 83.4, solUltra: null, terra: 78.2, luna: 73.9, gpt55: 55.8, mythos5: 65, mythosPreview: 61, opus48: 51.8, gemini31pro: null },
+      },
+    ],
+  },
 ];
 
 export const OPENAI_BENCHMARK_SOURCE: SourceReference = {
@@ -575,21 +764,69 @@ export const OPENAI_BENCHMARK_SOURCE: SourceReference = {
   publishedAt: '2026-07-09',
 };
 
+export const BENCHMARK_EXPLANATION_SOURCES: SourceReference[] = [
+  {
+    title: "Agents' Last Exam framework documentation",
+    publisher: "Agents' Last Exam",
+    url: 'https://agents-last-exam.org/docs/ale/index.html',
+  },
+  {
+    title: 'Intelligence Benchmarking methodology',
+    publisher: 'Artificial Analysis',
+    url: 'https://artificialanalysis.ai/methodology/intelligence-benchmarking',
+  },
+  {
+    title: 'Coding Agent Index methodology',
+    publisher: 'Artificial Analysis',
+    url: 'https://artificialanalysis.ai/methodology/coding-agents-benchmarking',
+  },
+  {
+    title: 'SWE-Bench Pro methodology and public dataset',
+    publisher: 'Scale AI',
+    url: 'https://labs.scale.com/leaderboard/swe_bench_pro_public',
+  },
+  {
+    title: 'SWE-Bench Pro data-quality audit',
+    publisher: 'OpenAI',
+    url: 'https://openai.com/index/separating-signal-from-noise-coding-evaluations/',
+  },
+  {
+    title: 'Terminal-Bench 2.1 release and corrections',
+    publisher: 'Terminal-Bench',
+    url: 'https://www.tbench.ai/news/terminal-bench-2-1',
+  },
+  {
+    title: 'OSWorld 2.0 paper',
+    publisher: 'OSWorld researchers',
+    url: 'https://arxiv.org/abs/2606.29537',
+  },
+  {
+    title: 'BrowseComp benchmark',
+    publisher: 'OpenAI',
+    url: 'https://openai.com/index/browsecomp/',
+  },
+  {
+    title: 'BenchCAD benchmark and dataset',
+    publisher: 'BenchCAD',
+    url: 'https://benchcad.com/',
+  },
+];
+
 export const POWERPOINT_ARTIFACT_BENCHMARK: ArtifactBenchmarkMetric[] = [
-  { metric: 'Deck quality', unit: '%', higherIsBetter: true, sol: 59.9, opus: 56.7, fable: 59.3, terra: 52.5 },
-  { metric: 'Professional readiness', unit: '%', higherIsBetter: true, sol: 43.3, opus: 26.7, fable: 32, terra: 17.3 },
-  { metric: 'PPTX produced', unit: '%', higherIsBetter: true, sol: 100, opus: 76, fable: 82, terra: 80 },
-  { metric: 'Visual quality', unit: '%', higherIsBetter: true, sol: 77.9, opus: 79.3, fable: 78.9, terra: 74.4 },
-  { metric: 'Tokens per deck', unit: 'M tokens', higherIsBetter: false, sol: 1.1, opus: 0.953, fable: 1.4, terra: 0.72 },
+  { metric: 'Deck quality', easyExplanation: '내용 구성과 전체 완성도', unit: '%', higherIsBetter: true, sol: 59.9, opus: 56.7, fable: 59.3, terra: 52.5 },
+  { metric: 'Professional readiness', easyExplanation: '수정 없이 업무에 바로 쓸 수 있는 수준', unit: '%', higherIsBetter: true, sol: 43.3, opus: 26.7, fable: 32, terra: 17.3 },
+  { metric: 'PPTX produced', easyExplanation: '열 수 있는 PPTX 파일 생성 성공률', unit: '%', higherIsBetter: true, sol: 100, opus: 76, fable: 82, terra: 80 },
+  { metric: 'Visual quality', easyExplanation: '레이아웃·가독성·시각 표현 품질', unit: '%', higherIsBetter: true, sol: 77.9, opus: 79.3, fable: 78.9, terra: 74.4 },
+  { metric: 'Tokens per deck', easyExplanation: '프레젠테이션 하나를 만드는 데 쓴 토큰', unit: 'M tokens', higherIsBetter: false, sol: 1.1, opus: 0.953, fable: 1.4, terra: 0.72 },
 ];
 
 export const EXCEL_ARTIFACT_BENCHMARK: ArtifactBenchmarkMetric[] = [
-  { metric: 'Key outputs correct', unit: '%', higherIsBetter: true, sol: 83.3, opus: 82.8, fable: 80.6, terra: 82.2 },
-  { metric: 'Fully correct workbooks', unit: '%', higherIsBetter: true, sol: 50, opus: 60, fable: 60, terra: 53.3 },
-  { metric: 'Expected outputs located', unit: '%', higherIsBetter: true, sol: 100, opus: 100, fable: 100, terra: 98.9 },
-  { metric: 'Workbook contract passed', unit: '%', higherIsBetter: true, sol: 100, opus: 100, fable: 100, terra: 100 },
-  { metric: 'Tokens per workbook', unit: 'M tokens', higherIsBetter: false, sol: 2.44, opus: 3.83, fable: 2.59, terra: 1.64 },
-  { metric: 'Wall clock', unit: 'minutes', higherIsBetter: false, sol: 7, opus: 7.5, fable: 8.4, terra: 4.2 },
+  { metric: 'Key outputs correct', easyExplanation: '중요 계산 결과가 정답과 맞는 비율', unit: '%', higherIsBetter: true, sol: 83.3, opus: 82.8, fable: 80.6, terra: 82.2 },
+  { metric: 'Fully correct workbooks', easyExplanation: '워크북 전체가 완전히 맞은 비율', unit: '%', higherIsBetter: true, sol: 50, opus: 60, fable: 60, terra: 53.3 },
+  { metric: 'Expected outputs located', easyExplanation: '요구한 셀·시트 위치에 결과를 넣은 비율', unit: '%', higherIsBetter: true, sol: 100, opus: 100, fable: 100, terra: 98.9 },
+  { metric: 'Workbook contract passed', easyExplanation: '필수 시트·형식·파일 조건 통과율', unit: '%', higherIsBetter: true, sol: 100, opus: 100, fable: 100, terra: 100 },
+  { metric: 'Tokens per workbook', easyExplanation: '워크북 하나를 만드는 데 쓴 토큰', unit: 'M tokens', higherIsBetter: false, sol: 2.44, opus: 3.83, fable: 2.59, terra: 1.64 },
+  { metric: 'Wall clock', easyExplanation: '작업 시작부터 파일 완성까지 걸린 실제 시간', unit: 'minutes', higherIsBetter: false, sol: 7, opus: 7.5, fable: 8.4, terra: 4.2 },
 ];
 
 export const MODEL_ML_BENCHMARK_SOURCE: SourceReference = {
@@ -603,6 +840,7 @@ export const EVIDENCE_RULES = [
   '공식 사양과 가격은 각 제공사의 현재 API 문서를 우선합니다.',
   '독립 측정값은 평가기관·버전·effort가 같은 경우에만 한 표에서 비교합니다.',
   '제조사 모델 카드의 교차 비교는 발행 주체와 하네스 차이를 함께 표시합니다.',
+  '원문 표의 비교 모델을 임의로 생략하지 않고, 미보고 값은 모델명·사유와 함께 남깁니다.',
   '보고되지 않은 값은 0점으로 처리하지 않고 “미보고”로 남깁니다.',
   '자체 실행 로그·원본 산출물·반복 횟수가 없으면 “사이트 실측”이라고 부르지 않습니다.',
 ];

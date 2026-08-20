@@ -1,3 +1,8 @@
+/**
+ * @deprecated Unpublished legacy feature catalog containing unverified limits, prices,
+ * and product claims. This file is not rendered by the current app. Do not reconnect it
+ * without a dated official source for each mutable claim.
+ */
 import { DetailedToolFeature } from '../types/ai';
 
 export const DETAILED_TOOLS_DATA: DetailedToolFeature[] = [

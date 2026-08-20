@@ -67,7 +67,7 @@ export const DesignPreExtractionView: React.FC<DesignPreExtractionViewProps> = (
               </h3>
             </div>
             <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-              앱과 웹을 개발할 때는 <strong>코딩을 시작하기 전에 디자인과 디자인 토큰(DESIGN.md)을 먼저 확립</strong>해야 합니다. 그래야 추후 화면을 수정할 때 레이아웃 깨짐과 비효율적인 중복 수정을 원천 차단할 수 있습니다.
+              디자인 토큰과 주요 화면 규칙을 구현 전에 정리하면 색상·간격·타이포그래피의 일관성을 높이고 변경 범위를 줄이는 데 도움이 됩니다. 다만 <strong>DESIGN.md는 업계 표준 파일 형식이 아니라 프로젝트가 선택해 쓰는 명세</strong>이며, 실제 코드 연결과 시각 회귀 검증이 함께 필요합니다.
             </p>
           </div>
 
@@ -81,7 +81,7 @@ export const DesignPreExtractionView: React.FC<DesignPreExtractionViewProps> = (
       {/* Why Design-First is Critical */}
       <div className="p-6 sm:p-8 rounded-3xl bg-slate-950 border border-slate-800 space-y-5 shadow-2xl">
         <div className="space-y-1 pb-3 border-b border-slate-800">
-          <span className="text-xs font-mono text-amber-400 uppercase">골든 룰 (Golden Rule)</span>
+          <span className="text-xs font-mono text-amber-400 uppercase">권장 작업 순서</span>
           <h4 className="text-lg font-bold text-white">
             왜 코딩보다 디자인 토큰을 먼저 만들어야 하는가?
           </h4>
@@ -94,8 +94,8 @@ export const DesignPreExtractionView: React.FC<DesignPreExtractionViewProps> = (
             </span>
             <ul className="space-y-1.5 text-slate-300 leading-relaxed">
               <li>• 버튼 색상, 여백 크기, 폰트 규격이 컴포넌트마다 제각각으로 작성됨</li>
-              <li>• 나중에 버튼 색이나 패딩 하나 바꿀 때 30개 파일의 CSS를 일일이 수동 수정해야 함</li>
-              <li>• 모바일 반응형 화면으로 전환 시 레이아웃이 깨지고 정렬이 틀어짐</li>
+              <li>• 공통 토큰이 없으면 같은 값을 여러 파일에서 반복 수정할 가능성이 커짐</li>
+              <li>• 반응형 규칙을 뒤늦게 정하면 화면별 수정 비용이 늘어날 수 있음</li>
             </ul>
           </div>
 
@@ -104,9 +104,9 @@ export const DesignPreExtractionView: React.FC<DesignPreExtractionViewProps> = (
               <CheckCircle2 className="w-4 h-4" /> DESIGN.md를 먼저 만들고 코딩할 때 (권장)
             </span>
             <ul className="space-y-1.5 text-slate-300 leading-relaxed">
-              <li>• AI 에이전트가 DESIGN.md에 적힌 색상 코드(#3182F6)와 4px 여백만 엄격히 준수</li>
-              <li>• 프론트엔드 전체 화면의 룩앤필(Look & Feel)이 통일되어 완성도 극대화</li>
-              <li>• 디자인을 바꿀 때 DESIGN.md 파일 1개만 수정하면 AI가 전체 컴포넌트를 일괄 리팩토링</li>
+              <li>• 사람과 AI가 같은 색상·간격·타이포그래피 기준을 참조할 수 있음</li>
+              <li>• CSS 변수나 디자인 토큰 코드와 연결하면 일관된 변경이 쉬워짐</li>
+              <li>• 명세 변경 후에는 구현 반영 여부를 코드 검사와 실제 화면 비교로 확인해야 함</li>
             </ul>
           </div>
         </div>
@@ -176,11 +176,20 @@ export const DesignPreExtractionView: React.FC<DesignPreExtractionViewProps> = (
                 </a>
               </div>
               <p className="text-slate-300 leading-relaxed">
-                피그마를 다룰 줄 몰라도 "토스 느낌의 다크모드 주식 호가창 UI 만들어줘"라고 말하거나 종이 스케치 사진을 올리면 10초 만에 화면 레이아웃과 <strong>`DESIGN.md` (디자인 토큰 규격)</strong>를 자동 생성합니다.
+                Google은 Stitch가 텍스트·이미지 입력으로 UI를 만들고, 디자인 시스템을 <strong>`DESIGN.md`로 가져오거나 내보내는 기능</strong>을 제공한다고 안내합니다. 생성 시간과 결과 품질은 입력·서비스 상태에 따라 달라지며, 생성물은 접근성·반응형·브랜드 규칙을 별도로 검토해야 합니다.
               </p>
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-mono">
-                👉 우측 상단 [Export] ➔ `DESIGN.md` 다운로드 후 내 프로젝트 루트(`./DESIGN.md`)에 저장하면 끝!
+                👉 현재 Stitch의 Export/Import 메뉴에서 `DESIGN.md` 지원 여부를 확인한 뒤 프로젝트 명세로 저장하세요. UI와 제공 범위는 업데이트될 수 있습니다.
               </div>
+              <a
+                href="https://blog.google/innovation-and-ai/models-and-research/google-labs/stitch-ai-ui-design/"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-indigo-400 hover:underline"
+              >
+                <span>Google 공식 Stitch 업데이트</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
             </div>
           )}
 
@@ -202,7 +211,7 @@ export const DesignPreExtractionView: React.FC<DesignPreExtractionViewProps> = (
                 디자이너가 완성해준 피그마 화면에서 Auto Layout(Flexbox) 속성과 CSS Variables(패딩 24px, 둥글기 12px, 메인 색상)를 확인하여 텍스트로 복사하거나 화면을 캡처해 `docs/preview.png`로 저장합니다.
               </p>
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-mono">
-                👉 피그마 Dev Mode에서 추출한 CSS 수치를 프롬프트의 [참고자료]에 넣어주면 완벽히 일치하게 코딩됩니다.
+                👉 Dev Mode 수치는 구현 참고자료입니다. 폰트 렌더링·브라우저·콘텐츠 길이에 따른 차이가 있으므로 오버레이 또는 스크린샷 비교로 최종 확인하세요.
               </div>
             </div>
           )}
@@ -212,7 +221,7 @@ export const DesignPreExtractionView: React.FC<DesignPreExtractionViewProps> = (
               <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                 <span className="font-bold text-white text-sm">💻 Claude Artifacts (클로드 미리보기 창)</span>
                 <a
-                  href="https://docs.anthropic.com/en/docs/build-with-claude/artifacts"
+                  href="https://support.claude.com/en/articles/9487310-what-are-artifacts-and-how-do-i-use-them"
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-1 text-indigo-400 hover:underline"
@@ -237,7 +246,7 @@ export const DesignPreExtractionView: React.FC<DesignPreExtractionViewProps> = (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
           <div>
             <span className="text-xs font-mono text-indigo-300 font-bold flex items-center gap-1.5">
-              <Code2 className="w-4 h-4" /> 표준 DESIGN.md 파일 예시
+              <Code2 className="w-4 h-4" /> 프로젝트용 DESIGN.md 예시
             </span>
             <p className="text-xs text-slate-400">내 프로젝트 루트에 `./DESIGN.md` 파일로 저장하여 사용하세요.</p>
           </div>

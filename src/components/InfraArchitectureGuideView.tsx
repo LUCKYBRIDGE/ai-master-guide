@@ -62,7 +62,7 @@ export const InfraArchitectureGuideView: React.FC<InfraArchitectureGuideViewProp
               </h3>
             </div>
             <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-              내 프로젝트에 <strong>보안/인증이 필요한지, DB가 필요한지, 백엔드 서버가 필요한지</strong> 명확한 기준을 확인하고, 각 상황별로 코딩 에이전트에 내릴 수 있는 실전 프롬프트를 복사해 사용하세요.
+              인증·DB·백엔드의 필요성을 요구사항과 위험에 따라 판단하는 출발점입니다. 보안·금융·개인정보는 이 페이지의 예시만으로 결정하지 말고 최신 공식 지침과 담당 전문가의 검토를 거치세요.
             </p>
           </div>
 
@@ -121,7 +121,7 @@ export const InfraArchitectureGuideView: React.FC<InfraArchitectureGuideViewProp
           {/* When Needed */}
           <div className="p-5 rounded-2xl bg-slate-900 border border-emerald-500/20 space-y-2">
             <span className="font-bold text-emerald-400 flex items-center gap-1.5 text-xs">
-              <CheckCircle2 className="w-4 h-4" /> 내 프로젝트에 꼭 필요한 경우
+              <CheckCircle2 className="w-4 h-4" /> 도입을 검토할 조건
             </span>
             <ul className="space-y-1.5 text-slate-300 leading-relaxed">
               {selectedSection.whenDoYouNeedIt.map((item: string, idx: number) => (
@@ -136,7 +136,7 @@ export const InfraArchitectureGuideView: React.FC<InfraArchitectureGuideViewProp
           {/* When Not Needed */}
           <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
             <span className="font-bold text-slate-400 flex items-center gap-1.5 text-xs">
-              <AlertCircle className="w-4 h-4 text-amber-400" /> 굳이 만들 필요가 없는 경우
+              <AlertCircle className="w-4 h-4 text-amber-400" /> 전용 구성이 불필요할 수 있는 조건
             </span>
             <ul className="space-y-1.5 text-slate-300 leading-relaxed">
               {selectedSection.whenYouDoNotNeedIt.map((item: string, idx: number) => (
@@ -152,7 +152,7 @@ export const InfraArchitectureGuideView: React.FC<InfraArchitectureGuideViewProp
         {/* Recommended Tech Stack */}
         <div className="space-y-3">
           <span className="text-xs font-bold text-white block">
-            🛠️ 실무 추천 기술 스택:
+            🛠️ 비교할 기술 선택지:
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             {selectedSection.recommendedTechStack.map((tech, idx) => (
@@ -160,7 +160,7 @@ export const InfraArchitectureGuideView: React.FC<InfraArchitectureGuideViewProp
                 <span className="font-bold text-indigo-300 block text-xs">{tech.name}</span>
                 <p className="text-slate-300 text-[11px] leading-relaxed">{tech.description}</p>
                 <div className="pt-1.5 text-[10px] text-emerald-400">
-                  👉 추천 대상: {tech.bestFor}
+                  👉 검토 대상: {tech.bestFor}
                 </div>
               </div>
             ))}
@@ -170,7 +170,7 @@ export const InfraArchitectureGuideView: React.FC<InfraArchitectureGuideViewProp
         {/* Architecture Checklist */}
         <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-xs space-y-2">
           <span className="font-bold text-slate-200 block">
-            📋 필수 아키텍처 점검 체크리스트:
+            📋 아키텍처 점검 항목:
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-300 text-[11px]">
             {selectedSection.architectureChecklist.map((chk: string, idx: number) => (
@@ -186,7 +186,7 @@ export const InfraArchitectureGuideView: React.FC<InfraArchitectureGuideViewProp
         <div className="p-6 rounded-2xl bg-slate-900 border border-indigo-500/30 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-800">
             <span className="text-xs font-bold text-white flex items-center gap-1.5">
-              <Terminal className="w-4 h-4 text-indigo-400" /> AI 에이전트에 바로 복사해서 쓰는 인프라 구축 프롬프트
+              <Terminal className="w-4 h-4 text-indigo-400" /> 구현 전 조사·설계를 요청하는 프롬프트
             </span>
 
             <button

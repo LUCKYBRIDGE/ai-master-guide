@@ -1,3 +1,8 @@
+/**
+ * @deprecated Unpublished qualitative comparison matrix. This file is not rendered by
+ * the current app. Do not reconnect it until criteria, evidence, scope, and update date
+ * are documented for every comparative rating.
+ */
 import { ComparisonRow } from '../types/ai';
 
 export const COMPARISON_MATRIX_DATA: ComparisonRow[] = [

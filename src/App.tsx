@@ -64,7 +64,7 @@ export function App() {
           <SystemHarnessEngineeringView onCopy={handleCopyText} />
         )}
 
-        {/* Tab 4: MCP 연결 허브 & 가이드 (Puppeteer, Postgres, GitHub 등) */}
+        {/* Tab 4: MCP 연결 허브 & 가이드 (Playwright, Filesystem, GitHub 등) */}
         {activeTab === 'mcp-hub' && (
           <McpHubGuideView onCopy={handleCopyText} />
         )}

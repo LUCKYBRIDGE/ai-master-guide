@@ -1,3 +1,8 @@
+/**
+ * @deprecated Unpublished legacy glossary and examples. This file is not rendered by the
+ * current app. Revalidate product-specific instructions and remove absolute outcome
+ * claims before reconnecting it.
+ */
 export interface EasyGlossaryTerm {
   id: string;
   term: string;
@@ -103,7 +108,7 @@ export const EASY_AI_GLOSSARY_DATA: EasyGlossaryTerm[] = [
     term: '구글 스티치 (Google Stitch)',
     englishTerm: 'Google Stitch (stitch.withgoogle.com)',
     category: '디자인/UI',
-    easyMeaning: '말로 요청하거나 대충 그린 낙서를 올리면 10초 만에 화면 시안을 만들어주는 구글의 AI 디자인 웹도구',
+    easyMeaning: '텍스트나 스케치 이미지를 바탕으로 UI 시안을 생성하는 Google의 AI 디자인 도구. 생성 시간과 품질은 입력·서비스 상태에 따라 달라짐',
     realLifeMetaphor: '말만 하면 스케치를 대신 그려주는 스케치북',
     realDevExample: '피그마를 다룰 줄 몰라도 "다크모드 주식 호가창 만들어줘"라고 치면 웹 화면 레이아웃과 DESIGN.md를 만들어 줍니다.',
     promptTip: '모든 AI 공통: "Google Stitch에서 추출한 DESIGN.md를 참고해서 컴포넌트를 작성해줘."'
@@ -304,7 +309,7 @@ export const CORE_AI_CONCEPTS_DATA: ConceptDetail[] = [
     name: '구글 스티치 (Google Stitch)',
     englishName: 'Google Stitch (stitch.withgoogle.com)',
     category: '프롬프트/디자인',
-    oneLineSummary: '자연어나 스케치를 10초 만에 화면 레이아웃과 DESIGN.md로 만들어주는 구글의 AI 디자인 도구',
+    oneLineSummary: '자연어나 이미지를 바탕으로 UI를 만들고 DESIGN.md 디자인 시스템을 가져오거나 내보낼 수 있는 Google 도구',
     whyItMatters: '피그마를 다루지 못하는 개발자나 기획자도 말 몇 마디로 깔끔한 UI 시안과 디자인 토큰을 바로 얻을 수 있습니다.',
     howItWorks: [
       '1. stitch.withgoogle.com에서 원하는 분위기(Vibe)를 텍스트나 음성으로 설명',
@@ -316,7 +321,7 @@ export const CORE_AI_CONCEPTS_DATA: ConceptDetail[] = [
     realWorldExample: {
       scenario: '손그림 결제 화면을 코드로 만들 때',
       beforeWithoutIt: '디자이너에게 부탁하고 기다리느라 수일 소요',
-      afterWithIt: '사진 올리고 10초 만에 시안과 DESIGN.md 추출 완료',
+      afterWithIt: '이미지로 시안 초안을 만든 뒤 DESIGN.md 지원 범위와 결과를 직접 검토',
       codeOrConfigSnippet: `# DESIGN.md 예시
 - Primary Color: #3182F6
 - Background: #0F172A

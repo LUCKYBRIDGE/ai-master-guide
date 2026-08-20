@@ -1,3 +1,8 @@
+/**
+ * @deprecated Unpublished legacy benchmark compilation. This file is not rendered by
+ * the current app. Do not reconnect it until every value is matched to the benchmark
+ * owner's dated primary result and differences in harnesses are explained.
+ */
 import { BenchmarkMetric, ModelRadarProfile } from '../types/ai';
 
 export const BENCHMARK_METRICS_DATA: BenchmarkMetric[] = [

@@ -1,3 +1,8 @@
+/**
+ * @deprecated Unpublished legacy review summaries with claims that have not been
+ * source-checked. This file is not rendered by the current app. Do not reconnect it
+ * until each quotation, result, date, and attribution is verified against the original.
+ */
 import { YouTuberReview } from '../types/ai';
 
 export const YOUTUBER_REVIEWS_DATA: YouTuberReview[] = [
@@ -63,7 +68,7 @@ export const YOUTUBER_REVIEWS_DATA: YouTuberReview[] = [
         },
         anthropicResult: {
           status: '🟢 100% 자가 치유 성공',
-          outputDetail: 'Claude Code가 터미널에서 `npm test`를 직접 실행하고 오류 스택을 읽어 3초 만에 원인 파일 2개 수정 후 올패스.'
+          outputDetail: '검증 가능한 원본 실행 로그가 없어 수정 시간·파일 수·테스트 통과 여부를 사실로 확인할 수 없음.'
         },
         xaiResult: {
           status: '🟡 부분 성공',

@@ -10,12 +10,12 @@ export interface AiToolItem {
   ruleHint: string;
 }
 
-// 2. 실무 작업 모듈 정의 (기본 장착 필수 팩 vs 선택형 확장 모듈)
+// 2. 실무 작업 모듈 정의 (프로젝트 기본 템플릿 vs 선택형 확장 모듈)
 export interface TaskFeatureModule {
   id: string;
   name: string;
   category: 
-    | '🌟 전문가 기본 필수 팩'
+    | '🌟 프로젝트 기본 템플릿'
     | '교사/교육자 특화'
     | '초중고 수업/활동지' 
     | '독서/문화/글쓰기' 
@@ -26,7 +26,7 @@ export interface TaskFeatureModule {
   badge: string;
   badgeColor: string;
   shortDesc: string;
-  isCoreDefault: boolean; // 기본 장착 필수 항목 여부
+  isCoreDefault: boolean; // ZIP에 기본 포함되는 프로젝트 템플릿 여부
   detailedImpact: {
     agentRuleSummary: string;
     mcpServerName?: string;
@@ -108,36 +108,34 @@ export const TEMPLATE_CONFIG_FILES: TemplateConfigFile[] = [
   {
     id: 'template-agents-md',
     filename: 'AGENTS.md',
-    badge: '통합 헌법 (단일 진실 공급원)',
+    badge: '공통 프로젝트 지침 원본',
     badgeColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
     targetLocation: '프로젝트 최상위 루트 (./AGENTS.md)',
-    supportedTools: 'OpenAI Codex · Claude Code · Google Antigravity 3대 AI 공용',
-    description: '모든 AI 도구가 공통으로 준수하는 프로젝트 단일 진실 공급원(Single Source of Truth)이자 헌법 문서',
-    whyNeeded: '도구마다 규칙이 분산되면 AI들이 서로 다른 스타일로 코드를 짜거나 충돌합니다. AGENTS.md에 핵심 빌드 명령, 코딩 규칙, 안전 수칙을 일원화합니다.',
+    supportedTools: 'OpenAI Codex 기본 지원 · 다른 도구는 import/지원 여부 확인',
+    description: '사람이 관리하는 프로젝트 공통 지침 원본. 모든 AI 도구가 자동으로 읽는 범용 표준이라고 가정하면 안 됩니다.',
+    whyNeeded: '공통 빌드 명령, 범위, 안전 수칙을 한곳에서 관리하고 도구별 설정 파일이 이를 참조하도록 구성하면 규칙 불일치를 줄일 수 있습니다.',
     customizationTips: [
       'Commands: 프로젝트의 실제 개발/빌드/테스트 명령어(npm run dev, npm run build)를 기입합니다.',
-      'Definition of Done: 작업 완료 판정 기준(0에러 빌드 증명, 회귀 테스트 확인)을 명시합니다.'
+      'Definition of Done: 실제 검증 명령, 결과, 미검증 범위를 포함한 완료 기준을 명시합니다.'
     ],
-    rawContent: `# AGENTS.md - Unified Project Constitution & Single Source of Truth
-> Standard AI Engines: OpenAI Codex · Claude Code · Google Antigravity (Universal Tri-IDE Support)
+    rawContent: `# AGENTS.md - Project Working Agreements
+> Human-maintained source for shared project guidance. Confirm how each AI client discovers or imports it.
 
 ## 1. Project Overview & Technology Stack
-- Framework: React 18+ (Vite) / TypeScript Strict Mode
-- Styling: Tailwind CSS v3 / Icons: lucide-react (See \`docs/design/tokens.md\` & \`.agents/rules/ui-design.md\`)
-- State Management: Zustand (Global) & useState (Local UI)
+- Inspect the repository and record the actual framework, runtime, package manager, and source-of-truth files.
+- Do not assume a framework or test runner that is not present.
 
 ## 2. Essential Commands
-- Dev Server: \`npm run dev\`
-- Verification Build: \`npm run build\`
-- Unit Tests: \`npm test\`
-- Lint & Format: \`npm run lint\`
+- Read package manifests or build files before listing commands.
+- Run only commands actually defined for this repository.
+- Report unavailable checks instead of inventing a result.
 
 ## 3. Development Principles & Safety Rules
 - **Smallest Coherent Change**: Prefer small, focused changes over broad speculative rewrites.
 - **Component & Pattern Reuse**: Inspect existing components and utilities before creating new ones.
 - **Single Source of Truth**: Durable project instructions live centrally in \`AGENTS.md\`. Do not duplicate in \`docs/rules/\`.
-- **Zero Regression**: Verify behavior, not just compilation. Never delete working functionality.
-- **Autonomous Execution**: Allowed to edit code, install packages (\`npm i\`), and run builds/tests.
+- **Regression Risk**: Verify affected behavior, not just compilation, and preserve unrelated functionality.
+- **Scoped Execution**: Add dependencies only when necessary and authorized.
 - **User Approval Required**: Database destruction commands (\`DROP TABLE\`, unbounded \`DELETE\`), force push (\`git push -f\`), external paid API calls.
 
 ## 4. Documentation Architecture
@@ -150,10 +148,10 @@ Project persistent knowledge lives under \`/docs\`:
 - \`docs/reference/\`: Project reference materials and policies.
 
 ## 5. Definition of Done
-A task is complete ONLY when:
+A task is complete when the applicable evidence is available:
 1. The requested behavior is fully implemented.
-2. \`npm run build\` passes with 0 TypeScript/Lint errors.
-3. Relevant tests pass and regressions are checked.
+2. The repository's actual build/type/lint checks have run, or unavailable checks are named.
+3. Relevant tests and representative user flows are checked where practical.
 4. No unnecessary unrelated files were modified.
 5. Persistent documentation under \`docs/\` is updated if persistent behavior changed.`
   },
@@ -187,9 +185,9 @@ Follow the shared project instructions in \`AGENTS.md\`.
     badge: '디자인 시스템 토큰 (영구 보관)',
     badgeColor: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
     targetLocation: 'docs/design/tokens.md',
-    supportedTools: '모든 AI 도구 및 프론트엔드 에이전트 공통',
+    supportedTools: '사람과 AI가 참조하는 프로젝트 문서',
     description: '루트 디렉토리를 어지럽히지 않고 docs/ 에 깔끔하게 보관된 디자인 토큰 (색상, 폰트, 4px 그리드 규격서)',
-    whyNeeded: '디자인 규격서가 없으면 AI가 페이지마다 제각각 다른 색상과 스타일을 마구잡이로 작성합니다.',
+    whyNeeded: '토큰을 명시하면 화면별 색상·간격·타이포그래피가 달라질 위험을 줄일 수 있습니다. 코드 변수와 시각 검증은 별도로 필요합니다.',
     customizationTips: [
       'Primary Color: 브랜드 고유의 헥사코드(예: Toss Blue #3182F6, Slate #0F172A)를 입력합니다.',
       'Radius & Spacing: 버튼과 카드의 둥글기(rounded-xl, rounded-2xl)와 4px 그리드를 통일합니다.'
@@ -226,11 +224,11 @@ export const MCP_SKILL_AGENT_CONCEPTS: McpSkillAgentSummary[] = [
     englishName: 'Autonomous AI Coding Agent',
     role: '두뇌이자 자율 실행자 (Agent)',
     metaphor: '👨‍🍳 전문 셰프: 목표를 전달하면 스스로 계획을 세우고, 재료를 준비해 완성된 요리를 만들어내는 주체',
-    description: '단순히 질문에 답하는 챗봇이 아니라, 목표를 주면 파일 생성, 코드 작성, 터미널 명령어 실행, 에러 자동 수정까지 스스로 수행하는 자율 코딩 AI입니다.',
-    practicalExample: '"초등 3학년 과학 수업 활동지와 퀴즈 웹앱 만들어줘"라고 요청하면 [단원 분석 ➔ 문제 생성 ➔ 화면 제작 ➔ 빌드 테스트 ➔ 완성]을 알아서 진행',
+    description: '권한과 도구 범위 안에서 파일 생성, 코드 작성, 명령 실행 같은 여러 단계를 수행할 수 있는 AI 시스템입니다. 실행 범위와 승인 정책은 제품·환경마다 다릅니다.',
+    practicalExample: '"초등 3학년 과학 수업 활동지와 퀴즈 웹앱 초안을 만들어줘"라고 요청하고, 교육과정 적합성과 정답·출처는 교사가 검토',
     keyBenefits: [
       '개발자가 코드를 일일이 타이핑할 필요 없이 핵심 목표만 지시',
-      '여러 파일을 동시에 수정하고 빌드 에러를 스스로 테스트하며 해결',
+      '여러 파일을 조사·수정하고 실제 빌드 오류를 바탕으로 수정안을 제시',
       'Google Antigravity, Claude Code, OpenAI Codex 등이 대표적'
     ],
     sampleFile: 'AGENTS.md / CLAUDE.md'
@@ -244,11 +242,11 @@ export const MCP_SKILL_AGENT_CONCEPTS: McpSkillAgentSummary[] = [
     description: 'AI가 회사 데이터베이스(PostgreSQL), GitHub 저장소, 내 컴퓨터 파일, 웹 브라우저 등 외부 시스템과 안전하게 통신할 수 있도록 만든 오픈소스 표준 프로토콜입니다.',
     practicalExample: 'AI가 내 로컬 DB에 직접 쿼리를 날려 테이블 구조를 확인하거나, 브라우저를 띄워 실제 화면 캡처 후 디자인 검증',
     keyBenefits: [
-      '무설정 MCP(Puppeteer, Filesystem)는 별도 키 없이 npx로 즉시 구동',
-      '인증형 MCP(GitHub, PostgreSQL)는 .env 환경변수 설정으로 안전하게 연결',
-      '보안 정책에 맞춰 읽기 전용(Read-only) 권한으로 안전하게 제한 가능'
+      '일부 로컬 MCP는 API 키 없이 실행할 수 있지만 런타임 설치와 접근 경로 승인이 필요',
+      '인증형 MCP는 토큰을 코드에 넣지 않고 클라이언트·배포 환경의 시크릿 방식으로 전달',
+      '서버가 지원할 때 읽기 전용과 최소 toolset으로 권한 범위를 줄일 수 있음'
     ],
-    sampleFile: 'mcp.json & .env.example'
+    sampleFile: '클라이언트별 MCP 설정 & 시크릿 저장소'
   },
   {
     id: 'concept-skill',
@@ -256,12 +254,12 @@ export const MCP_SKILL_AGENT_CONCEPTS: McpSkillAgentSummary[] = [
     englishName: 'Reusable Workflow Recipe',
     role: '반복 작업 자동화 매뉴얼 (Workflows)',
     metaphor: '📖 표준 작업 레시피: 복잡한 작업을 언제나 동일한 품질로 빠르게 처리하도록 적어둔 실무 가이드',
-    description: '교과 활동지 자동 생성, 생기부 문구 검사, Git PR 자동 생성 등 반복되는 실무 작업을 AI가 실수 없이 일관되게 수행하도록 절차를 정리해 둔 재사용 문서입니다.',
-    practicalExample: '에이전트에게 `/plan-feature` 또는 `/student-record-writer` 스킬을 실행시키면 표준 워크플로우에 따라 3초 만에 작성',
+    description: '교과 활동지 초안, 생기부 문구 점검, PR 초안처럼 반복되는 작업 절차를 정리한 재사용 문서입니다. 결과의 정확성을 보증하지 않으며 사람의 검토가 필요합니다.',
+    practicalExample: '지원하는 에이전트에서 `/plan-feature` 또는 `/student-record-writer` 작업 지침을 불러와 단계별 초안을 작성',
     keyBenefits: [
       '매번 프롬프트를 길게 쓸 필요 없이 짧은 명령어 하나로 표준화된 작업 수행',
-      '팀원 전체가 동일한 품질의 산출물을 얻을 수 있도록 프로세스 표준화',
-      '.agents/skills/{이름}/SKILL.md 파일로 Codex 및 Antigravity에서 즉시 공용 로딩'
+      '팀원이 같은 검토 순서와 출력 형식을 따르도록 프로세스를 정리',
+      '스킬 경로와 자동 발견 방식은 Codex·Antigravity 등 각 클라이언트의 현재 문서에서 확인'
     ],
     sampleFile: '.agents/skills/{skill-name}/SKILL.md'
   }
@@ -301,16 +299,16 @@ export const AI_TOOLS_CATALOG: AiToolItem[] = [
   }
 ];
 
-// 2. 실무 작업 모듈 목록 (🌟 전문가 공인 기본 필수 팩 vs ➕ 선택형 확장 모듈)
+// 2. 실무 작업 모듈 목록 (🌟 프로젝트 기본 템플릿 vs ➕ 선택형 확장 모듈)
 export const TASK_FEATURE_MODULES: TaskFeatureModule[] = [
   // =========================================================================
-  // --- [TIER 1] 🌟 전문가 공인 기본 필수 팩 (Core Default Pack - 항상 기본 포함) ---
+  // --- [TIER 1] 🌟 프로젝트 기본 템플릿 (Core Default Pack - ZIP 기본 포함) ---
   // =========================================================================
   {
     id: 'mod-skill-mcp-router',
     name: '🧭 skill-mcp-router (스마트 도구 자동 탐색 & 라우터)',
-    category: '🌟 전문가 기본 필수 팩',
-    badge: '필수 기본 장착',
+    category: '🌟 프로젝트 기본 템플릿',
+    badge: 'ZIP 기본 포함',
     badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
     shortDesc: '사용자 요청을 분석하여 불필요한 도구 호출을 막고 최적의 스킬을 1순위로 자동 매칭하는 지능형 메타 라우터',
     isCoreDefault: true,
@@ -321,21 +319,21 @@ export const TASK_FEATURE_MODULES: TaskFeatureModule[] = [
     },
     defaultSelected: true,
     agentRuleSection: `### [스킬 & MCP 도구 스마트 라우팅 및 선택 규칙]
-- **작업 의도 파악**: 사용자의 요청이 들어오면 \`.agents/skills/\` 폴더의 스킬 목록과 \`mcp.json\` 도구 명세를 먼저 스캔하여 가장 적합한 도구를 1순위로 선정할 것.
+- **작업 의도 파악**: 현재 클라이언트가 실제로 제공하는 스킬과 MCP 도구 목록을 확인하고 요청에 필요한 최소 도구를 선정할 것.
 - **불필요한 도구 호출 금지**: 단순 질의나 파일 작성에는 무거운 외부 MCP를 호출하지 말고, 꼭 필요한 순간에만 정확한 파라미터로 호출할 것.`,
     skillFile: {
       path: '.agents/skills/skill-mcp-router/SKILL.md',
       description: '사용자 명령에 가장 적합한 스킬과 MCP를 스스로 탐색하고 실행하는 스마트 라우터 스킬',
       content: `---
 name: skill-mcp-router
-description: Analyzes user intent, automatically discovers matching skills from .agents/skills/ and tools from mcp.json, and executes the optimal tool chain with minimal steps.
+description: Reviews user intent and the tools actually available in the current client, then proposes the smallest suitable tool chain.
 tools: [file_reader, shell]
 ---
 
 # Skill & MCP 스마트 라우팅 워크플로우
 1. 사용자의 요청에서 [목표], [필요 데이터], [기대 산출물]을 추출한다.
-2. \`.agents/skills/\` 디렉토리와 \`mcp.json\`을 조회하여 가장 일치율이 높은 스킬/도구를 판별한다.
-3. 선택된 도구를 실행하고, 에러 발생 시 대안 도구로 폴백(Fallback)하여 작업을 완수한다.`
+2. 현재 클라이언트가 발견한 스킬과 MCP 서버 상태를 확인하고 필요한 도구만 선택한다.
+3. 외부 상태 변경·유료 호출·민감정보 접근은 승인을 확인하고, 실패하면 근거와 안전한 대안을 보고한다.`
     },
     extraFile: {
       path: '.agents/rules/tool-selection.md',
@@ -348,8 +346,8 @@ tools: [file_reader, shell]
   {
     id: 'mod-plan-feature',
     name: '📋 plan-feature (작업 착수 전 사전 기획 & 위험 분석)',
-    category: '🌟 전문가 기본 필수 팩',
-    badge: '필수 기본 장착',
+    category: '🌟 프로젝트 기본 템플릿',
+    badge: 'ZIP 기본 포함',
     badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
     shortDesc: '코드를 바로 건드려 망가뜨리지 않고, 변경 범위와 위험 요소를 분석하여 단계별 구현 계획서를 docs/plans/ 에 사전 작성',
     isCoreDefault: true,
@@ -382,9 +380,9 @@ Use this skill before implementing a significant feature.
   },
   {
     id: 'mod-implement-feature',
-    name: '⚡ implement-feature (무결점 최소 변경 구현 & 빌드 검증)',
-    category: '🌟 전문가 기본 필수 팩',
-    badge: '필수 기본 장착',
+    name: '⚡ implement-feature (최소 변경 구현 & 빌드 검증)',
+    category: '🌟 프로젝트 기본 템플릿',
+    badge: 'ZIP 기본 포함',
     badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
     shortDesc: '불필요한 리팩토링을 배제하고 기존 패턴을 재사용하여 가장 작고 응집력 높은 코드를 안전하게 작성 및 npm run build 검증',
     isCoreDefault: true,
@@ -395,7 +393,7 @@ Use this skill before implementing a significant feature.
     defaultSelected: true,
     agentRuleSection: `### [implement-feature 구현 원칙]
 - 불필요한 전면 재작성을 피하고 가장 작은 단위의 변경을 적용할 것.
-- 작업 완료 전 반드시 npm run build와 테스트를 실행해 0에러를 증명할 것.`,
+- 프로젝트에 실제로 정의된 빌드·테스트 명령을 실행하고 성공·실패 결과와 미검증 항목을 그대로 보고할 것.`,
     skillFile: {
       path: '.agents/skills/implement-feature/SKILL.md',
       description: '안전한 최소 단위 기능 구현 및 사후 검증 스킬',
@@ -419,8 +417,8 @@ Use this skill when implementing an approved feature or plan.
   {
     id: 'mod-debug-skill',
     name: '🔍 debug (근본 원인 분석 ➔ 최소 패치 ➔ 회귀 방지)',
-    category: '🌟 전문가 기본 필수 팩',
-    badge: '필수 기본 장착',
+    category: '🌟 프로젝트 기본 템플릿',
+    badge: 'ZIP 기본 포함',
     badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
     shortDesc: '단순 증상만 덮지 않고 에러의 근본 원인(Root Cause)을 추적하여 다른 기능이 망가지지 않게 안전하게 수정',
     isCoreDefault: true,
@@ -455,8 +453,8 @@ Use this skill to diagnose and fix defects.
   {
     id: 'mod-code-review',
     name: '🛡️ code-review (10단계 다차원 정밀 코드 리뷰)',
-    category: '🌟 전문가 기본 필수 팩',
-    badge: '필수 기본 장착',
+    category: '🌟 프로젝트 기본 템플릿',
+    badge: 'ZIP 기본 포함',
     badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
     shortDesc: '기능 정확성, 회귀 위험, 데이터 유실, 타입 안정성, 아키텍처 일관성, 문서 반영까지 10개 관점에서 꼼꼼히 점검',
     isCoreDefault: true,
@@ -491,11 +489,11 @@ Report concrete findings first. Do not invent issues solely to produce a longer 
   },
   {
     id: 'mod-session-compactor',
-    name: '⚡ session-context-compactor (Claude 긴 세션 압축 & 토큰 다이어트)',
-    category: '🌟 전문가 기본 필수 팩',
-    badge: '클로드 킬러 스킬',
+    name: '⚡ session-context-compactor (긴 세션 요약 & 인수인계)',
+    category: '🌟 프로젝트 기본 템플릿',
+    badge: '선택적 세션 요약',
     badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
-    shortDesc: '터미널 작업이 길어질 때 진행 상황을 docs/tasks/ 에 요약 저장하고 컨텍스트를 /compact 압축하여 10배 빠른 속도 유지',
+    shortDesc: '긴 작업의 진행 상황과 남은 일을 요약해 컨텍스트 손실을 줄임. 속도·토큰 절감 폭은 작업과 도구에 따라 달라짐',
     isCoreDefault: true,
     detailedImpact: {
       agentRuleSummary: '긴 터미널 대화 이력 압축, docs/tasks/ 요약 기록, 속도 및 토큰 최적화',
@@ -522,19 +520,19 @@ tools: [file_writer]
   {
     id: 'mod-tdd-testing',
     name: '🧪 tdd-test-generator (테스트 주도 개발 TDD & 회귀 방지)',
-    category: '🌟 전문가 기본 필수 팩',
+    category: '🌟 프로젝트 기본 템플릿',
     badge: 'TDD 선행 테스트',
     badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
-    shortDesc: '코드 작성 전에 tests/ 폴더에 실패하는 테스트를 먼저 작성하고, 이를 통과하는 코드를 작성하도록 강제',
+    shortDesc: '동작을 테스트로 명확히 표현할 수 있는 변경에는 실패 테스트를 먼저 작성하고 회귀 위험을 확인',
     isCoreDefault: true,
     detailedImpact: {
-      agentRuleSummary: 'TDD 테스트 코드 선행 작성, npm test 검증, 회귀 오류 원천 차단',
+      agentRuleSummary: '필요한 경우 테스트를 먼저 작성하고, 실제 프로젝트의 테스트 명령으로 회귀 위험 확인',
       policyPath: '.agents/rules/testing.md',
       skillPath: '.agents/skills/tdd-test-generator/SKILL.md'
     },
     defaultSelected: true,
     agentRuleSection: `### [테스트 및 TDD 원칙]
-- 새로운 기능을 구현하기 전 실패하는 테스트(\`tests/\`)를 먼저 작성하고, 테스트가 통과하는 최소한의 코드를 작성할 것.`,
+- 재현 가능한 결함이나 명확한 동작 계약에는 실패 테스트를 먼저 작성한다. 탐색적 UI·문서 작업처럼 TDD가 맞지 않으면 적절한 수동 검증을 기록할 것.`,
     skillFile: {
       path: '.agents/skills/tdd-test-generator/SKILL.md',
       description: '단위 테스트 선행 작성 및 TDD 워크플로우 스킬',
@@ -547,7 +545,7 @@ tools: [file_writer, shell]
 # TDD Generator Workflow
 1. Define test cases for normal inputs, edge cases, and error boundaries.
 2. Write unit tests under \`tests/\`.
-3. Execute \`npm test\` and implement code until all tests pass.`
+3. Discover the project's actual test command, run it, and implement the smallest change needed for the relevant tests to pass.`
     },
     extraFile: {
       path: '.agents/rules/testing.md',
@@ -561,7 +559,7 @@ tools: [file_writer, shell]
   {
     id: 'mod-docs-knowledge-base',
     name: '🏛️ docs-knowledge-base (영구 아키텍처 & ADR 의사결정 보관소)',
-    category: '🌟 전문가 기본 필수 팩',
+    category: '🌟 프로젝트 기본 템플릿',
     badge: '영구 지식보관소',
     badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
     shortDesc: '프롬프트 컨텍스트를 낭비하지 않고, 시스템 구조도(overview.md)와 기술 의사결정(ADR)을 docs/ 에 영구 보관',
@@ -603,16 +601,17 @@ tools: [file_writer, shell]
     category: '교사/교육자 특화',
     badge: '교사 필수 생기부',
     badgeColor: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
-    shortDesc: '학생 관찰 키워드만 넣으면 교육부 NEIS 글자수(바이트)에 맞추고 기재 금지어(외부 수상, 부모 직업 등)를 자동 검사하여 수려한 학생부 문장으로 완성',
+    shortDesc: '학생 관찰 기록을 바탕으로 문장 초안을 만들고 글자 수와 민감 표현을 점검. 최신 교육부 기재요령과 학교 담당자의 최종 검토 필요',
     isCoreDefault: false,
     detailedImpact: {
-      agentRuleSummary: 'NEIS 글자수/바이트 검사, 교육부 기재 금지어 자동 필터링, 개별 학생 역량 중심 문장화',
+      agentRuleSummary: '글자 수와 민감 표현 점검, 최신 공식 기재요령 대조, 교사 최종 검토',
       skillPath: '.agents/skills/student-record-writer/SKILL.md',
       policyPath: 'docs/reference/neis_record_guideline.md'
     },
     defaultSelected: false,
     agentRuleSection: `### [학생생활기록부(생기부) 과세특/행특 작성 규칙]
-- **교육부 기재 금지어 엄격 배제**: 공인어학시험, 교외 수상 실적, 부모 직업/사회경제적 지위 암시 문구, 외부 기관명 절대 기재 금지.
+- **공식 지침 우선**: 학년도별 교육부 학교생활기록부 기재요령과 학교 내부 절차를 먼저 확인하고, 금지·제한 항목은 해당 원문 근거와 함께 점검할 것.
+- **사람의 최종 검토**: 학생 개인정보, 사실관계, 글자 수 계산 방식, 기재 가능 범위를 담당 교사가 최종 확인할 것.
 - **NEIS 바이트 수 규격 준수**: 한글 1자=3바이트, 띄어쓰기/영문=1바이트 기준으로 과목별 세특(1,500바이트), 행특(1,500바이트) 상한선 초과 방지.
 - **성장과 역량 중심 문체**: 단순 '참여함' 나열이 아닌, [동기/계기] ➔ [구체적 활동 과정] ➔ [배우고 성장한 점(자기주도성)] 구조로 서술.`,
     skillFile: {
@@ -977,21 +976,21 @@ tools: [file_writer]
     isCoreDefault: false,
     detailedImpact: {
       agentRuleSummary: '모바일·태블릿 화면 자동 최적화, 브라우저 화면 캡처 검사',
-      mcpServerName: 'puppeteer-browser',
+      mcpServerName: 'playwright',
       mcpType: 'zero-config',
-      mcpSetupGuide: 'API 키 없이 npx로 즉시 브라우저 구동'
+      mcpSetupGuide: 'Microsoft 공식 Playwright MCP. Node.js 18+와 로컬 브라우저 실행 권한 필요'
     },
     defaultSelected: false,
     agentRuleSection: `### [반응형 디자인 및 브라우저 검증 규칙]
 - **반응형 필수 대응**: 모바일(sm: 640px), 태블릿(md: 768px), 데스크톱(lg: 1024px) 화면 크기에서 글자나 버튼 깨짐이 없도록 설계
-- **화면 렌더링 검증**: UI 컴포넌트 작성 후 Puppeteer 브라우저 도구를 활용해 렌더링 화면을 캡처하고 시각적 결함을 점검할 것.`,
+- **화면 렌더링 검증**: UI 컴포넌트 작성 후 Playwright MCP 등 실제 브라우저 도구로 대표 뷰포트와 핵심 상호작용을 점검할 것.`,
     mcpServer: {
-      key: 'puppeteer-browser',
+      key: 'playwright',
       mcpType: 'zero-config',
       config: {
         command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-puppeteer'],
-        description: '실제 웹 브라우저를 띄워 UI 스크린샷 캡처 및 화면 레이아웃 자동 검사 (무설정 즉시 실행)'
+        args: ['@playwright/mcp@latest'],
+        description: 'Microsoft 공식 Playwright MCP. 브라우저 접근성 스냅샷과 상호작용을 이용한 화면 검증'
       }
     }
   },
@@ -1032,29 +1031,16 @@ tools: [shell]
     category: '백엔드/DB',
     badge: 'DB 연동',
     badgeColor: 'bg-teal-500/10 text-teal-300 border-teal-500/30',
-    shortDesc: '회원 정보나 게시글 데이터를 DB에 안전하게 저장하고, 실수로 전체 데이터가 날아가는(삭제) 사고를 완벽 차단',
+    shortDesc: '회원 정보나 게시글 데이터를 DB에 저장하고, 백업·권한·승인 절차로 대량 삭제 위험을 줄임',
     isCoreDefault: false,
     detailedImpact: {
-      agentRuleSummary: '안전한 데이터 읽기/쓰기, 데이터 전체 삭제 사고 원천 차단',
-      mcpServerName: 'postgres',
-      mcpType: 'needs-auth',
-      mcpSetupGuide: '.env의 DATABASE_URL 또는 로컬 postgresql 연결 URL 입력 필요',
+      agentRuleSummary: '읽기 전용 계정, 백업, 마이그레이션 검토로 데이터 변경 위험 관리',
       skillPath: '.agents/skills/db-migration-gen/SKILL.md'
     },
     defaultSelected: false,
     agentRuleSection: `### [데이터베이스 보안 및 스키마 관리 규칙]
 - **DB 접근 제한**: 데이터베이스 조회 시 쓰기(Write) 대신 읽기 전용(Read-Only) 조회를 우선 활용할 것.
 - **위험 명령 차단**: 데이터 전체 삭제 명령(\`DROP TABLE\`, 조건 없는 \`DELETE\`)은 사람의 확인 승인 없이 절대 실행 금지.`,
-    mcpServer: {
-      key: 'postgres',
-      mcpType: 'needs-auth',
-      envVarNeeded: 'DATABASE_URL=postgresql://user:password@localhost:5432/my_database',
-      config: {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-postgres', 'postgresql://user:password@localhost:5432/my_database'],
-        description: '데이터베이스 테이블 구조 조회 및 안전한 읽기 쿼리 실행 (.env DATABASE_URL 연결)'
-      }
-    },
     skillFile: {
       path: '.agents/skills/db-migration-gen/SKILL.md',
       description: 'DB 테이블 변경 및 되돌리기(롤백) SQL 스크립트 자동 생성 스킬',
@@ -1067,44 +1053,44 @@ tools: [file_writer, shell]
 # DB 스키마 생성 워크플로우
 1. 변경할 테이블의 관계와 데이터 영향도를 사전에 분석한다.
 2. 신규 테이블 생성 또는 컬럼 추가 쿼리를 작성한다.
-3. 문제 발생 시 즉시 이전 상태로 되돌릴 수 있는 원상복구(롤백) 쿼리를 세트로 작성한다.`
+3. 롤백 가능 여부와 데이터 손실 위험을 검토하고, 실제 백업·복구 절차를 확인한 뒤 변경안을 제시한다.`
     }
   },
   {
     id: 'mod-security-auth',
-    name: '🔐 카카오/구글 간편 로그인 & 비밀번호 암호화 보안',
+    name: '🔐 소셜 로그인 & 비밀번호 해시·시크릿 관리',
     category: '보안/결제',
     badge: '보안 수칙',
     badgeColor: 'bg-rose-500/10 text-rose-300 border-rose-500/30',
-    shortDesc: '카카오·구글 소셜 로그인, 비밀번호 안전 암호화 저장, 비밀키(API Key) 외부 유출 방지 보안 수칙',
+    shortDesc: '소셜 로그인, 검증된 비밀번호 해시, 최소 권한과 시크릿 분리를 적용하기 위한 보안 점검 항목',
     isCoreDefault: false,
     detailedImpact: {
-      agentRuleSummary: '소셜 로그인 연동, 비밀번호 암호화 저장, 비밀키 유출 방지',
+      agentRuleSummary: '소셜 로그인 검증, 비밀번호 해시, 최소 권한과 시크릿 관리',
       policyPath: '.agents/rules/security_policy.md'
     },
     defaultSelected: false,
     agentRuleSection: `### [보안 및 비밀키 관리 규칙]
 - **비밀키 코드 노출 금지**: API Key, DB 비밀번호, 토큰 키를 소스코드에 절대 직접 적지 말고 \`.env\` 환경변수로만 참조할 것.
-- **비밀번호 암호화**: 비밀번호를 원문 그대로 저장하지 말고, 반드시 안전한 암호화(bcrypt 등)를 거쳐 저장할 것.`,
+- **비밀번호 해싱**: 원문이나 복호화 가능한 형태로 저장하지 말고, 현재 보안 지침과 라이브러리에 맞는 비밀번호 해시(예: Argon2id 또는 bcrypt)를 사용할 것.`,
     extraFile: {
       path: '.agents/rules/security_policy.md',
       description: '사내 보안 인증 및 시크릿 키 관리 정책',
       content: `# Security Policy & Secret Key Management
-1. 모든 비밀번호는 단방향 암호화하여 저장한다.
-2. 로그인 토큰 유효기간을 설정하고 안전한 쿠키 방식으로 관리한다.
-3. .env 파일은 절대 Git 레포지토리에 커밋하지 않는다 (.gitignore 필수 등록).`
+1. 비밀번호는 검증된 단방향 비밀번호 해시로 저장하고 매개변수는 현재 보안 지침에 맞춰 정한다.
+2. 세션·토큰 방식은 위협 모델에 맞춰 선택하고, 웹에서는 Secure·HttpOnly·SameSite 쿠키와 CSRF 방어를 검토한다.
+3. 실제 시크릿은 Git에 커밋하지 않으며 배포 환경의 시크릿 관리 기능을 사용한다.`
     }
   },
   {
     id: 'mod-git-pr-skill',
-    name: '🚀 작업 내용 깃허브(GitHub) 자동 백업 & 에러 발생 시 스스로 수정',
+    name: '🚀 GitHub 변경 요약·PR 초안 & 빌드 오류 진단',
     category: '보안/결제',
-    badge: '자동 백업 & 치유',
+    badge: 'GitHub 공식 MCP',
     badgeColor: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
-    shortDesc: 'AI가 수정한 코드 내용을 일목요연하게 요약해 깃허브에 백업하고, 터미널 오류 발생 시 멈추지 않고 스스로 고치도록 지시',
+    shortDesc: '코드 변경을 요약하고 PR 초안을 만들며, 실제 로그를 바탕으로 빌드 오류 수정안을 제시',
     isCoreDefault: false,
     detailedImpact: {
-      agentRuleSummary: '코드 변경 내역 자동 요약, 에러 발생 시 AI 스스로 자동 수정',
+      agentRuleSummary: '코드 변경과 검증 결과 요약, 오류 원인 조사 후 최소 수정',
       mcpServerName: 'github',
       mcpType: 'needs-auth',
       mcpSetupGuide: '.env의 GITHUB_PERSONAL_ACCESS_TOKEN 입력 필요',
@@ -1112,19 +1098,19 @@ tools: [file_writer, shell]
     },
     defaultSelected: false,
     agentRuleSection: `### [Git 커밋 및 자가 검증 규칙]
-- **에러 자동 수정 (Self-Healing)**: 터미널 빌드/테스트 중 에러가 발생하면 멈추지 말고 에러 로그를 읽고 스스로 1차 수정을 시도할 것.
-- **작업 완료 입증**: 작업을 마쳤다고 선언하기 전에 반드시 \`npm run build\`를 돌려 에러가 0건임을 확인할 것.`,
+- **오류 기반 수정**: 빌드/테스트 오류가 발생하면 실제 로그와 실행 경로를 조사하고 권한 범위 안에서 최소 수정할 것.
+- **작업 완료 입증**: 프로젝트에 정의된 검증 명령을 실행하고 결과와 미검증 항목을 그대로 보고할 것.`,
     mcpServer: {
       key: 'github',
       mcpType: 'needs-auth',
       envVarNeeded: 'GITHUB_PERSONAL_ACCESS_TOKEN=ghp_your_github_token_here',
       config: {
-        command: 'npx',
-        args: ['-y', '@modelcontextprotocol/server-github'],
+        command: 'docker',
+        args: ['run', '-i', '--rm', '-p', '127.0.0.1:8085:8085', '-e', 'GITHUB_OAUTH_CALLBACK_PORT', 'ghcr.io/github/github-mcp-server'],
         env: {
-          GITHUB_PERSONAL_ACCESS_TOKEN: '${GITHUB_PERSONAL_ACCESS_TOKEN}'
+          GITHUB_OAUTH_CALLBACK_PORT: '8085'
         },
-        description: 'GitHub 저장소 이슈 조회, 코드 백업 및 PR 생성 자동화 (.env 토큰 연결)'
+        description: 'GitHub 공식 MCP Docker 이미지의 로컬 OAuth 예시. 최초 사용 시 브라우저 인증, 쓰기 작업은 승인 후 실행'
       }
     },
     skillFile: {
@@ -1146,10 +1132,10 @@ tools: [git, shell]
 
 // 3. 신규 프로젝트 시작 시 스캐폴딩 4단계 가이드 데이터
 export const NEW_PROJECT_SCAFFOLD_GUIDE: NewProjectScaffoldGuide = {
-  title: 'Codex + Claude Code + Antigravity 3대 AI IDE 통합 스캐폴딩 로드맵',
-  summary: '루트 디렉토리를 어지럽히지 않고, [AGENTS.md(단일 진실 공급원) ➔ @AGENTS.md 임포트(CLAUDE.md) ➔ .agents/skills/ 공용 스킬 ➔ docs/ 영구 지식] 구조로 구축하는 2026 표준 아키텍처입니다.',
+  title: 'Codex + Claude Code + Antigravity용 프로젝트 지침 스캐폴딩',
+  summary: '공통 프로젝트 원칙은 AGENTS.md에 정리하고, 각 도구가 요구하는 파일·경로로 연결하는 프로젝트 템플릿입니다. 자동 발견 범위와 설정 형식은 제품 버전에 따라 달라 공식 문서를 확인해야 합니다.',
   triIdePrinciple: {
-    title: '3대 AI IDE 단일 진실 공급원(Single Source of Truth) 메커니즘',
+    title: '공통 지침과 도구별 어댑터를 분리하는 구성 예시',
     diagram: `                         AGENTS.md
                    (프로젝트 단일 진실 공급원 헌법)
                     /          |          \\
@@ -1164,19 +1150,19 @@ export const NEW_PROJECT_SCAFFOLD_GUIDE: NewProjectScaffoldGuide = {
                     ├── architecture/  ├── design/
                     ├── plans/         ├── decisions/`,
     rules: [
-      '1. 규칙 일원화: 모든 AI 공통 규칙은 루트 AGENTS.md 에만 작성하며, CLAUDE.md는 @AGENTS.md 임포트 포인터로 작동합니다.',
-      '2. 스킬 공용화: 재사용 가능한 워크플로우는 .agents/skills/ 에 배치하여 Codex와 Antigravity가 100% 공유합니다.',
-      '3. 디자인 & 정책 체계화: 디자인 토큰은 docs/design/tokens.md 및 .agents/rules/ui-design.md 에 배치하여 루트를 정갈하게 유지합니다.',
-      '4. 영구 지식 분리: 일시적 태스크가 아닌 지속적 지식(아키텍처, ADR 결정)은 docs/ 디렉토리에 보관합니다.'
+      '1. 공통 원칙: 사람이 관리할 프로젝트 규칙은 AGENTS.md에 모으되, 각 도구가 이 파일을 읽는지는 별도로 확인합니다.',
+      '2. 도구별 연결: Claude Code는 CLAUDE.md, Antigravity는 현재 지원하는 .agents 설정 등 공식 경로를 사용합니다.',
+      '3. 스킬 이식성: 같은 Markdown 절차를 재사용할 수 있어도 검색 경로·메타데이터·지원 기능은 도구별로 다를 수 있습니다.',
+      '4. 영구 지식 분리: 아키텍처와 ADR처럼 지속되는 지식은 docs/에 두고, 사실 변경 시 함께 갱신합니다.'
     ]
   },
   hierarchyDiagram: `프로젝트 루트 (Root Directory)
-├── AGENTS.md                   [마스터 헌법: 모든 AI 도구 단일 진실 공급원]
+├── AGENTS.md                   [프로젝트 공통 지침의 관리 원본]
 ├── CLAUDE.md                   [@AGENTS.md 임포트 포인터 (Claude Code 전용)]
-├── mcp.json                    [외부 도구: DB, 브라우저, GitHub MCP 연동]
+├── .agents/mcp_config.json     [Antigravity용 MCP 설정 예시]
 ├── .env.example                [환경변수: API 시크릿 키 템플릿]
 │
-├── .agents/                    [Antigravity & Codex 공용]
+├── .agents/                    [지원 도구에서 사용하는 프로젝트 설정 예시]
 │   ├── rules/                  [전용 안전 정책 (testing.md, ui-design.md)]
 │   └── skills/                 [공용 워크플로우 스킬]
 │       ├── plan-feature/       [사전 기획 & 위험 분석]
@@ -1212,16 +1198,16 @@ export const NEW_PROJECT_SCAFFOLD_GUIDE: NewProjectScaffoldGuide = {
     },
     {
       stepNumber: 3,
-      title: '3단계: 전문가 기본 필수 팩 (.agents/skills/) & MCP 도구 장착',
-      action: '.agents/skills/ 에 plan-feature, implement-feature, debug, code-review, session-compactor 및 맞춤 스킬을 장착합니다.',
-      outputFile: '.agents/skills/*, mcp.json'
+      title: '3단계: 프로젝트 기본 템플릿 & MCP 설정 검토',
+      action: '필요한 작업 지침만 선택하고, MCP 패키지·권한·설정 경로를 각 클라이언트의 현재 공식 문서와 대조합니다.',
+      outputFile: '.agents/skills/*, .agents/mcp_config.json'
     },
     {
       stepNumber: 4,
       title: '4단계: 영구 지식 베이스 (docs/) 초기화 & 검증',
-      action: 'docs/architecture, docs/plans 폴더를 생성하고, npm run build 를 실행하여 0에러를 검증합니다.',
-      outputFile: 'docs/*, npm run build'
+      action: 'docs/architecture, docs/plans 폴더를 만들고 package.json에 실제로 정의된 빌드·테스트 명령을 실행해 결과를 기록합니다.',
+      outputFile: 'docs/*, 프로젝트별 검증 결과'
     }
   ],
-  copyableScaffoldPrompt: `"이 프로젝트의 AGENTS.md, docs/design/tokens.md, mcp.json, .agents/skills/ 를 먼저 읽고 프로젝트 기본 뼈대(Scaffold)를 생성한 뒤, npm run build 를 실행하여 타입 오류 0건임을 입증해줘."`
+  copyableScaffoldPrompt: `"이 프로젝트의 AGENTS.md와 관련 docs를 먼저 읽고 기본 구조를 제안해줘. 현재 도구가 자동으로 읽는 규칙·스킬·MCP 경로는 공식 문서와 로컬 설정으로 확인하고, package.json에 실제로 존재하는 검증 명령만 실행해 결과와 미검증 항목을 보고해줘."`
 };

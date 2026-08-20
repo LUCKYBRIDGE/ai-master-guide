@@ -1,3 +1,8 @@
+/**
+ * @deprecated Unpublished legacy dataset containing unsourced synthetic measurements.
+ * This file is not rendered by the current app. Do not reconnect it without replacing
+ * every score, timing, token, and cost claim with dated, reproducible source data.
+ */
 import { ReasoningEffortTier } from '../types/ai';
 
 export interface ScenarioStepResult {

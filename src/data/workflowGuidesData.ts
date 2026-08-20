@@ -1,3 +1,8 @@
+/**
+ * @deprecated Unpublished legacy workflow guide containing unverified product names and
+ * capabilities. This file is not rendered by the current app. Recheck all commands,
+ * versions, permissions, and automation claims before future publication.
+ */
 import { WorkflowGuide } from '../types/ai';
 
 export const WORKFLOW_GUIDES_DATA: WorkflowGuide[] = [

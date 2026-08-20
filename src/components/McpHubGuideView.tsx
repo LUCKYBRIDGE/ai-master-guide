@@ -73,16 +73,16 @@ export const McpHubGuideView: React.FC<McpHubGuideViewProps> = ({ onCopy }) => {
                 <Plug className="w-5 h-5 text-teal-300" />
               </span>
               <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                실무 인기 MCP 설치 명령어 & AI 활용 프롬프트 허브
+                공식 출처로 검증한 MCP 설정 & 활용 가이드
               </h3>
             </div>
             <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-              사람들이 가장 많이 쓰는 <strong>실무 Top 8 MCP 서버</strong>의 <strong>터미널 설치 명령어, mcp.json 설정, AI에게 일 시키는 실제 업무 지시문(프롬프트), 공식 레포지토리 링크</strong>를 한곳에 집약했습니다.
+              2026-08-20 기준으로 <strong>공식 제작사 서버와 MCP reference server</strong>만 선별했습니다. 설치 명령, Antigravity 설정 예시, 안전한 업무 요청문과 공식 출처를 함께 확인할 수 있습니다.
             </p>
           </div>
 
           <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-slate-300 font-mono shrink-0">
-            <span className="text-emerald-400 font-bold">🟢 무설정 (No Key)</span>
+            <span className="text-emerald-400 font-bold">🟢 API 키 불필요</span>
             <span>•</span>
             <span className="text-teal-400 font-bold">🔑 .env 키 필요</span>
           </div>
@@ -98,11 +98,11 @@ export const McpHubGuideView: React.FC<McpHubGuideViewProps> = ({ onCopy }) => {
               <h4 className="font-bold text-sm text-white">1. 서브에이전트 (Subagent)</h4>
             </div>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-              파일 다운로드 100%
+              도구별 지원 확인
             </span>
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
-            프론트 전담, DB 전담 등 <strong>역할별 전문 AI 두뇌</strong>입니다. <code className="text-indigo-300">AGENTS.md</code> 파일만 있으면 AI가 알아서 분신을 띄워 일합니다.
+            프론트·DB처럼 역할과 작업 범위를 나눠 실행하는 에이전트입니다. 지원 방식과 설정 파일은 제품마다 다르며, <code className="text-indigo-300">AGENTS.md</code> 하나만으로 모든 도구가 자동 실행되는 것은 아닙니다.
           </p>
         </div>
 
@@ -113,11 +113,11 @@ export const McpHubGuideView: React.FC<McpHubGuideViewProps> = ({ onCopy }) => {
               <h4 className="font-bold text-sm text-white">2. 스킬 (Skill)</h4>
             </div>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">
-              파일 다운로드 100%
+              클라이언트별 경로 확인
             </span>
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
-            Git PR 작성, DB 마이그레이션 등 <strong>작업 매뉴얼(레시피)</strong>입니다. <code className="text-amber-300">skills/이름/SKILL.md</code> 파일만 폴더에 두면 즉시 실행됩니다.
+            Git PR 작성, DB 마이그레이션 같은 <strong>재사용 작업 지침</strong>입니다. 스킬 경로·형식·자동 발견 여부는 사용하는 에이전트의 공식 문서를 확인해야 합니다.
           </p>
         </div>
 
@@ -132,7 +132,7 @@ export const McpHubGuideView: React.FC<McpHubGuideViewProps> = ({ onCopy }) => {
             </span>
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
-            내 컴퓨터의 DB나 브라우저를 꽂아주는 <strong>실제 외장 프로그램</strong>입니다. 터미널 명령어(<code className="text-teal-300">claude mcp add</code>)로 1회 등록합니다.
+            브라우저·파일·외부 서비스 도구를 에이전트에 연결하는 표준 프로토콜입니다. 서버 설치 외에도 클라이언트 등록, 인증, 접근 권한 검토가 필요합니다.
           </p>
         </div>
       </div>
@@ -154,7 +154,7 @@ export const McpHubGuideView: React.FC<McpHubGuideViewProps> = ({ onCopy }) => {
 
           {/* Category Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            {['ALL', '무설정 즉시실행', '데이터베이스/파일', '개발/협업', '웹/검색', '지속기억/메모리'].map(cat => (
+            {['ALL', '로컬 실행/무키', '파일/데이터', '개발/협업', '웹/검색', '지속기억/메모리'].map(cat => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
@@ -171,7 +171,7 @@ export const McpHubGuideView: React.FC<McpHubGuideViewProps> = ({ onCopy }) => {
         </div>
       </div>
 
-      {/* 3. Top 8 MCP Cards Grid */}
+      {/* 3. Verified MCP Cards Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         {filteredServers.map((server: McpServerItem) => {
           const currentTab = getActiveTab(server.id);
@@ -185,14 +185,12 @@ export const McpHubGuideView: React.FC<McpHubGuideViewProps> = ({ onCopy }) => {
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                      {server.id === 'mcp-puppeteer' && <Globe className="w-5 h-5 text-purple-400" />}
-                      {server.id === 'mcp-postgres' && <Database className="w-5 h-5 text-teal-400" />}
+                      {server.id === 'mcp-playwright' && <Globe className="w-5 h-5 text-purple-400" />}
                       {server.id === 'mcp-github' && <GitPullRequest className="w-5 h-5 text-indigo-400" />}
                       {server.id === 'mcp-filesystem' && <FolderTree className="w-5 h-5 text-emerald-400" />}
                       {server.id === 'mcp-memory' && <BrainCircuit className="w-5 h-5 text-purple-400" />}
                       {server.id === 'mcp-fetch' && <Globe className="w-5 h-5 text-amber-400" />}
                       {server.id === 'mcp-brave-search' && <Zap className="w-5 h-5 text-amber-400" />}
-                      {server.id === 'mcp-docker' && <Container className="w-5 h-5 text-cyan-400" />}
                       {server.name}
                     </h4>
                     <span className="text-xs text-slate-400 font-medium">({server.koreanName})</span>
@@ -236,6 +234,17 @@ export const McpHubGuideView: React.FC<McpHubGuideViewProps> = ({ onCopy }) => {
                 <span>{server.whyUse}</span>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] leading-relaxed">
+                <div className="p-3 rounded-2xl bg-emerald-950/20 border border-emerald-500/20 text-emerald-100">
+                  <strong className="block text-emerald-300 mb-1">유지관리 상태</strong>
+                  {server.sourceStatus}
+                </div>
+                <div className="p-3 rounded-2xl bg-amber-950/20 border border-amber-500/20 text-amber-100">
+                  <strong className="block text-amber-300 mb-1">설치·보안 주의</strong>
+                  {server.setupNote}
+                </div>
+              </div>
+
               {/* SECTION A: Terminal Installation & Setup Commands */}
               <div className="space-y-2">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -258,7 +267,7 @@ export const McpHubGuideView: React.FC<McpHubGuideViewProps> = ({ onCopy }) => {
                           : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
                       }`}
                     >
-                      Antigravity / mcp.json
+                      Antigravity mcp_config.json
                     </button>
                     <button
                       onClick={() => setActiveTab(server.id, 'npx')}
@@ -268,7 +277,7 @@ export const McpHubGuideView: React.FC<McpHubGuideViewProps> = ({ onCopy }) => {
                           : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
                       }`}
                     >
-                      직접 터미널 실행 (npx)
+                      서버 직접 실행
                     </button>
                   </div>
 
