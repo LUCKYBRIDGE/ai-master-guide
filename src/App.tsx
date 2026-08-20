@@ -49,7 +49,7 @@ export function App() {
 
       {/* Main Content View Container */}
       <main className="flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-6">
-        {/* Tab 1: AI 모델 & 추론설정 실측 비교 */}
+        {/* Tab 1: AI 모델 공식 데이터와 출처별 성능 비교 */}
         {activeTab === 'models-ranking' && (
           <ModelRankingComparisonView />
         )}

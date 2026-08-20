@@ -30,8 +30,8 @@ export const Header: React.FC<HeaderProps> = ({
     {
       id: 'models-ranking' as TabType,
       number: '1',
-      label: 'AI 모델 비교 & 실측 랩',
-      subtitle: '순위 · 코딩/게임 실측 · 요금표',
+      label: 'AI 모델 데이터 & 성능 비교',
+      subtitle: '공식 사양 · 독립 측정 · 공개 평가',
       icon: BarChart3,
       color: 'text-indigo-400',
       activeGradient: 'from-indigo-600 to-indigo-700'
@@ -111,7 +111,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Quick Info Pill */}
           <div className="flex items-center gap-2 text-xs font-mono">
             <span className="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">
-              ⚡ 검증 기준: <strong className="text-emerald-400">2026.08.18</strong>
+              ⚡ 데이터 검증: <strong className="text-emerald-400">2026.08.20</strong>
             </span>
           </div>
         </div>
