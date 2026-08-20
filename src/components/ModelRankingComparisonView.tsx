@@ -16,9 +16,11 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import {
+  AGENTS_LAST_EXAM_SNAPSHOT,
   BENCHMARK_EXPLANATION_SOURCES,
   EVIDENCE_RULES,
   EXCEL_ARTIFACT_BENCHMARK,
+  EXTERNAL_BENCHMARK_RESOURCES,
   INDEPENDENT_METHODOLOGY_SOURCE,
   INDEPENDENT_MEASUREMENTS,
   INDEPENDENT_UNAVAILABLE_MODELS,
@@ -691,6 +693,112 @@ const PublishedView = () => {
           <ArtifactTable title="Excel 제작" icon={FileSpreadsheet} rows={EXCEL_ARTIFACT_BENCHMARK} />
         </div>
       </section>
+
+      <section className="overflow-hidden rounded-2xl border border-cyan-500/20 bg-slate-900/60">
+        <div className="flex flex-col gap-3 border-b border-slate-800 p-5 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-xs font-bold text-cyan-300">독립 운영 주체의 공개 리더보드 스냅샷</p>
+            <h2 className="mt-1 font-black text-white">Agents’ Last Exam: 장기 전문 업무 실행 기록</h2>
+            <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-400">
+              여러 산업의 실제 업무를 에이전트가 끝까지 수행하는지를 측정합니다. 모델 이름만이 아니라 사용한
+              하네스, 부분 점수, 비용, 총 실행 시간을 같이 보므로 실제 도입 판단에 더 가까운 자료입니다.
+            </p>
+          </div>
+          <SourceLink source={AGENTS_LAST_EXAM_SNAPSHOT.source} />
+        </div>
+        <div className="border-b border-slate-800 bg-cyan-500/5 px-5 py-3 text-xs leading-5 text-cyan-100/80">
+          스냅샷 확인일 {AGENTS_LAST_EXAM_SNAPSHOT.capturedAt} · {AGENTS_LAST_EXAM_SNAPSHOT.split}
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-[900px] w-full text-sm">
+            <thead className="bg-slate-950/50 text-xs text-slate-500">
+              <tr>
+                <th className="px-5 py-3 text-left">하네스</th>
+                <th className="px-3 py-3 text-left">모델 · 설정</th>
+                <th className="px-3 py-3 text-right">완벽 통과율</th>
+                <th className="px-3 py-3 text-right">부분 점수</th>
+                <th className="px-3 py-3 text-right">추정 총비용</th>
+                <th className="px-5 py-3 text-right">총 실행 시간</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {AGENTS_LAST_EXAM_SNAPSHOT.runs.map((run) => (
+                <tr key={`${run.harness}-${run.modelName}`} className="align-top hover:bg-slate-800/30">
+                  <td className="px-5 py-3 font-bold text-cyan-200">{run.harness}</td>
+                  <td className="px-3 py-3">
+                    <p className="font-bold text-slate-200">{run.modelName}</p>
+                    <p className="mt-1 text-[10px] text-slate-500">{run.effort}</p>
+                    {run.note && <p className="mt-1 text-[10px] leading-4 text-amber-300/80">{run.note}</p>}
+                  </td>
+                  <td className="px-3 py-3 text-right font-mono font-black text-white">{run.passRate}%</td>
+                  <td className="px-3 py-3 text-right font-mono text-slate-300">{run.partialScore}</td>
+                  <td className="px-3 py-3 text-right font-mono text-slate-300">
+                    {run.estimatedCostUsd === null ? '원문 미기재' : formatMoney(run.estimatedCostUsd)}
+                  </td>
+                  <td className="px-5 py-3 text-right font-mono text-slate-300">{run.totalRuntime ?? '원문 미기재'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="border-t border-amber-500/20 bg-amber-500/5 px-5 py-3 text-[11px] leading-5 text-amber-100/80">
+          {AGENTS_LAST_EXAM_SNAPSHOT.warning}
+        </p>
+      </section>
+
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 sm:p-6">
+        <div>
+          <p className="text-xs font-bold text-violet-300">추가로 참고할 공식 테스트·리더보드</p>
+          <h2 className="mt-1 font-black text-white">한 가지 점수 대신, 작업 종류에 맞는 시험을 함께 보세요</h2>
+          <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-400">
+            이 목록은 서로 다른 작업을 재는 운영 주체의 공식 자료입니다. 수치를 한 순위로 합치지 않고,
+            실제 도입하려는 업무와 맞는 자료를 열어 조건·날짜·하네스를 확인하는 용도로 제공합니다.
+          </p>
+        </div>
+        <div className="mt-5 grid gap-3 md:grid-cols-2 2xl:grid-cols-4">
+          {EXTERNAL_BENCHMARK_RESOURCES.map((resource) => (
+            <article key={resource.id} className="flex flex-col rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-black text-violet-300">{resource.category}</p>
+                  <h3 className="mt-1 text-sm font-black text-white">{resource.title}</h3>
+                </div>
+                <a
+                  href={resource.source.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`${resource.title} 원문 열기`}
+                  className="rounded-lg p-1 text-slate-500 hover:bg-slate-800 hover:text-violet-300"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </div>
+              <p className="mt-3 text-xs leading-5 text-slate-300">{resource.easyExplanation}</p>
+              <dl className="mt-4 space-y-2 border-t border-slate-800 pt-3 text-[11px] leading-5">
+                <div>
+                  <dt className="font-bold text-slate-500">이럴 때 참고</dt>
+                  <dd className="text-slate-400">{resource.bestFor}</dd>
+                </div>
+                <div>
+                  <dt className="font-bold text-slate-500">점수 해석</dt>
+                  <dd className="text-slate-400">{resource.scoreGuide}</dd>
+                </div>
+              </dl>
+              <p className="mt-3 rounded-lg border border-amber-500/15 bg-amber-500/5 p-2 text-[10px] leading-4 text-amber-100/70">
+                {resource.comparabilityNote}
+              </p>
+              <a
+                href={resource.source.url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-violet-300 hover:text-violet-200"
+              >
+                {resource.source.publisher} 원문 <ExternalLink className="h-3 w-3" />
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };
@@ -706,11 +814,15 @@ const MethodologyView = () => {
       })),
       INDEPENDENT_METHODOLOGY_SOURCE,
       ...BENCHMARK_EXPLANATION_SOURCES,
+      AGENTS_LAST_EXAM_SNAPSHOT.source,
+      ...EXTERNAL_BENCHMARK_RESOURCES.map((resource) => resource.source),
       ...PUBLISHED_BENCHMARKS.map((benchmark) => benchmark.source),
       OPENAI_BENCHMARK_SOURCE,
       MODEL_ML_BENCHMARK_SOURCE,
     ];
-    return Array.from(new Map(allSources.map((source) => [source.url, source])).values());
+    return Array.from(
+      new Map<string, SourceReference>(allSources.map((source) => [source.url, source])).values(),
+    );
   }, []);
 
   return (

@@ -72,6 +72,23 @@ Artificial Analysis의 Intelligence Index v4.1.1 모델 페이지에서 다음 �
 
 이 자료가 공개한 비교 대상은 GPT-5.6 Sol, Claude Opus 5, Claude Fable 5, GPT-5.6 Terra 네 모델이다. 나머지 모델 칸은 비교 대상이 아니므로 추가하지 않으며, 각 영문 측정 항목 아래에 한국어 쉬운 뜻을 함께 표시한다.
 
+### 추가로 참고할 공식 벤치마크와 리더보드
+
+화면에는 아래 자료를 별도 참고 카드로 추가했다. 서로 다른 도구 권한, 프롬프트, 실행 시간, 비용 한도, 에이전트 하네스를 쓰므로 점수를 한 표로 합치거나 자체 종합 순위로 만들지 않는다.
+
+| 자료 | 무엇을 확인하는가 | 원문 |
+|---|---|---|
+| Agents' Last Exam | 검증 가능한 성공 조건이 있는 장기 전문 업무 수행 | [공식 리더보드](https://agents-last-exam.org/leaderboard) |
+| Terminal-Bench 3 | 격리된 컨테이너에서 터미널 명령과 파일 작업을 끝까지 완료하는 능력 | [공식 리더보드](https://www.tbench.ai/leaderboard) |
+| τ³-bench | 항공·소매·통신·은행 환경에서 정책을 지키며 도구와 사용자 상호작용을 처리하는 능력 | [공식 저장소·방법](https://github.com/sierra-research/tau2-bench) |
+| SWE-Bench Pro | 전문 소프트웨어 저장소의 실제 이슈를 수정하고 테스트를 통과하는 능력 | [공식 리더보드](https://labs.scale.com/leaderboard/swe_bench_pro_public) |
+| LiveCodeBench | 오염을 줄이기 위해 최신 문제를 지속 반영한 프로그래밍 문제 풀이 | [공식 리더보드](https://huggingface.co/spaces/livecodebench/leaderboard) |
+| BrowseComp | 웹에서 찾기 어려운 정보를 찾아, 짧고 검증 가능한 답을 내는 능력 | [OpenAI 소개](https://openai.com/index/browsecomp/) |
+| OSWorld 2.0 | 실제 운영체제·앱을 넘나드는 긴 컴퓨터 사용 워크플로 | [논문](https://arxiv.org/abs/2606.29537) |
+| ARC-AGI-2 | 예시에서 새로운 규칙을 추론해 낯선 시각 퍼즐을 푸는 일반화 능력 | [ARC Prize 설명](https://arcprize.org/arc-agi/2) |
+
+Agents' Last Exam은 2026-08-20에 확인한 공식 공개 리더보드의 실행 기록도 별도 표로 옮겼다. 이 표의 pass rate는 완전 성공한 과제의 비율이고, score는 부분 성공을 포함한 평균 점수다. 리더보드의 각 실행은 서로 다른 하네스와 설정일 수 있으므로 **모델 자체의 공정한 단독 순위가 아니라 공개된 에이전트 실행 기록**으로 해석한다. 모델별로 원문에 공개된 실행이 없는 경우 숫자나 빈 칸을 만들지 않는다.
+
 ## 4. 수록하지 않는 데이터
 
 - 실행 로그와 원본 산출물이 없는 사이트 자체 ‘실측’ 수치

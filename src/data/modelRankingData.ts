@@ -101,6 +101,28 @@ export interface ArtifactBenchmarkMetric {
   terra: number;
 }
 
+export interface OfficialLeaderboardRun {
+  harness: string;
+  modelName: string;
+  effort: string;
+  passRate: number;
+  partialScore: number;
+  estimatedCostUsd: number | null;
+  totalRuntime: string | null;
+  note?: string;
+}
+
+export interface ExternalBenchmarkResource {
+  id: string;
+  title: string;
+  category: string;
+  easyExplanation: string;
+  bestFor: string;
+  scoreGuide: string;
+  comparabilityNote: string;
+  source: SourceReference;
+}
+
 export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
   {
     id: 'claude-opus-5',
@@ -809,6 +831,110 @@ export const BENCHMARK_EXPLANATION_SOURCES: SourceReference[] = [
     title: 'BenchCAD benchmark and dataset',
     publisher: 'BenchCAD',
     url: 'https://benchcad.com/',
+  },
+];
+
+export const AGENTS_LAST_EXAM_SNAPSHOT = {
+  capturedAt: '2026-08-20',
+  split: 'Overall · official public leaderboard',
+  source: {
+    title: "Agents' Last Exam official leaderboard",
+    publisher: 'UC Berkeley RDI / Agents’ Last Exam',
+    url: 'https://agents-last-exam.org/leaderboard',
+  } satisfies SourceReference,
+  warning:
+    '같은 모델이라도 Codex·Claude Code·Grok Build처럼 에이전트 하네스와 설정이 다릅니다. 이 표는 공개 실행 기록을 읽는 자료이며, 모델만의 공정 순위가 아닙니다.',
+  runs: [
+    { harness: 'Codex', modelName: 'GPT-5.6 Sol', effort: '리더보드 등록 설정', passRate: 30.6, partialScore: 53.6, estimatedCostUsd: 762, totalRuntime: '94시간 39분' },
+    { harness: 'Codex', modelName: 'GPT-5.6 Luna', effort: '리더보드 등록 설정', passRate: 29.6, partialScore: 48.3, estimatedCostUsd: 235, totalRuntime: '66시간 7분' },
+    { harness: 'Codex', modelName: 'GPT-5.6 Terra', effort: '리더보드 등록 설정', passRate: 28, partialScore: 50.5, estimatedCostUsd: 545, totalRuntime: '118시간 39분' },
+    { harness: 'Grok Build', modelName: 'Grok 4.5', effort: 'high', passRate: 27, partialScore: 51.2, estimatedCostUsd: 337, totalRuntime: '89시간 8분' },
+    { harness: 'Claude Code', modelName: 'Claude Opus 4.8', effort: '리더보드 등록 설정', passRate: 27, partialScore: 45.1, estimatedCostUsd: 3985, totalRuntime: '179시간 18분' },
+    { harness: 'Codex', modelName: 'GPT-5.5', effort: '리더보드 등록 설정', passRate: 26.6, partialScore: 47.9, estimatedCostUsd: 602, totalRuntime: '97시간 8분' },
+    { harness: 'Claude Code', modelName: 'Claude Fable 5', effort: '리더보드 등록 설정', passRate: 25.7, partialScore: 48.7, estimatedCostUsd: 4340, totalRuntime: '70시간 0분', note: '원문에 “40% tasks downgraded” 표기가 있는 실행입니다.' },
+  ] satisfies OfficialLeaderboardRun[],
+};
+
+export const EXTERNAL_BENCHMARK_RESOURCES: ExternalBenchmarkResource[] = [
+  {
+    id: 'agents-last-exam',
+    title: "Agents' Last Exam",
+    category: '장기 전문 업무',
+    easyExplanation: '도구·파일·웹 앱을 써서 여러 산업의 실제 업무를 끝까지 수행하는지 봅니다.',
+    bestFor: '에이전트가 긴 업무를 끈기 있게 완수하는지, 비용과 실행 시간까지 함께 보고 싶을 때',
+    scoreGuide: 'Pass rate는 완벽 통과 비율, Score는 부분 점수 평균입니다.',
+    comparabilityNote: '하네스·도구 권한·모델 설정이 다르면 같은 모델도 달라질 수 있습니다.',
+    source: AGENTS_LAST_EXAM_SNAPSHOT.source,
+  },
+  {
+    id: 'terminal-bench',
+    title: 'Terminal-Bench 3',
+    category: '터미널 에이전트',
+    easyExplanation: '격리된 명령줄 환경에서 개발·운영·데이터·보안 과제를 실제로 해결하는지 봅니다.',
+    bestFor: 'CLI 코딩 에이전트나 DevOps 자동화 도입 전',
+    scoreGuide: '버전별 태스크와 하네스가 달라 동일 버전·동일 하네스 결과만 비교합니다.',
+    comparabilityNote: '공식 리더보드의 무결성 정책과 실행 세부 조건을 함께 확인해야 합니다.',
+    source: { title: 'Terminal-Bench official leaderboard', publisher: 'Terminal-Bench', url: 'https://www.tbench.ai/leaderboard' },
+  },
+  {
+    id: 'tau3-bench',
+    title: 'τ³-bench',
+    category: '도구 사용·고객 대화',
+    easyExplanation: '정책을 지키며 항공·리테일·통신·지식 기반 고객 지원 업무를 도구로 처리하는지 봅니다.',
+    bestFor: '고객지원 챗봇, 예약·주문·계정 관리 에이전트',
+    scoreGuide: '최종 답변의 말솜씨보다 정책 준수와 올바른 도구 조작이 핵심입니다.',
+    comparabilityNote: '텍스트·음성, 도메인, 사용자 시뮬레이터 조건을 섞어 비교하면 안 됩니다.',
+    source: { title: 'τ³-bench official repository and benchmark guide', publisher: 'Sierra Research', url: 'https://github.com/sierra-research/tau2-bench' },
+  },
+  {
+    id: 'swe-bench-pro',
+    title: 'SWE-Bench Pro',
+    category: '실제 저장소 수정',
+    easyExplanation: '긴 실제 소프트웨어 이슈를 읽고 여러 파일을 고친 뒤 테스트를 통과하는지 봅니다.',
+    bestFor: '코드베이스 단위의 버그 수정·기능 구현 에이전트',
+    scoreGuide: '첫 시도에서 검증을 통과한 비율을 주로 봅니다.',
+    comparabilityNote: '데이터 결함·부분집합·하네스 문제가 보고돼 절대 순위가 아닌 한 가지 신호로만 봐야 합니다.',
+    source: { title: 'SWE-Bench Pro public leaderboard and methodology', publisher: 'Scale AI', url: 'https://labs.scale.com/leaderboard/swe_bench_pro_public' },
+  },
+  {
+    id: 'livecodebench',
+    title: 'LiveCodeBench',
+    category: '오염 저항 코딩',
+    easyExplanation: '모델 학습 시점 이후에 수집한 프로그래밍 문제로 코드 생성·실행·테스트 능력을 봅니다.',
+    bestFor: '알고리즘 문제 해결과 일반 코드 생성의 최신 감각을 확인할 때',
+    scoreGuide: '실행·정답 기준 점수이지만, 저장소 수정이나 도구 사용 능력 전체를 대신하지는 않습니다.',
+    comparabilityNote: '월별 문제 묶음·난이도·언어·평가 설정을 동일하게 맞춰야 합니다.',
+    source: { title: 'LiveCodeBench official leaderboard', publisher: 'LiveCodeBench', url: 'https://huggingface.co/spaces/livecodebench/leaderboard' },
+  },
+  {
+    id: 'browsecomp',
+    title: 'BrowseComp',
+    category: '웹 조사',
+    easyExplanation: '웹 여러 곳에 흩어진 단서를 끈기 있게 찾아, 검증 가능한 짧은 정답을 찾는지 봅니다.',
+    bestFor: '딥리서치·조사형 웹 에이전트',
+    scoreGuide: '어려운 단답형 탐색 문제의 정답률이며, 장문 보고서의 품질 전체를 뜻하지는 않습니다.',
+    comparabilityNote: '브라우징 도구·반복 횟수·투표 방식에 따라 결과가 달라집니다.',
+    source: { title: 'BrowseComp benchmark', publisher: 'OpenAI', url: 'https://openai.com/index/browsecomp/' },
+  },
+  {
+    id: 'osworld-2',
+    title: 'OSWorld 2.0',
+    category: '컴퓨터 사용',
+    easyExplanation: '데스크톱 앱을 조작해 여러 단계의 일상·전문 업무를 완료하는지 봅니다.',
+    bestFor: '브라우저·오피스·파일 시스템을 실제로 조작하는 컴퓨터 사용 에이전트',
+    scoreGuide: '정해진 최종 상태에 도달한 과제 비율을 중심으로 읽습니다.',
+    comparabilityNote: '운영체제 이미지, 앱 버전, 관찰 방식, 도구 권한이 같아야 비교가 가능합니다.',
+    source: { title: 'OSWorld 2.0 paper', publisher: 'OSWorld researchers', url: 'https://arxiv.org/abs/2606.29537' },
+  },
+  {
+    id: 'arc-agi-2',
+    title: 'ARC-AGI-2',
+    category: '추상 추론',
+    easyExplanation: '몇 개의 예시만 보고 숨은 규칙을 찾아 새로운 격자 퍼즐에 적용하는지 봅니다.',
+    bestFor: '새 규칙을 빠르게 배우고 일반화하는 추론 신호를 별도로 확인할 때',
+    scoreGuide: '정답률뿐 아니라 과제당 비용·시도 횟수 등 효율 조건을 같이 봐야 합니다.',
+    comparabilityNote: '일반 코딩·업무 자동화 실력을 직접 대변하지 않는 특화된 추상 추론 시험입니다.',
+    source: { title: 'ARC-AGI-2 official benchmark', publisher: 'ARC Prize Foundation', url: 'https://arcprize.org/arc-agi/2' },
   },
 ];
 
