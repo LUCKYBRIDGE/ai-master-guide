@@ -172,7 +172,8 @@ const SpecsView = () => {
           </div>
           <p className="mt-2 text-sm leading-6 text-slate-400">
             가격은 입력 / 출력 100만 토큰당 Standard API 요금입니다. 캐시·배치·Fast mode·도구 호출
-            비용은 포함하지 않습니다.
+            비용은 포함하지 않습니다. 각 모델에는 현재 단가의 적용 기간과 확인 가능한 이전·예정 단가를 함께
+            표시하며, 원문 재확인일은 {MODEL_DATA_SNAPSHOT.localeDate}입니다.
           </p>
         </div>
         <div className="overflow-x-auto">
@@ -204,6 +205,15 @@ const SpecsView = () => {
                   <td className="px-4 py-4">
                     <p className="font-mono font-bold text-emerald-300">{model.priceLabel}</p>
                     <p className="mt-1 max-w-[250px] text-xs leading-5 text-slate-500">{model.priceNote}</p>
+                    <div className="mt-2 max-w-[270px] space-y-1 border-t border-slate-800 pt-2 text-[10px] leading-4">
+                      <p className="text-emerald-200/80"><span className="font-bold">현재 적용:</span> {model.priceTiming.current}</p>
+                      {model.priceTiming.previous && (
+                        <p className="text-slate-500"><span className="font-bold text-slate-400">이전:</span> {model.priceTiming.previous}</p>
+                      )}
+                      {model.priceTiming.scheduled && (
+                        <p className="text-amber-200/80"><span className="font-bold">예정·변경:</span> {model.priceTiming.scheduled}</p>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-4 max-w-[180px] text-slate-300">{model.inputModalities}</td>
                   <td className="px-4 py-4">

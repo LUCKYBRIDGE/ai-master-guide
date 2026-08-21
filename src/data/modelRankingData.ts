@@ -26,6 +26,11 @@ export interface VerifiedModelSpec {
   outputCostPer1M: number;
   priceLabel: string;
   priceNote: string;
+  priceTiming: {
+    current: string;
+    previous?: string;
+    scheduled?: string;
+  };
   inputModalities: string;
   outputModalities: string;
   badgeColor: string;
@@ -149,6 +154,7 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
     outputCostPer1M: 25,
     priceLabel: '$5 / $25',
     priceNote: 'Claude API 기본 모드. Fast mode는 기본 가격의 2배.',
+    priceTiming: { current: '모델 공개 시점부터 적용 · 2026-07-24' },
     inputModalities: '텍스트·이미지',
     outputModalities: '텍스트',
     badgeColor: 'bg-purple-500/10 text-purple-300 border-purple-500/30',
@@ -180,6 +186,7 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
     outputCostPer1M: 50,
     priceLabel: '$10 / $50',
     priceNote: 'Claude API 표준 가격. 일부 민감 영역은 거절 또는 fallback이 발생할 수 있음.',
+    priceTiming: { current: '모델 공개 시점부터 적용 · 2026-06-09' },
     inputModalities: '텍스트·이미지',
     outputModalities: '텍스트',
     badgeColor: 'bg-teal-500/10 text-teal-300 border-teal-500/30',
@@ -206,6 +213,7 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
     outputCostPer1M: 30,
     priceLabel: '$5 / $30',
     priceNote: 'OpenAI API Standard. 272K 초과 입력은 장문 컨텍스트 할증 적용.',
+    priceTiming: { current: '모델 공개 시점 기준 · 2026-07-09', scheduled: '2026-07-30 가격 인하 발표에서 Sol 단가는 변경 없음' },
     inputModalities: '텍스트·이미지',
     outputModalities: '텍스트',
     badgeColor: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
@@ -237,6 +245,7 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
     outputCostPer1M: 6,
     priceLabel: '$2 / $6',
     priceNote: 'SpaceXAI API 공개 모델 표 기준. 공식 페이지에 최대 출력 토큰은 별도 기재되지 않음.',
+    priceTiming: { current: '가격 효력 시작일 원문 미공개 · 가격표 재확인 2026-08-21' },
     inputModalities: '텍스트·이미지',
     outputModalities: '텍스트',
     badgeColor: 'bg-orange-500/10 text-orange-300 border-orange-500/30',
@@ -268,6 +277,7 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
     outputCostPer1M: 12,
     priceLabel: '$2 / $12',
     priceNote: '2026-07-30 인하된 OpenAI API Standard 가격. 272K 초과 입력은 할증 적용.',
+    priceTiming: { current: '현재 단가 적용 · 2026-07-30부터', previous: '이전 $2.50 / $15 · 2026-07-29까지' },
     inputModalities: '텍스트·이미지',
     outputModalities: '텍스트',
     badgeColor: 'bg-slate-500/10 text-slate-300 border-slate-500/30',
@@ -299,6 +309,7 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
     outputCostPer1M: 10,
     priceLabel: '$2 / $10',
     priceNote: '2026-08-31까지 도입 가격. 이후 표준 가격은 $3 / $15.',
+    priceTiming: { current: '도입 가격 적용 · 2026-08-31까지', scheduled: '예정 표준 가격 $3 / $15 · 2026-09-01부터' },
     inputModalities: '텍스트·이미지',
     outputModalities: '텍스트',
     badgeColor: 'bg-violet-500/10 text-violet-300 border-violet-500/30',
@@ -325,6 +336,7 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
     outputCostPer1M: 1.2,
     priceLabel: '$0.20 / $1.20',
     priceNote: '2026-07-30 인하된 OpenAI API Standard 가격. 272K 초과 입력은 할증 적용.',
+    priceTiming: { current: '현재 단가 적용 · 2026-07-30부터', previous: '이전 $1 / $6 · 2026-07-29까지' },
     inputModalities: '텍스트·이미지',
     outputModalities: '텍스트',
     badgeColor: 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30',
@@ -356,6 +368,7 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
     outputCostPer1M: 3.75,
     priceLabel: '$0.75 / $3.75',
     priceNote: '2026-12-31까지 Standard 도입 가격. 출력 가격에는 thinking tokens 포함.',
+    priceTiming: { current: '도입 가격 적용 · 2026-12-31까지', scheduled: '예정 표준 가격 $1.50 / $7.50 · 2027-01-01부터' },
     inputModalities: '텍스트·이미지·비디오·오디오·PDF',
     outputModalities: '텍스트',
     badgeColor: 'bg-blue-500/10 text-blue-300 border-blue-500/30',
