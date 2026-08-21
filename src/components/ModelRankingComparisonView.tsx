@@ -133,6 +133,10 @@ const EvidenceNotice = () => (
           측정값, 공개된 모델 카드·실사용 벤치마크를 출처별로 옮겼습니다. 실행 조건이 다른 결과를 하나의
           종합 순위로 합산하지 않습니다.
         </p>
+        <p className="mt-2 leading-6 text-amber-100/80">
+          날짜는 <strong>시험 실행일</strong>, <strong>결과 공개일</strong>, <strong>사이트 확인일</strong>, <strong>별도 가격 발표일</strong>을
+          서로 바꾸어 쓰지 않습니다. 가격 발표는 기존 시험 점수·토큰 수·평가 비용을 소급 수정하지 않습니다.
+        </p>
       </div>
     </div>
   </div>
@@ -220,11 +224,11 @@ const SpecsView = () => {
         <div className="flex items-start gap-3">
           <Activity className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
           <div>
-            <p className="text-xs font-bold text-emerald-300">공식 발표·가격표 재확인 · {MODEL_DATA_SNAPSHOT.localeDate}</p>
-            <h2 className="mt-1 font-black text-white">최근 토큰 비용·효율 업데이트</h2>
+            <p className="text-xs font-bold text-emerald-300">테스트 결과와 분리한 공식 가격·정책 발표 · {MODEL_DATA_SNAPSHOT.localeDate} 확인</p>
+            <h2 className="mt-1 font-black text-white">별도 가격·토큰 효율 업데이트</h2>
             <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-400">
-              단가 인하, 캐시 재사용, 한시 가격은 모두 실제 비용에 영향을 줍니다. 다만 제공사·모델·처리 방식마다
-              조건이 달라 “AI 비용이 전부 내려갔다”라고 일반화하지 않고, 원문에 확인된 변화만 따로 표시합니다.
+              단가 인하, 캐시 재사용, 한시 가격은 모두 현재 비용에 영향을 줍니다. 이 카드는 시험·측정 결과와
+              별개인 가격 발표를 날짜와 함께 기록한 것이며, 기존 평가의 점수·토큰 수·비용값을 다시 계산하지 않습니다.
             </p>
           </div>
         </div>
@@ -233,7 +237,7 @@ const SpecsView = () => {
             <article key={update.id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-black text-emerald-300">{update.provider} · {update.announcedAt}</p>
+                  <p className="text-[10px] font-black text-emerald-300">{update.provider} · 가격·정책 발표일 {update.priceAnnouncementDate}</p>
                   <h3 className="mt-1 text-sm font-black text-white">{update.title}</h3>
                 </div>
                 <SourceLink source={update.source} compact />
@@ -332,7 +336,7 @@ const IndependentView = () => {
               ‘모델 서열’이 아니라 해당 버전의 9개 평가 묶음에 대한 종합 지표입니다.
             </p>
             <p className="mt-2 text-xs leading-5 text-cyan-100/75">
-              결과 스냅샷 확인일: {INDEPENDENT_MEASUREMENT_SNAPSHOT.sourceCheckedAt} · 시험 실행일: {INDEPENDENT_MEASUREMENT_SNAPSHOT.resultRunDate}
+              시험 실행일: {INDEPENDENT_MEASUREMENT_SNAPSHOT.resultRunDate} · 결과·비용 스냅샷 확인일: {INDEPENDENT_MEASUREMENT_SNAPSHOT.sourceCheckedAt}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -366,7 +370,7 @@ const IndependentView = () => {
 
         {metric === 'costPerIndexTaskUsd' && (
           <div className="mt-4 rounded-xl border border-amber-500/25 bg-amber-500/5 p-4 text-xs leading-5 text-amber-100/80">
-            <p><span className="font-black text-amber-200">가격 기준: </span>{INDEPENDENT_MEASUREMENT_SNAPSHOT.costBasis}</p>
+            <p><span className="font-black text-amber-200">이 비용 지표의 가격 기준: </span>{INDEPENDENT_MEASUREMENT_SNAPSHOT.costBasis}</p>
             <p className="mt-2">{INDEPENDENT_MEASUREMENT_SNAPSHOT.warning}</p>
           </div>
         )}
@@ -761,7 +765,7 @@ const PublishedView = () => {
           <SourceLink source={AGENTS_LAST_EXAM_SNAPSHOT.source} />
         </div>
         <div className="border-b border-slate-800 bg-cyan-500/5 px-5 py-3 text-xs leading-5 text-cyan-100/80">
-          스냅샷 확인일 {AGENTS_LAST_EXAM_SNAPSHOT.capturedAt} · {AGENTS_LAST_EXAM_SNAPSHOT.split}
+          리더보드 스냅샷 확인일 {AGENTS_LAST_EXAM_SNAPSHOT.capturedAt} · {AGENTS_LAST_EXAM_SNAPSHOT.split} · 개별 실행일·당시 가격 기준은 원문 미공개
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-[900px] w-full text-sm">
