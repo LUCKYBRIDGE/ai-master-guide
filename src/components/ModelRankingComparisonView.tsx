@@ -23,6 +23,7 @@ import {
   EXTERNAL_BENCHMARK_RESOURCES,
   INDEPENDENT_METHODOLOGY_SOURCE,
   INDEPENDENT_MEASUREMENTS,
+  INDEPENDENT_MEASUREMENT_SNAPSHOT,
   INDEPENDENT_UNAVAILABLE_MODELS,
   MODEL_DATA_SNAPSHOT,
   MODEL_ML_BENCHMARK_SOURCE,
@@ -31,6 +32,7 @@ import {
   POWERPOINT_ARTIFACT_BENCHMARK,
   PUBLISHED_BENCHMARKS,
   REPRODUCIBLE_LAB_REQUIREMENTS,
+  VERIFIED_COST_EFFICIENCY_UPDATES,
   VERIFIED_MODEL_SPECS,
   type ArtifactBenchmarkMetric,
   type SourceReference,
@@ -214,6 +216,40 @@ const SpecsView = () => {
         </div>
       </section>
 
+      <section className="rounded-2xl border border-emerald-500/20 bg-slate-900/60 p-5 sm:p-6">
+        <div className="flex items-start gap-3">
+          <Activity className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
+          <div>
+            <p className="text-xs font-bold text-emerald-300">공식 발표·가격표 재확인 · {MODEL_DATA_SNAPSHOT.localeDate}</p>
+            <h2 className="mt-1 font-black text-white">최근 토큰 비용·효율 업데이트</h2>
+            <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-400">
+              단가 인하, 캐시 재사용, 한시 가격은 모두 실제 비용에 영향을 줍니다. 다만 제공사·모델·처리 방식마다
+              조건이 달라 “AI 비용이 전부 내려갔다”라고 일반화하지 않고, 원문에 확인된 변화만 따로 표시합니다.
+            </p>
+          </div>
+        </div>
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
+          {VERIFIED_COST_EFFICIENCY_UPDATES.map((update) => (
+            <article key={update.id} className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-black text-emerald-300">{update.provider} · {update.announcedAt}</p>
+                  <h3 className="mt-1 text-sm font-black text-white">{update.title}</h3>
+                </div>
+                <SourceLink source={update.source} compact />
+              </div>
+              <p className="mt-3 text-xs leading-5 text-slate-300">{update.summary}</p>
+              <p className="mt-3 border-t border-slate-800 pt-3 text-[11px] leading-5 text-slate-400">
+                <span className="font-bold text-slate-300">실무 해석: </span>{update.practicalMeaning}
+              </p>
+              <p className="mt-3 rounded-lg border border-amber-500/15 bg-amber-500/5 p-2 text-[10px] leading-4 text-amber-100/75">
+                {update.caveat}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div>
@@ -295,6 +331,9 @@ const IndependentView = () => {
               같은 기관이 공개한 현재 모델 페이지의 값을 사용했습니다. Intelligence Index는 절대적
               ‘모델 서열’이 아니라 해당 버전의 9개 평가 묶음에 대한 종합 지표입니다.
             </p>
+            <p className="mt-2 text-xs leading-5 text-cyan-100/75">
+              결과 스냅샷 확인일: {INDEPENDENT_MEASUREMENT_SNAPSHOT.sourceCheckedAt} · 시험 실행일: {INDEPENDENT_MEASUREMENT_SNAPSHOT.resultRunDate}
+            </p>
           </div>
           <div className="flex flex-wrap gap-2">
             {(Object.keys(INDEPENDENT_METRICS) as IndependentMetric[]).map((metricId) => (
@@ -324,6 +363,13 @@ const IndependentView = () => {
             <p className="mt-1 text-sm leading-6 text-slate-300">{meta.interpretation}</p>
           </div>
         </div>
+
+        {metric === 'costPerIndexTaskUsd' && (
+          <div className="mt-4 rounded-xl border border-amber-500/25 bg-amber-500/5 p-4 text-xs leading-5 text-amber-100/80">
+            <p><span className="font-black text-amber-200">가격 기준: </span>{INDEPENDENT_MEASUREMENT_SNAPSHOT.costBasis}</p>
+            <p className="mt-2">{INDEPENDENT_MEASUREMENT_SNAPSHOT.warning}</p>
+          </div>
+        )}
 
         <div className="mt-6 rounded-xl border border-slate-800 bg-slate-950/70 p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
@@ -524,6 +570,12 @@ const PublishedView = () => {
                 <dt className="text-slate-600">표본·산식</dt>
                 <dd className="mt-1 font-bold text-slate-300">{benchmark.sampleInfo}</dd>
               </div>
+              <div className="rounded-lg bg-slate-900 p-3 sm:col-span-3">
+                <dt className="text-slate-600">결과 공개일 · 시험 실행일</dt>
+                <dd className="mt-1 font-bold text-slate-300">
+                  결과 공개 {benchmark.source.publishedAt ?? '원문 미기재'} · 개별 시험 실행일은 원문 미공개
+                </dd>
+              </div>
             </dl>
             <div className="mt-4 grid gap-3 rounded-xl border border-orange-500/20 bg-orange-500/5 p-4 lg:grid-cols-3">
               <div>
@@ -582,7 +634,8 @@ const PublishedView = () => {
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
               기존 화면은 원문에 있는 8~10개 모델 중 4개 열만 보였습니다. 이제 선택한 분야의 공개 모델 열을
               빠짐없이 옮기고, 원문이 비워 둔 값만 ‘미보고’로 남깁니다. 위 2026년 8월 모델 카드와는
-              버전·하네스가 달라 직접 병합하지 않습니다.
+              버전·하네스가 달라 직접 병합하지 않습니다. 결과 공개일은 2026-07-09이며, 원문이 행별 시험
+              실행일을 일괄 공개하지 않은 경우에는 그 날짜를 시험일로 바꾸어 쓰지 않습니다.
             </p>
           </div>
           <div className="flex flex-col items-start gap-3 xl:items-end">
@@ -683,7 +736,8 @@ const PublishedView = () => {
               Model ML의 에이전트 하네스로 문서와 워크북을 생성해 채점한 공개 결과입니다. PowerPoint는
               수백 개 덱과 세부 루브릭을 사용했습니다. OpenAI 고객 사례에 게시된 제3자 자체 평가이므로
               독립 기관 점수와는 구분합니다. 이 원문이 공개한 비교 대상은 아래 4개 모델뿐이므로 다른 모델의
-              칸을 추정해 추가하지 않았습니다.
+              칸을 추정해 추가하지 않았습니다. 결과 공개일은 {MODEL_ML_BENCHMARK_SOURCE.publishedAt ?? '원문 미기재'}이며,
+              상세 실행일은 원문 미공개입니다.
             </p>
           </div>
           <SourceLink source={MODEL_ML_BENCHMARK_SOURCE} />

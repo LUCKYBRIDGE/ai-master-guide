@@ -1,6 +1,6 @@
 export const MODEL_DATA_SNAPSHOT = {
-  verifiedAt: '2026-08-20',
-  localeDate: '2026년 8월 20일',
+  verifiedAt: '2026-08-21',
+  localeDate: '2026년 8월 21일',
   policy:
     '공식 API 사양과 원문이 공개된 평가 결과만 수록합니다. 출처가 다른 점수는 합산하거나 임의 순위로 변환하지 않습니다.',
 };
@@ -120,6 +120,17 @@ export interface ExternalBenchmarkResource {
   bestFor: string;
   scoreGuide: string;
   comparabilityNote: string;
+  source: SourceReference;
+}
+
+export interface CostEfficiencyUpdate {
+  id: string;
+  provider: string;
+  announcedAt: string;
+  title: string;
+  summary: string;
+  practicalMeaning: string;
+  caveat: string;
   source: SourceReference;
 }
 
@@ -363,6 +374,69 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
   },
 ];
 
+// 2026-08-21에 제공사 원문에서 다시 확인한 가격·토큰 효율 변경이다.
+// 제공사 발표의 효율 수치는 해당 제공사의 설명이므로, 독립 성능 측정이나 보편적 절감률로 바꾸지 않는다.
+export const VERIFIED_COST_EFFICIENCY_UPDATES: CostEfficiencyUpdate[] = [
+  {
+    id: 'openai-gpt-5-6-price-cut',
+    provider: 'OpenAI',
+    announcedAt: '2026-07-30',
+    title: 'GPT-5.6 Terra·Luna API 가격 인하',
+    summary: 'Terra는 입력/출력 $2.50/$15에서 $2/$12로 20%, Luna는 $1/$6에서 $0.20/$1.20로 80% 인하됐습니다. (각 100만 토큰당)',
+    practicalMeaning: '대량 분류·정형 작업에는 Luna, 품질과 비용을 함께 보려면 Terra의 현재 Standard 단가를 계산기에 적용하면 됩니다.',
+    caveat: 'Sol 가격은 그대로입니다. Fast mode는 더 빠르지만 Standard의 2배 가격이며, 긴 요청·도구 호출 비용도 별도로 발생할 수 있습니다.',
+    source: {
+      title: 'GPT-5.6 가격·속도 업데이트',
+      publisher: 'OpenAI',
+      url: 'https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/',
+      publishedAt: '2026-07-30',
+    },
+  },
+  {
+    id: 'openai-gpt-5-6-cache-pricing',
+    provider: 'OpenAI',
+    announcedAt: '2026-07-09',
+    title: '반복 입력은 캐시 읽기 요금으로 분리',
+    summary: 'GPT-5.6부터 캐시 읽기는 일반 입력 단가의 10%이고, 캐시 쓰기는 일반 입력 단가의 1.25배입니다.',
+    practicalMeaning: '같은 긴 시스템 지침·문서를 정확히 재사용하는 다회 요청이라면, 단순 입력 토큰 합계보다 실제 비용이 낮아질 수 있습니다.',
+    caveat: '캐시 적중은 프롬프트 구성과 재사용 방식에 좌우됩니다. 첫 요청·캐시 쓰기·출력·추론 토큰은 별도로 청구되므로 90% 절감을 모든 요청에 적용하면 안 됩니다.',
+    source: {
+      title: 'GPT-5.6 출시 및 프롬프트 캐싱 안내',
+      publisher: 'OpenAI',
+      url: 'https://openai.com/index/gpt-5-6/',
+      publishedAt: '2026-07-09',
+    },
+  },
+  {
+    id: 'google-gemini-3-7-introductory-pricing',
+    provider: 'Google',
+    announcedAt: '2026-08',
+    title: 'Gemini 3.7 Flash 도입 가격과 만료일',
+    summary: 'Gemini 3.7 Flash Standard는 2026-12-31까지 입력 $0.75·출력 $3.75이며, 이후 $1.50·$7.50로 안내됩니다. 출력 가격에는 thinking tokens가 포함됩니다. (각 100만 토큰당)',
+    practicalMeaning: '현재 단가를 기준으로 예산을 잡되, 2027년 이후 장기 운영 예산은 표준 가격으로도 계산해 두어야 합니다.',
+    caveat: '무료 티어와 Standard·Batch·Flex·Priority는 서로 다르고, Search/Maps grounding은 별도 사용량 요금이 생길 수 있습니다.',
+    source: {
+      title: 'Gemini 3.7 Flash 최신 모델·가격 안내',
+      publisher: 'Google',
+      url: 'https://ai.google.dev/gemini-api/docs/latest-model',
+    },
+  },
+  {
+    id: 'anthropic-sonnet-5-introductory-pricing',
+    provider: 'Anthropic',
+    announcedAt: '2026-08-21 확인',
+    title: 'Claude Sonnet 5 도입 가격은 8월 말 종료 예정',
+    summary: '현재 Sonnet 5의 도입 가격은 입력/출력 $2/$10이며 2026-08-31까지입니다. 이후 문서상 표준 가격은 $3/$15입니다. (각 100만 토큰당)',
+    practicalMeaning: '현재 월 비용만 보지 말고 9월 이후 입력·출력 비용이 각각 50% 올라간 경우도 함께 예산에 반영해야 합니다.',
+    caveat: '따라서 최신 모델 API 가격이 모두 계속 내려간다는 일반화는 정확하지 않습니다. 지역·플랫폼·배치·캐시 조건도 원문에서 확인해야 합니다.',
+    source: {
+      title: 'Claude 최신 모델·가격 비교',
+      publisher: 'Anthropic',
+      url: 'https://platform.claude.com/docs/en/about-claude/models/overview',
+    },
+  },
+];
+
 // Artificial Analysis Intelligence Index v4.1.1. 각 행은 동일 기관의 현재 모델 페이지에서
 // max effort 설정과 first-party API 측정값을 옮겼다. Grok 4.6과 Gemini 3.7 Flash는
 // 이 스냅샷에서 동일 조건의 공개 모델 페이지가 확인되지 않아 임의 보간하지 않는다.
@@ -441,6 +515,15 @@ export const INDEPENDENT_METHODOLOGY_SOURCE: SourceReference = {
   title: 'Artificial Analysis Intelligence Benchmarking methodology',
   publisher: 'Artificial Analysis',
   url: 'https://artificialanalysis.ai/methodology/intelligence-benchmarking',
+};
+
+export const INDEPENDENT_MEASUREMENT_SNAPSHOT = {
+  version: 'Artificial Analysis Intelligence Index v4.1.1',
+  sourceCheckedAt: '2026-08-20',
+  resultRunDate: '모델별 원문 미공개',
+  costBasis: '각 모델 페이지에 표시된 “평가 과제당 비용”을 2026-08-20에 옮긴 값',
+  warning:
+    '이후 API 단가·캐시·추론 토큰 사용량이 바뀌어도 이 과거 측정값을 자동으로 다시 계산하지 않습니다. 현재 비용은 위의 최신 공식 단가와 실제 사용 로그로 별도 계산해야 합니다.',
 };
 
 const noScore = (modelId: string, modelName: string): BenchmarkResult => ({

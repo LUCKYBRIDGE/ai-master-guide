@@ -2,7 +2,7 @@
 
 ## 데이터 스냅샷
 
-- 검증일: 2026-08-20
+- 검증일: 2026-08-21
 - 화면 데이터 원본: `src/data/modelRankingData.ts`
 - 원칙: 공식 API 사양과 원문이 공개된 평가 결과만 수록한다. 출처·버전·하네스가 다른 점수를 합산하거나 임의 종합 순위로 바꾸지 않는다.
 
@@ -17,6 +17,19 @@
 
 가격 계산기는 입력·출력 토큰의 기본 Standard 단가만 계산한다. 캐시, 배치, 우선 처리, Fast mode, 내장 도구 사용료는 제외한다. OpenAI 모델은 입력이 272K 토큰을 초과할 때 문서에 기재된 장문 컨텍스트 할증을 반영한다.
 
+### 최근 가격·토큰 효율 발표의 확인 결과
+
+최근 발표를 “모든 모델의 토큰 비용이 계속 내려간다”는 단일 추세로 표현하지 않는다. 아래는 2026-08-21에 제공사 원문을 다시 확인해 화면의 별도 카드에 반영한 항목이다.
+
+| 제공사·항목 | 원문으로 확인한 사실 | 해석 제한 |
+|---|---|---|
+| OpenAI GPT-5.6 Terra·Luna | 2026-07-30부터 Terra는 $2/$12, Luna는 $0.20/$1.20 (입력/출력 100만 토큰당). 발표는 Terra 20%, Luna 80% 인하라고 설명 | Sol 가격은 그대로이며, Fast mode는 2배 가격이다. 장문 컨텍스트와 도구 사용료는 별도다. [원문](https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/) |
+| OpenAI GPT-5.6 캐시 | 캐시 읽기는 일반 입력 단가의 10%, 캐시 쓰기는 1.25배 | 정확히 재사용되는 프롬프트에만 해당한다. 첫 요청·출력·추론 토큰에 일괄 90% 할인을 적용하지 않는다. [원문](https://openai.com/index/gpt-5-6/) |
+| Google Gemini 3.7 Flash | 2026-12-31까지 Standard 입력/출력 $0.75/$3.75, 2027-01-01부터 $1.50/$7.50로 안내 | thinking token은 출력 가격에 포함되지만, Batch·Flex·Priority·grounding은 별도 조건과 요금이 있다. [원문](https://ai.google.dev/gemini-api/docs/latest-model) |
+| Anthropic Claude Sonnet 5 | 도입 가격 $2/$10은 2026-08-31까지이며 이후 표준 가격은 $3/$15 | 현재 저가가 장기 가격을 보장하지 않는다. 플랫폼·지역·캐시·배치 가격도 분리해 확인한다. [원문](https://platform.claude.com/docs/en/about-claude/models/overview) |
+
+제공사가 말하는 “토큰 효율”은 같은 과제·품질·프롬프트·도구 사용 조건을 맞춘 독립 실측이 아니다. 이 사이트는 이를 제공사 발표로 표시하며, 실제 도입 전에는 대표 작업에서 입력·캐시·추론·출력·도구 호출을 분리해 측정하도록 안내한다.
+
 ## 2. 독립 동일조건 비교
 
 Artificial Analysis의 Intelligence Index v4.1.1 모델 페이지에서 다음 세 측정값을 사용한다.
@@ -25,7 +38,7 @@ Artificial Analysis의 Intelligence Index v4.1.1 모델 페이지에서 다음 �
 - first-party API 출력 속도(tokens/s)
 - Intelligence Index 평가 과제당 비용
 
-한 표에는 같은 기관의 같은 스냅샷과 max effort 결과만 넣었다. Claude Fable 5는 원문처럼 Opus 4.8 fallback 허용 결과라고 표시한다. Grok 4.6과 Gemini 3.7 Flash는 확인 시점에 같은 스냅샷의 모델 페이지가 확인되지 않아 값이나 순위를 추정하지 않았다.
+한 표에는 같은 기관의 같은 스냅샷과 max effort 결과만 넣었다. **결과·비용 스냅샷 확인일은 2026-08-20**이며, Artificial Analysis 모델 페이지가 각 시험의 실제 실행일을 공통으로 공개하지 않아 화면에는 `시험 실행일: 모델별 원문 미공개`로 표시한다. 특히 `평가 과제당 비용`은 이 확인일에 원문 페이지에 표시된 값이며, 2026-07-30 OpenAI 가격 인하나 이후의 가격·캐시 정책을 소급 반영해 다시 계산하지 않는다. Claude Fable 5는 원문처럼 Opus 4.8 fallback 허용 결과라고 표시한다. Grok 4.6과 Gemini 3.7 Flash는 확인 시점에 같은 스냅샷의 모델 페이지가 확인되지 않아 값이나 순위를 추정하지 않았다.
 
 모델별 원문: [Claude Opus 5](https://artificialanalysis.ai/models/claude-opus-5), [Claude Fable 5](https://artificialanalysis.ai/models/claude-fable-5/), [GPT-5.6 Sol](https://artificialanalysis.ai/models/gpt-5-6-sol), [GPT-5.6 Terra](https://artificialanalysis.ai/models/gpt-5-6-terra), [Claude Sonnet 5](https://artificialanalysis.ai/models/claude-sonnet-5), [GPT-5.6 Luna](https://artificialanalysis.ai/models/gpt-5-6-luna)
 
@@ -44,6 +57,8 @@ Artificial Analysis의 Intelligence Index v4.1.1 모델 페이지에서 다음 �
 
 이 자료의 발행 주체는 SpaceXAI다. 일부 표는 비-Grok 모델의 모델 카드 최고 보고치나 서로 다른 에이전트 하네스를 사용하므로 완전한 동일조건 대조가 아니다. 화면에 각 표의 평가자, 하네스, 표본과 제한을 함께 표시한다.
 
+각 표에는 결과 공개일과 시험 실행일을 구분한다. Grok 4.6 모델 카드는 `2026-08`까지만 공개되어 있어 개별 시험 실행일을 추정하지 않는다.
+
 ### OpenAI GPT-5.6 공개 평가표
 
 [GPT-5.6 공개 발표](https://openai.com/index/gpt-5-6/)의 원문 표에 함께 실린 결과를 분야별로 옮겼다. 기존 화면은 Sol·Terra·Luna·Fable 5 네 열만 표시했지만, 현재 화면은 원문에 수치가 있는 비교 모델을 누락하지 않도록 다음 범위를 제공한다.
@@ -53,6 +68,8 @@ Artificial Analysis의 Intelligence Index v4.1.1 모델 페이지에서 다음 �
 - 컴퓨터 사용·웹 탐색·CAD: 9개 모델, 4개 공개 평가
 
 원문이 대시(`—`)로 둔 값은 `미보고`로 표시한다. 이는 0점이나 실패가 아니며 다른 출처의 숫자로 보충하지 않는다. 2026년 8월 Grok 모델 카드의 갱신된 수치와는 시점·버전·하네스가 달라 별도 표로 유지한다.
+
+OpenAI 발표의 결과 공개일은 2026-07-09다. 원문이 행별 시험 실행일을 일괄 공개하지 않은 경우, 공개일을 시험 실행일로 대체하지 않는다.
 
 쉬운 설명은 다음 벤치마크 소유자·연구진의 방법론을 바탕으로 작성했다.
 

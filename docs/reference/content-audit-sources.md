@@ -2,7 +2,7 @@
 
 ## 감사 범위
 
-- 검토일: 2026-08-20
+- 검토일: 2026-08-21
 - 대상: 현재 앱에서 접근 가능한 모델 비교, 디자인 사전 설계, 프로젝트 하네스, MCP, 개발 로드맵, 인프라 가이드와 공개 README/아키텍처 문서
 - 원칙: 숫자와 순위는 측정 조건이 있는 원문만 사용하고, 제품 기능·명령·보안 지침은 공식 1차 자료를 우선한다.
 
@@ -31,6 +31,8 @@
 | “실리콘밸리 전문가 공인”, “Gold Standard”, “Top 8 MCP” | 조사 방법·표본·공인 기관 근거 없음 | 프로젝트 제공 템플릿·공식 출처로 검증한 목록으로 명칭 변경 |
 | OpenAI 공개 평가표의 8~10개 모델 중 4개 모델만 화면에 표시 | 원문에는 GPT-5.5, Claude Mythos·Opus 4.8, Gemini 비교값 등이 더 존재 | 전문 업무·코딩·컴퓨터 사용 분야별 원문 전체 열로 확장. 원문 미보고만 명시적으로 유지 |
 | 벤치마크 이름과 숫자만 표시해 실제 시험 내용을 이해하기 어려움 | 서로 다른 `%`, Elo, Index, Reward를 같은 성공률처럼 오해할 위험 | 모든 비교 시험에 쉬운 설명·예시 과제·점수 읽는 법·하네스 주의사항 추가 |
+| 최근 AI 비용 인하 소식을 모든 모델·모든 요청의 보편적 절감으로 해석 | 모델별 가격 인하, 캐시 적중, 한시 가격 종료, 도구 사용료는 서로 다른 조건 | OpenAI·Google·Anthropic 원문을 기준으로 가격 변화와 적용 조건을 별도 카드·출처 문서에 분리. 캐시·Batch·Fast mode·grounding은 기본 단가 계산기에서 제외한다고 명시 |
+| 가격 변경 후에도 과거 측정의 비용 지표를 최신 단가처럼 해석 | 평가 실행일, 결과 공개일, 사이트 확인일, 가격 기준일은 서로 다를 수 있음 | 독립 측정에는 결과·비용 스냅샷 확인일과 원문 미공개 실행일을 표시하고, 비용 지표를 최신 가격으로 소급 재계산하지 않음. 공개 평가에는 공개일과 미공개 실행일을 구분 표시 |
 
 ## 사용한 1차 자료
 
@@ -55,6 +57,13 @@
 - [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html): 인증·세션·MFA·민감 계정 원칙
 - [OWASP REST Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html): 일반화된 오류 응답, 관리 endpoint, 감사 로그와 보안 헤더
 - [Redis 공식 benchmark 가이드](https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/benchmarks/): 측정 방법과 네트워크·파이프라이닝·지속성·하드웨어 변인의 영향
+
+### AI 모델 가격·토큰 효율
+
+- [OpenAI GPT-5.6 가격·속도 업데이트](https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/): Terra 20%, Luna 80% 인하와 현재 API 가격, Fast mode 조건
+- [OpenAI GPT-5.6 발표](https://openai.com/index/gpt-5-6/): prompt cache read/write 요금 조건
+- [Gemini 3.7 Flash 최신 모델 안내](https://ai.google.dev/gemini-api/docs/latest-model): 2026년 도입 가격과 2027년 표준 가격
+- [Claude 최신 모델 개요](https://platform.claude.com/docs/en/about-claude/models/overview): Sonnet 5 도입 가격 만료일과 표준 가격
 
 ## 게시 전 체크리스트
 
