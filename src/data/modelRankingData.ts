@@ -1,6 +1,6 @@
 export const MODEL_DATA_SNAPSHOT = {
-  verifiedAt: '2026-08-21',
-  localeDate: '2026년 8월 21일',
+  verifiedAt: '2026-08-22',
+  localeDate: '2026년 8월 22일',
   policy:
     '공식 API 사양과 원문이 공개된 평가 결과만 수록합니다. 출처가 다른 점수는 합산하거나 임의 순위로 변환하지 않습니다.',
 };
@@ -22,6 +22,7 @@ export interface VerifiedModelSpec {
   role: string;
   contextWindowTokens: number;
   maxOutputTokens: number | null;
+  maxOutputNote?: string;
   inputCostPer1M: number;
   outputCostPer1M: number;
   priceLabel: string;
@@ -30,6 +31,13 @@ export interface VerifiedModelSpec {
     current: string;
     previous?: string;
     scheduled?: string;
+  };
+  longContextPricing?: {
+    thresholdTokens: number;
+    inputCostPer1M: number;
+    cachedInputCostPer1M?: number;
+    outputCostPer1M: number;
+    label: string;
   };
   inputModalities: string;
   outputModalities: string;
@@ -241,25 +249,39 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
     role: '코딩과 도구 호출을 포함한 범용 플래그십',
     contextWindowTokens: 500_000,
     maxOutputTokens: null,
+    maxOutputNote: '텍스트 출력 제한 없음',
     inputCostPer1M: 2,
     outputCostPer1M: 6,
-    priceLabel: '$2 / $6',
-    priceNote: 'SpaceXAI API 공개 모델 표 기준. 공식 페이지에 최대 출력 토큰은 별도 기재되지 않음.',
-    priceTiming: { current: '가격 효력 시작일 원문 미공개 · 가격표 재확인 2026-08-21' },
+    priceLabel: '$2 / $6 (≤200K) · $4 / $12 (>200K)',
+    priceNote: '입력 200K 토큰 이하/초과에 서로 다른 Standard API 단가 적용. 캐시 입력은 각각 $0.50 / $1.',
+    priceTiming: { current: '출시와 가격 동시 공지 · 2026-08-12' },
+    longContextPricing: {
+      thresholdTokens: 200_000,
+      inputCostPer1M: 4,
+      cachedInputCostPer1M: 1,
+      outputCostPer1M: 12,
+      label: 'Grok 4.6 200K 초과 장문 컨텍스트 단가',
+    },
     inputModalities: '텍스트·이미지',
     outputModalities: '텍스트',
     badgeColor: 'bg-orange-500/10 text-orange-300 border-orange-500/30',
     sources: [
       {
-        title: 'Grok models & pricing',
+        title: 'Grok 4.6 release notes',
         publisher: 'SpaceXAI',
-        url: 'https://docs.x.ai/developers/models',
+        url: 'https://docs.x.ai/developers/release-notes',
+        publishedAt: '2026-08-12',
+      },
+      {
+        title: 'Grok 4.6 model specification',
+        publisher: 'SpaceXAI',
+        url: 'https://docs.x.ai/developers/grok-4-6',
       },
       {
         title: 'Grok 4.6 model card',
         publisher: 'SpaceXAI',
         url: 'https://media.x.ai/v1/website/card-4p6-4cd2dc57.pdf',
-        publishedAt: '2026-08',
+        publishedAt: '2026-08-12',
       },
     ],
   },
@@ -308,8 +330,8 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
     inputCostPer1M: 2,
     outputCostPer1M: 10,
     priceLabel: '$2 / $10',
-    priceNote: '2026-08-31까지 도입 가격. 이후 표준 가격은 $3 / $15.',
-    priceTiming: { current: '도입 가격 적용 · 2026-08-31까지', scheduled: '예정 표준 가격 $3 / $15 · 2026-09-01부터' },
+    priceNote: '$2 / $10 도입 가격이 2026-08-10부터 표준 가격으로 전환됨.',
+    priceTiming: { current: '표준 가격 $2 / $10 · 2026-08-10부터', previous: '도입 가격 $2 / $10 · 2026-06-30~2026-08-09' },
     inputModalities: '텍스트·이미지',
     outputModalities: '텍스트',
     badgeColor: 'bg-violet-500/10 text-violet-300 border-violet-500/30',
@@ -319,6 +341,12 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
         publisher: 'Anthropic',
         url: 'https://platform.claude.com/docs/en/about-claude/models/whats-new-sonnet-5',
         publishedAt: '2026-06-30',
+      },
+      {
+        title: 'Claude Platform release notes',
+        publisher: 'Anthropic',
+        url: 'https://platform.claude.com/docs/en/release-notes/overview',
+        publishedAt: '2026-08-10',
       },
     ],
   },
@@ -360,7 +388,7 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
     koreanName: '제미나이 3.7 플래시',
     companyName: 'Google',
     apiModelId: 'gemini-3.7-flash',
-    releaseDate: '2026-08-13 문서 갱신',
+    releaseDate: '2026-08-13 (GA)',
     role: '에이전트 워크플로와 멀티모달 추론을 위한 Flash 모델',
     contextWindowTokens: 1_048_576,
     maxOutputTokens: 65_536,
@@ -379,6 +407,12 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
         url: 'https://ai.google.dev/gemini-api/docs/models/gemini-3.7-flash',
       },
       {
+        title: 'Gemini API changelog',
+        publisher: 'Google',
+        url: 'https://ai.google.dev/gemini-api/docs/changelog',
+        publishedAt: '2026-08-13',
+      },
+      {
         title: 'Gemini Developer API pricing',
         publisher: 'Google',
         url: 'https://ai.google.dev/gemini-api/docs/pricing',
@@ -387,7 +421,7 @@ export const VERIFIED_MODEL_SPECS: VerifiedModelSpec[] = [
   },
 ];
 
-// 2026-08-21에 제공사 원문에서 다시 확인한 가격·토큰 효율 변경이다.
+// 2026-08-22에 제공사 원문에서 다시 확인한 가격·토큰 효율 변경이다.
 // 제공사 발표의 효율 수치는 해당 제공사의 설명이므로, 독립 성능 측정이나 보편적 절감률로 바꾸지 않는다.
 export const VERIFIED_COST_EFFICIENCY_UPDATES: CostEfficiencyUpdate[] = [
   {
@@ -437,22 +471,22 @@ export const VERIFIED_COST_EFFICIENCY_UPDATES: CostEfficiencyUpdate[] = [
   {
     id: 'anthropic-sonnet-5-introductory-pricing',
     provider: 'Anthropic',
-    priceAnnouncementDate: '2026-08-21 확인',
-    title: 'Claude Sonnet 5 도입 가격은 8월 말 종료 예정',
-    summary: '현재 Sonnet 5의 도입 가격은 입력/출력 $2/$10이며 2026-08-31까지입니다. 이후 문서상 표준 가격은 $3/$15입니다. (각 100만 토큰당)',
-    practicalMeaning: '현재 월 비용만 보지 말고 9월 이후 입력·출력 비용이 각각 50% 올라간 경우도 함께 예산에 반영해야 합니다.',
-    caveat: '따라서 최신 모델 API 가격이 모두 계속 내려간다는 일반화는 정확하지 않습니다. 지역·플랫폼·배치·캐시 조건도 원문에서 확인해야 합니다.',
+    priceAnnouncementDate: '2026-08-10',
+    title: 'Claude Sonnet 5 도입 가격을 표준 가격으로 전환',
+    summary: 'Sonnet 5의 입력/출력 $2/$10 도입 가격이 2026-08-10부터 표준 가격이 됐습니다. 기존에 안내되던 2026-09-01 $3/$15 전환은 최신 공식 릴리스 노트 기준으로 적용 예정 가격이 아닙니다. (각 100만 토큰당)',
+    practicalMeaning: '9월 이후 예산에도 현재 Standard $2/$10을 기준으로 계산하되, 실제 도입 전 최신 Pricing 문서를 다시 확인합니다.',
+    caveat: '캐시·배치·Fast mode·지역·플랫폼 조건은 별도 요금일 수 있습니다. 과거에 안내됐던 $3/$15를 현재 예정 가격으로 표시하지 않습니다.',
     source: {
-      title: 'Claude 최신 모델·가격 비교',
+      title: 'Claude Platform release notes',
       publisher: 'Anthropic',
-      url: 'https://platform.claude.com/docs/en/about-claude/models/overview',
+      url: 'https://platform.claude.com/docs/en/release-notes/overview',
+      publishedAt: '2026-08-10',
     },
   },
 ];
 
-// Artificial Analysis Intelligence Index v4.1.1. 각 행은 동일 기관의 현재 모델 페이지에서
-// max effort 설정과 first-party API 측정값을 옮겼다. Grok 4.6과 Gemini 3.7 Flash는
-// 이 스냅샷에서 동일 조건의 공개 모델 페이지가 확인되지 않아 임의 보간하지 않는다.
+// Artificial Analysis Intelligence Index v4.1.1. 아래 값은 2026-08-20에 각 모델 페이지에서
+// 관측해 고정한 스냅샷이다. 이후 페이지의 속도·비용 수치가 갱신되어도 이 과거 관측값을 최신값처럼 덮어쓰지 않는다.
 export const INDEPENDENT_MEASUREMENTS: IndependentMeasurement[] = [
   {
     modelId: 'claude-opus-5',
@@ -532,11 +566,12 @@ export const INDEPENDENT_METHODOLOGY_SOURCE: SourceReference = {
 
 export const INDEPENDENT_MEASUREMENT_SNAPSHOT = {
   version: 'Artificial Analysis Intelligence Index v4.1.1',
+  snapshotLabel: '2026-08-20 관측 스냅샷',
   sourceCheckedAt: '2026-08-20',
   resultRunDate: '모델별 원문 미공개',
   costBasis: '각 모델 페이지에 표시된 “평가 과제당 비용”을 2026-08-20에 옮긴 값',
   warning:
-    '가격 인하·캐시·추론 토큰 정책 발표이 있더라도 이 측정값을 자동으로 다시 계산하지 않습니다. 발표일과 최신 단가는 시험 결과와 분리해 표시하며, 현재 비용은 최신 단가와 실제 사용 로그로 별도 계산해야 합니다.',
+    '이 값은 2026-08-20 관측 스냅샷이며 실시간 최신값이 아닙니다. 가격 인하·캐시·추론 토큰 정책 발표가 있더라도 자동 재계산하지 않고, 현재 비용은 최신 단가와 실제 사용 로그로 별도 계산해야 합니다.',
 };
 
 const noScore = (modelId: string, modelName: string): BenchmarkResult => ({
@@ -565,7 +600,7 @@ export const PUBLISHED_BENCHMARKS: PublishedBenchmark[] = [
       title: 'Grok 4.6 Model Card §2.3',
       publisher: 'SpaceXAI',
       url: 'https://media.x.ai/v1/website/card-4p6-4cd2dc57.pdf#page=10',
-      publishedAt: '2026-08',
+      publishedAt: '2026-08-12',
     },
     warning: 'Cognition이 평가한 결과를 SpaceXAI 모델 카드가 인용합니다. 모델별 에이전트 하네스가 완전히 같지는 않습니다.',
     results: [
@@ -595,7 +630,7 @@ export const PUBLISHED_BENCHMARKS: PublishedBenchmark[] = [
       title: 'Grok 4.6 Model Card §2.4',
       publisher: 'SpaceXAI',
       url: 'https://media.x.ai/v1/website/card-4p6-4cd2dc57.pdf#page=11',
-      publishedAt: '2026-08',
+      publishedAt: '2026-08-12',
     },
     warning: '비-Grok 점수는 각 모델 카드 또는 평가기관의 최고 보고치이므로 완전한 동일 하네스 대조가 아닙니다.',
     results: [
@@ -625,7 +660,7 @@ export const PUBLISHED_BENCHMARKS: PublishedBenchmark[] = [
       title: 'Grok 4.6 Model Card §2.6',
       publisher: 'SpaceXAI',
       url: 'https://media.x.ai/v1/website/card-4p6-4cd2dc57.pdf#page=13',
-      publishedAt: '2026-08',
+      publishedAt: '2026-08-12',
     },
     warning: 'Terminal-Bench 2.1 결과와 직접 비교할 수 없습니다. 3.0은 태스크와 하네스가 갱신됐습니다.',
     results: [
@@ -655,7 +690,7 @@ export const PUBLISHED_BENCHMARKS: PublishedBenchmark[] = [
       title: 'Grok 4.6 Model Card §3.1',
       publisher: 'SpaceXAI',
       url: 'https://media.x.ai/v1/website/card-4p6-4cd2dc57.pdf#page=14',
-      publishedAt: '2026-08',
+      publishedAt: '2026-08-12',
     },
     warning: 'Elo는 해당 평가 풀과 시점에 종속됩니다. 다른 버전의 GDPval 결과와 숫자를 합치지 않습니다.',
     results: [
@@ -685,7 +720,7 @@ export const PUBLISHED_BENCHMARKS: PublishedBenchmark[] = [
       title: 'Grok 4.6 Model Card §3.3',
       publisher: 'SpaceXAI',
       url: 'https://media.x.ai/v1/website/card-4p6-4cd2dc57.pdf#page=16',
-      publishedAt: '2026-08',
+      publishedAt: '2026-08-12',
     },
     warning: '모델별 effort가 다르며 Fable 5는 fallback 허용 결과입니다.',
     results: [
@@ -715,7 +750,7 @@ export const PUBLISHED_BENCHMARKS: PublishedBenchmark[] = [
       title: 'Grok 4.6 Model Card §4.2',
       publisher: 'SpaceXAI',
       url: 'https://media.x.ai/v1/website/card-4p6-4cd2dc57.pdf#page=20',
-      publishedAt: '2026-08',
+      publishedAt: '2026-08-12',
     },
     warning: '브라우저 FPS가 아니라 생성된 3D 자산의 실행 가능성과 형상 충실도를 평가한 결과입니다.',
     results: [
