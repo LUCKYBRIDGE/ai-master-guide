@@ -2,7 +2,7 @@
 
 ## 데이터 스냅샷
 
-- 검증일: 2026-08-21
+- 검증일: 2026-08-22
 - 화면 데이터 원본: `src/data/modelRankingData.ts`
 - 원칙: 공식 API 사양과 원문이 공개된 평가 결과만 수록한다. 출처·버전·하네스가 다른 점수를 합산하거나 임의 종합 순위로 바꾸지 않는다.
 
@@ -18,24 +18,25 @@
 | 제공사 | 확인 항목 | 원문 |
 |---|---|---|
 | OpenAI | GPT-5.6 Sol·Terra·Luna 컨텍스트, 최대 출력, Standard API 가격, 장문 컨텍스트 조건 | [Sol](https://developers.openai.com/api/docs/models/gpt-5.6-sol), [Terra](https://developers.openai.com/api/docs/models/gpt-5.6-terra), [Luna](https://developers.openai.com/api/docs/models/gpt-5.6-luna), [가격 인하 발표](https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/) |
-| Anthropic | Claude Opus 5·Fable 5·Sonnet 5 컨텍스트, 최대 출력, API 가격과 한시 가격 | [Opus 5](https://www.anthropic.com/news/claude-opus-5), [Fable 5](https://platform.claude.com/docs/en/about-claude/models/introducing-claude-fable-5-and-claude-mythos-5), [Sonnet 5](https://platform.claude.com/docs/en/about-claude/models/whats-new-sonnet-5) |
-| SpaceXAI | Grok 4.6 컨텍스트와 API 가격 | [모델·가격 문서](https://docs.x.ai/developers/models), [모델 카드](https://media.x.ai/v1/website/card-4p6-4cd2dc57.pdf) |
-| Google | Gemini 3.7 Flash 입력·출력 한도, 멀티모달 입력, 한시 Standard 가격 | [모델 사양](https://ai.google.dev/gemini-api/docs/models/gemini-3.7-flash), [가격](https://ai.google.dev/gemini-api/docs/pricing) |
+| Anthropic | Claude Opus 5·Fable 5·Sonnet 5 컨텍스트, 최대 출력, 현재 API 가격과 가격 변경 이력 | [Opus 5](https://www.anthropic.com/news/claude-opus-5), [Fable 5](https://platform.claude.com/docs/en/about-claude/models/introducing-claude-fable-5-and-claude-mythos-5), [Sonnet 5](https://platform.claude.com/docs/en/about-claude/models/whats-new-sonnet-5), [릴리스 노트](https://platform.claude.com/docs/en/release-notes/overview) |
+| SpaceXAI | Grok 4.6 컨텍스트, 텍스트 출력 제한, 200K 기준 API 가격 구간 | [Grok 4.6 사양](https://docs.x.ai/developers/grok-4-6), [릴리스 노트](https://docs.x.ai/developers/release-notes), [모델 카드](https://media.x.ai/v1/website/card-4p6-4cd2dc57.pdf) |
+| Google | Gemini 3.7 Flash GA일, 입력·출력 한도, 멀티모달 입력, 한시 Standard 가격 | [모델 사양](https://ai.google.dev/gemini-api/docs/models/gemini-3.7-flash), [변경 기록](https://ai.google.dev/gemini-api/docs/changelog), [가격](https://ai.google.dev/gemini-api/docs/pricing) |
 
-가격 계산기는 입력·출력 토큰의 기본 Standard 단가만 계산한다. 캐시, 배치, 우선 처리, Fast mode, 내장 도구 사용료는 제외한다. OpenAI 모델은 입력이 272K 토큰을 초과할 때 문서에 기재된 장문 컨텍스트 할증을 반영한다.
+가격 계산기는 입력·출력 토큰의 Standard 단가만 계산한다. 캐시, 배치, 우선 처리, Fast mode, 내장 도구 사용료는 제외한다. OpenAI 모델은 입력이 272K 토큰을 초과할 때 문서에 기재된 장문 컨텍스트 할증을 반영하고, Grok 4.6은 입력이 200K 토큰을 초과할 때 $4/$12 장문 컨텍스트 구간을 적용한다.
 
-공식 사양 표의 가격 칸에는 `현재 적용`, `이전`, `예정·변경`을 날짜와 함께 표시한다. 날짜를 공식 문서에서 확인하지 못한 경우에는 `가격 효력 시작일 원문 미공개`로 남기며, 모델 출시일이나 사이트 확인일을 임의로 가격 시작일로 바꾸지 않는다. 현재 원문 재확인일은 2026-08-21이다.
+공식 사양 표의 가격 칸에는 `현재 적용`, `이전`, `예정·변경`을 날짜와 함께 표시한다. 모델 출시일, 가격 적용일, 사이트 확인일은 같은 날짜로 간주하지 않는다. 현재 원문 재확인일은 2026-08-22이다.
 
 ### 최근 가격·토큰 효율 발표의 확인 결과
 
-최근 발표를 “모든 모델의 토큰 비용이 계속 내려간다”는 단일 추세로 표현하지 않는다. 아래는 2026-08-21에 제공사 원문을 다시 확인해 화면의 **시험 결과와 분리된** 가격 카드에 반영한 항목이다. 표의 날짜는 시험일이 아니라 가격·정책 발표일이다.
+최근 발표를 “모든 모델의 토큰 비용이 계속 내려간다”는 단일 추세로 표현하지 않는다. 아래는 2026-08-22에 제공사 원문을 다시 확인해 화면의 **시험 결과와 분리된** 가격 카드에 반영한 항목이다. 표의 날짜는 시험일이 아니라 가격·정책 발표일이다.
 
 | 제공사·항목 | 원문으로 확인한 사실 | 해석 제한 |
 |---|---|---|
 | OpenAI GPT-5.6 Terra·Luna | 2026-07-30부터 Terra는 $2/$12, Luna는 $0.20/$1.20 (입력/출력 100만 토큰당). 발표는 Terra 20%, Luna 80% 인하라고 설명 | Sol 가격은 그대로이며, Fast mode는 2배 가격이다. 장문 컨텍스트와 도구 사용료는 별도다. [원문](https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/) |
 | OpenAI GPT-5.6 캐시 | 캐시 읽기는 일반 입력 단가의 10%, 캐시 쓰기는 1.25배 | 정확히 재사용되는 프롬프트에만 해당한다. 첫 요청·출력·추론 토큰에 일괄 90% 할인을 적용하지 않는다. [원문](https://openai.com/index/gpt-5-6/) |
+| SpaceXAI Grok 4.6 | 2026-08-12 출시 시 입력 200K 이하 $2/$0.50/$6, 200K 초과 $4/$1/$12(입력/캐시 입력/출력 100만 토큰당)로 공지 | 화면 계산기는 캐시 입력을 별도 계산하지 않고 일반 입력·출력 Standard 단가만 사용한다. [원문](https://docs.x.ai/developers/release-notes) |
 | Google Gemini 3.7 Flash | 2026-12-31까지 Standard 입력/출력 $0.75/$3.75, 2027-01-01부터 $1.50/$7.50로 안내 | thinking token은 출력 가격에 포함되지만, Batch·Flex·Priority·grounding은 별도 조건과 요금이 있다. [원문](https://ai.google.dev/gemini-api/docs/latest-model) |
-| Anthropic Claude Sonnet 5 | 도입 가격 $2/$10은 2026-08-31까지이며 이후 표준 가격은 $3/$15 | 현재 저가가 장기 가격을 보장하지 않는다. 플랫폼·지역·캐시·배치 가격도 분리해 확인한다. [원문](https://platform.claude.com/docs/en/about-claude/models/overview) |
+| Anthropic Claude Sonnet 5 | 2026-06-30의 $2/$10 도입 가격이 2026-08-10부터 표준 가격으로 전환됨 | 과거에 안내됐던 2026-09-01 $3/$15 전환을 현재 예정 가격으로 표시하지 않는다. 캐시·배치·Fast mode 등은 별도 조건이다. [원문](https://platform.claude.com/docs/en/release-notes/overview) |
 
 제공사가 말하는 “토큰 효율”은 같은 과제·품질·프롬프트·도구 사용 조건을 맞춘 독립 실측이 아니다. 이 사이트는 이를 제공사 발표로 표시하며, 실제 도입 전에는 대표 작업에서 입력·캐시·추론·출력·도구 호출을 분리해 측정하도록 안내한다.
 
@@ -47,7 +48,7 @@ Artificial Analysis의 Intelligence Index v4.1.1 모델 페이지에서 다음 �
 - first-party API 출력 속도(tokens/s)
 - Intelligence Index 평가 과제당 비용
 
-한 표에는 같은 기관의 같은 스냅샷과 max effort 결과만 넣었다. **결과·비용 스냅샷 확인일은 2026-08-20**이며, Artificial Analysis 모델 페이지가 각 시험의 실제 실행일을 공통으로 공개하지 않아 화면에는 `시험 실행일: 모델별 원문 미공개`로 표시한다. 특히 `평가 과제당 비용`은 이 확인일에 원문 페이지에 표시된 값이며, 2026-07-30 OpenAI 가격 인하나 이후의 가격·캐시 정책을 소급 반영해 다시 계산하지 않는다. Claude Fable 5는 원문처럼 Opus 4.8 fallback 허용 결과라고 표시한다. Grok 4.6과 Gemini 3.7 Flash는 확인 시점에 같은 스냅샷의 모델 페이지가 확인되지 않아 값이나 순위를 추정하지 않았다.
+한 표에는 같은 기관의 같은 스냅샷과 max effort 결과만 넣었다. **2026-08-20에 관측한 고정 스냅샷**이며 실시간 최신값으로 해석하지 않는다. Artificial Analysis 모델 페이지가 각 시험의 실제 실행일을 공통으로 공개하지 않아 화면에는 `시험 실행일: 모델별 원문 미공개`로 표시한다. 특히 `평가 과제당 비용`은 2026-08-20에 원문 페이지에 표시된 값이며, 이후 가격·속도·캐시 정책 변화나 페이지 갱신을 소급 반영해 다시 계산하지 않는다. Claude Fable 5는 원문처럼 Opus 4.8 fallback 허용 결과라고 표시한다. Grok 4.6과 Gemini 3.7 Flash는 확인 시점에 같은 스냅샷의 모델 페이지가 확인되지 않아 값이나 순위를 추정하지 않았다.
 
 모델별 원문: [Claude Opus 5](https://artificialanalysis.ai/models/claude-opus-5), [Claude Fable 5](https://artificialanalysis.ai/models/claude-fable-5/), [GPT-5.6 Sol](https://artificialanalysis.ai/models/gpt-5-6-sol), [GPT-5.6 Terra](https://artificialanalysis.ai/models/gpt-5-6-terra), [Claude Sonnet 5](https://artificialanalysis.ai/models/claude-sonnet-5), [GPT-5.6 Luna](https://artificialanalysis.ai/models/gpt-5-6-luna)
 
@@ -66,7 +67,7 @@ Artificial Analysis의 Intelligence Index v4.1.1 모델 페이지에서 다음 �
 
 이 자료의 발행 주체는 SpaceXAI다. 일부 표는 비-Grok 모델의 모델 카드 최고 보고치나 서로 다른 에이전트 하네스를 사용하므로 완전한 동일조건 대조가 아니다. 화면에 각 표의 평가자, 하네스, 표본과 제한을 함께 표시한다.
 
-각 표에는 결과 공개일과 시험 실행일을 구분한다. Grok 4.6 모델 카드는 `2026-08`까지만 공개되어 있어 개별 시험 실행일을 추정하지 않는다.
+모델 카드 공개일은 **2026-08-12**로 기록한다. 개별 벤치마크의 실제 시험 실행일은 원문에서 별도로 공개하지 않았으므로 공개일을 시험일로 대체하지 않는다.
 
 ### OpenAI GPT-5.6 공개 평가표
 
