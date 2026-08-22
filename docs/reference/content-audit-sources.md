@@ -35,7 +35,7 @@
 | 가격 변경 후에도 과거 측정의 비용 지표를 최신 단가처럼 해석 | 시험 실행일, 결과 공개일, 사이트 확인일, 가격 기준일, 후속 가격 발표일은 서로 다를 수 있음 | 시험 실행일을 최우선 기준으로 표시하되 원문 미공개 시 그 사실을 명시. 비용 지표를 최신 가격으로 소급 재계산하지 않고, 후속 가격 발표는 날짜가 있는 별도 카드로 분리 |
 | 공식 사양 표의 현재 단가만 보고 가격 변경 시점을 알기 어려움 | 가격 효력일, 이전 단가 종료일, 예정 단가 시작일을 모델 출시일과 혼동할 수 있음 | 각 공식 사양의 가격 칸에 `현재 적용`·`이전`·`예정·변경`과 날짜를 표기. 원문 확인일은 별도로 표시 |
 | Claude Sonnet 5를 2026-08-31까지 $2/$10 도입 가격, 이후 $3/$15 예정으로 안내 | Anthropic 최신 릴리스 노트는 $2/$10 도입 가격이 2026-08-10부터 표준 가격이 됐다고 명시 | $3/$15 예정 표기를 제거하고 2026-08-10 표준 가격 전환 이력으로 수정 |
-| Grok 4.6 가격을 모든 입력 길이에 $2/$6으로 계산 | 2026-08-12 공식 릴리스 노트는 200K 이하 $2/$0.50/$6, 200K 초과 $4/$1/$12 구간을 명시 | 사양 표와 계산기에 200K 초과 장문 가격 구간을 반영하고 캐시 단가는 설명에만 분리 표기 |
+| Grok 4.6 가격을 모든 입력 길이에 $2/$6으로 계산 | 현재 SpaceXAI Pricing은 200K 미만 $2/$0.50/$6, 200K 이상 $4/$1/$12 구간을 명시 | 사양 표와 계산기에 200K 이상 장문 가격 구간을 반영하고 캐시 단가는 설명에만 분리 표기 |
 | Grok 4.6 최대 출력을 `공식 문서 미기재`로 표시 | 공식 모델 사양은 `No text output limit`이라고 명시 | 숫자 미기재와 무제한을 구분해 `텍스트 출력 제한 없음`으로 표시 |
 | Gemini 3.7 Flash의 2026-08-13을 `문서 갱신`으로 표시 | Google 변경 기록은 2026-08-13을 GA로 명시 | `2026-08-13 (GA)`로 정밀화하고 변경 기록을 공식 출처에 추가 |
 | Artificial Analysis 값을 현재 페이지의 최신값처럼 읽을 여지 | 속도·비용 표시는 후속 갱신될 수 있고 사이트는 2026-08-20 관측값을 보존함 | `2026-08-20 관측 스냅샷`으로 명시하고 이후 최신 가격·속도로 소급 덮어쓰지 않음 |
@@ -68,7 +68,8 @@
 
 - [OpenAI GPT-5.6 가격·속도 업데이트](https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/): Terra 20%, Luna 80% 인하와 현재 API 가격, Fast mode 조건
 - [OpenAI GPT-5.6 발표](https://openai.com/index/gpt-5-6/): prompt cache read/write 요금 조건
-- [SpaceXAI Grok 4.6 릴리스 노트](https://docs.x.ai/developers/release-notes): 2026-08-12 출시일과 200K 기준 입력·캐시·출력 가격 구간
+- [SpaceXAI Grok API Pricing](https://docs.x.ai/developers/pricing): 200K 미만/이상 경계와 입력·캐시·출력 가격 구간
+- [SpaceXAI Grok 4.6 릴리스 노트](https://docs.x.ai/developers/release-notes): 2026-08-12 출시일과 초기 가격 안내
 - [SpaceXAI Grok 4.6 모델 사양](https://docs.x.ai/developers/grok-4-6): 500K 컨텍스트와 텍스트 출력 제한 없음
 - [Gemini API 변경 기록](https://ai.google.dev/gemini-api/docs/changelog): Gemini 3.7 Flash 2026-08-13 GA
 - [Gemini 3.7 Flash 최신 모델 안내](https://ai.google.dev/gemini-api/docs/latest-model): 2026년 도입 가격과 2027년 표준 가격

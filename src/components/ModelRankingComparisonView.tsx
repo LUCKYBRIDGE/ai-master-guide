@@ -153,7 +153,7 @@ const SpecsView = () => {
           model.companyName === 'OpenAI' && inputTokens > 272_000;
         const longContextPricing = model.longContextPricing;
         const hasProviderLongContextTier =
-          longContextPricing !== undefined && inputTokens > longContextPricing.thresholdTokens;
+          longContextPricing !== undefined && inputTokens >= longContextPricing.thresholdTokens;
         const inputRate = hasProviderLongContextTier
           ? longContextPricing.inputCostPer1M
           : model.inputCostPer1M * (hasOpenAiLongContextSurcharge ? 2 : 1);
@@ -289,7 +289,7 @@ const SpecsView = () => {
             </div>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
               토큰 단가만 적용한 추정치입니다. OpenAI는 입력 272K 초과 시 입력 2배·출력 1.5배를,
-              Grok 4.6은 입력 200K 초과 시 $4/$12 장문 컨텍스트 단가를 자동 반영합니다. 캐시·배치·도구 비용은 제외합니다.
+              Grok 4.6은 입력 200K 이상일 때 $4/$12 장문 컨텍스트 단가를 자동 반영합니다. 캐시·배치·도구 비용은 제외합니다.
             </p>
           </div>
           <div className="grid w-full gap-3 sm:grid-cols-2 lg:max-w-xl">

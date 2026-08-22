@@ -19,10 +19,10 @@
 |---|---|---|
 | OpenAI | GPT-5.6 Sol·Terra·Luna 컨텍스트, 최대 출력, Standard API 가격, 장문 컨텍스트 조건 | [Sol](https://developers.openai.com/api/docs/models/gpt-5.6-sol), [Terra](https://developers.openai.com/api/docs/models/gpt-5.6-terra), [Luna](https://developers.openai.com/api/docs/models/gpt-5.6-luna), [가격 인하 발표](https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/) |
 | Anthropic | Claude Opus 5·Fable 5·Sonnet 5 컨텍스트, 최대 출력, 현재 API 가격과 가격 변경 이력 | [Opus 5](https://www.anthropic.com/news/claude-opus-5), [Fable 5](https://platform.claude.com/docs/en/about-claude/models/introducing-claude-fable-5-and-claude-mythos-5), [Sonnet 5](https://platform.claude.com/docs/en/about-claude/models/whats-new-sonnet-5), [릴리스 노트](https://platform.claude.com/docs/en/release-notes/overview) |
-| SpaceXAI | Grok 4.6 컨텍스트, 텍스트 출력 제한, 200K 기준 API 가격 구간 | [Grok 4.6 사양](https://docs.x.ai/developers/grok-4-6), [릴리스 노트](https://docs.x.ai/developers/release-notes), [모델 카드](https://media.x.ai/v1/website/card-4p6-4cd2dc57.pdf) |
+| SpaceXAI | Grok 4.6 컨텍스트, 텍스트 출력 제한, 200K 기준 API 가격 구간 | [Grok 4.6 사양](https://docs.x.ai/developers/grok-4-6), [Pricing](https://docs.x.ai/developers/pricing), [릴리스 노트](https://docs.x.ai/developers/release-notes), [모델 카드](https://media.x.ai/v1/website/card-4p6-4cd2dc57.pdf) |
 | Google | Gemini 3.7 Flash GA일, 입력·출력 한도, 멀티모달 입력, 한시 Standard 가격 | [모델 사양](https://ai.google.dev/gemini-api/docs/models/gemini-3.7-flash), [변경 기록](https://ai.google.dev/gemini-api/docs/changelog), [가격](https://ai.google.dev/gemini-api/docs/pricing) |
 
-가격 계산기는 입력·출력 토큰의 Standard 단가만 계산한다. 캐시, 배치, 우선 처리, Fast mode, 내장 도구 사용료는 제외한다. OpenAI 모델은 입력이 272K 토큰을 초과할 때 문서에 기재된 장문 컨텍스트 할증을 반영하고, Grok 4.6은 입력이 200K 토큰을 초과할 때 $4/$12 장문 컨텍스트 구간을 적용한다.
+가격 계산기는 입력·출력 토큰의 Standard 단가만 계산한다. 캐시, 배치, 우선 처리, Fast mode, 내장 도구 사용료는 제외한다. OpenAI 모델은 입력이 272K 토큰을 초과할 때 문서에 기재된 장문 컨텍스트 할증을 반영하고, Grok 4.6은 입력이 200K 토큰 이상일 때 $4/$12 장문 컨텍스트 구간을 적용한다.
 
 공식 사양 표의 가격 칸에는 `현재 적용`, `이전`, `예정·변경`을 날짜와 함께 표시한다. 모델 출시일, 가격 적용일, 사이트 확인일은 같은 날짜로 간주하지 않는다. 현재 원문 재확인일은 2026-08-22이다.
 
@@ -34,7 +34,7 @@
 |---|---|---|
 | OpenAI GPT-5.6 Terra·Luna | 2026-07-30부터 Terra는 $2/$12, Luna는 $0.20/$1.20 (입력/출력 100만 토큰당). 발표는 Terra 20%, Luna 80% 인하라고 설명 | Sol 가격은 그대로이며, Fast mode는 2배 가격이다. 장문 컨텍스트와 도구 사용료는 별도다. [원문](https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/) |
 | OpenAI GPT-5.6 캐시 | 캐시 읽기는 일반 입력 단가의 10%, 캐시 쓰기는 1.25배 | 정확히 재사용되는 프롬프트에만 해당한다. 첫 요청·출력·추론 토큰에 일괄 90% 할인을 적용하지 않는다. [원문](https://openai.com/index/gpt-5-6/) |
-| SpaceXAI Grok 4.6 | 2026-08-12 출시 시 입력 200K 이하 $2/$0.50/$6, 200K 초과 $4/$1/$12(입력/캐시 입력/출력 100만 토큰당)로 공지 | 화면 계산기는 캐시 입력을 별도 계산하지 않고 일반 입력·출력 Standard 단가만 사용한다. [원문](https://docs.x.ai/developers/release-notes) |
+| SpaceXAI Grok 4.6 | 현재 Pricing 기준 입력 200K 미만 $2/$0.50/$6, 200K 이상 $4/$1/$12(입력/캐시 입력/출력 100만 토큰당) | 정확한 경계는 현재 Pricing 표를 우선한다. 화면 계산기는 캐시 입력을 별도 계산하지 않고 일반 입력·출력 Standard 단가만 사용한다. [원문](https://docs.x.ai/developers/pricing) |
 | Google Gemini 3.7 Flash | 2026-12-31까지 Standard 입력/출력 $0.75/$3.75, 2027-01-01부터 $1.50/$7.50로 안내 | thinking token은 출력 가격에 포함되지만, Batch·Flex·Priority·grounding은 별도 조건과 요금이 있다. [원문](https://ai.google.dev/gemini-api/docs/latest-model) |
 | Anthropic Claude Sonnet 5 | 2026-06-30의 $2/$10 도입 가격이 2026-08-10부터 표준 가격으로 전환됨 | 과거에 안내됐던 2026-09-01 $3/$15 전환을 현재 예정 가격으로 표시하지 않는다. 캐시·배치·Fast mode 등은 별도 조건이다. [원문](https://platform.claude.com/docs/en/release-notes/overview) |
 
