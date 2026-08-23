@@ -151,12 +151,25 @@ const SpecsView = () => {
       VERIFIED_MODEL_SPECS.map((model) => {
         const hasOpenAiLongContextSurcharge =
           model.companyName === 'OpenAI' && inputTokens > 272_000;
-        const inputRate = model.inputCostPer1M * (hasOpenAiLongContextSurcharge ? 2 : 1);
-        const outputRate = model.outputCostPer1M * (hasOpenAiLongContextSurcharge ? 1.5 : 1);
+        const longContextPricing = model.longContextPricing;
+        const hasProviderLongContextTier =
+          longContextPricing !== undefined && inputTokens >= longContextPricing.thresholdTokens;
+        const inputRate = hasProviderLongContextTier
+          ? longContextPricing.inputCostPer1M
+          : model.inputCostPer1M * (hasOpenAiLongContextSurcharge ? 2 : 1);
+        const outputRate = hasProviderLongContextTier
+          ? longContextPricing.outputCostPer1M
+          : model.outputCostPer1M * (hasOpenAiLongContextSurcharge ? 1.5 : 1);
+        const pricingNote = hasProviderLongContextTier
+          ? longContextPricing.label
+          : hasOpenAiLongContextSurcharge
+            ? 'OpenAI 272K 초과 장문 컨텍스트 할증'
+            : '기본 Standard 단가 적용';
         return {
           model,
           cost: (inputTokens / 1_000_000) * inputRate + (outputTokens / 1_000_000) * outputRate,
-          surcharge: hasOpenAiLongContextSurcharge,
+          adjustedPricing: hasProviderLongContextTier || hasOpenAiLongContextSurcharge,
+          pricingNote,
         };
       }),
     [inputTokens, outputTokens],
@@ -199,9 +212,12 @@ const SpecsView = () => {
                     <p className="mt-2 max-w-[220px] text-xs leading-5 text-slate-400">{model.role}</p>
                     <code className="mt-1 block text-[11px] text-slate-500">{model.apiModelId}</code>
                   </td>
-                  <td className="px-4 py-4 text-slate-300">{model.releaseDate}</td>
+                  <td className="px-4 py-4 text-slate-300">
+                    <p>{model.releaseDate}</p>
+                    <p className="mt-1 text-[10px] text-slate-600">원문 확인 {MODEL_DATA_SNAPSHOT.verifiedAt}</p>
+                  </td>
                   <td className="px-4 py-4 font-mono font-bold text-white">{formatTokens(model.contextWindowTokens)}</td>
-                  <td className="px-4 py-4 font-mono text-slate-200">{formatTokens(model.maxOutputTokens)}</td>
+                  <td className="px-4 py-4 font-mono text-slate-200">{model.maxOutputNote ?? formatTokens(model.maxOutputTokens)}</td>
                   <td className="px-4 py-4">
                     <p className="font-mono font-bold text-emerald-300">{model.priceLabel}</p>
                     <p className="mt-1 max-w-[250px] text-xs leading-5 text-slate-500">{model.priceNote}</p>
@@ -272,8 +288,8 @@ const SpecsView = () => {
               <h2 className="font-black text-white">공식 단가 기반 요청 비용 계산기</h2>
             </div>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-              토큰 단가만 적용한 추정치입니다. OpenAI 모델은 입력이 272K를 넘으면 공식 장문 컨텍스트
-              할증(입력 2배·출력 1.5배)을 자동 반영합니다.
+              토큰 단가만 적용한 추정치입니다. OpenAI는 입력 272K 초과 시 입력 2배·출력 1.5배를,
+              Grok 4.6은 입력 200K 이상일 때 $4/$12 장문 컨텍스트 단가를 자동 반영합니다. 캐시·배치·도구 비용은 제외합니다.
             </p>
           </div>
           <div className="grid w-full gap-3 sm:grid-cols-2 lg:max-w-xl">
@@ -300,12 +316,12 @@ const SpecsView = () => {
           </div>
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {costs.map(({ model, cost, surcharge }) => (
+          {costs.map(({ model, cost, adjustedPricing, pricingNote }) => (
             <div key={model.id} className="rounded-xl border border-slate-800 bg-slate-950/70 p-4">
               <p className="text-xs font-bold text-slate-400">{model.modelName}</p>
               <p className="mt-1 font-mono text-xl font-black text-white">{formatMoney(cost)}</p>
-              <p className={`mt-1 text-[11px] ${surcharge ? 'text-amber-300' : 'text-slate-500'}`}>
-                {surcharge ? '장문 컨텍스트 할증 적용' : '기본 Standard 단가 적용'}
+              <p className={`mt-1 text-[11px] ${adjustedPricing ? 'text-amber-300' : 'text-slate-500'}`}>
+                {pricingNote}
               </p>
             </div>
           ))}
@@ -338,15 +354,16 @@ const IndependentView = () => {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-xs font-bold text-cyan-300">
-              독립 측정 · v4.1.1 · max effort
+              독립 측정 · {INDEPENDENT_MEASUREMENT_SNAPSHOT.snapshotLabel} · max effort
             </span>
             <h2 className="mt-3 text-xl font-black text-white">Artificial Analysis 동일 스냅샷 비교</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-              같은 기관이 공개한 현재 모델 페이지의 값을 사용했습니다. Intelligence Index는 절대적
-              ‘모델 서열’이 아니라 해당 버전의 9개 평가 묶음에 대한 종합 지표입니다.
+              2026-08-20에 같은 기관의 모델 페이지에서 관측한 값을 고정 스냅샷으로 사용합니다. 이후 페이지 수치가
+              바뀌어도 과거 관측값을 최신값처럼 덮어쓰지 않습니다. Intelligence Index는 절대적 ‘모델 서열’이 아니라
+              해당 버전의 9개 평가 묶음에 대한 종합 지표입니다.
             </p>
             <p className="mt-2 text-xs leading-5 text-cyan-100/75">
-              시험 실행일: {INDEPENDENT_MEASUREMENT_SNAPSHOT.resultRunDate} · 결과·비용 스냅샷 확인일: {INDEPENDENT_MEASUREMENT_SNAPSHOT.sourceCheckedAt}
+              시험 실행일: {INDEPENDENT_MEASUREMENT_SNAPSHOT.resultRunDate} · 스냅샷 확인일: {INDEPENDENT_MEASUREMENT_SNAPSHOT.sourceCheckedAt}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
