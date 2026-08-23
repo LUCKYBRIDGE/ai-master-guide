@@ -37,7 +37,7 @@
 ### 2026-08-21 · Codex 사용량 빠른 소진 보고
 
 - 판정: `광범위한 논의` / `관계자 직접 언급` / `관찰 중`
-- 관계자 원문: https://x.com/thsottiaux/status/2090766694897619318
+- 관계자 원문: https://x.com/thsottiaux/status/2090675027670978569
 - 사용자 논의 예시:
   - https://www.reddit.com/r/codex/comments/1vtiymv/is_the_usage_limit_nerfed/
   - https://www.reddit.com/r/codex/comments/1vrjady/the_real_reason_behind_my_sudden_75x_drop_in/
@@ -52,7 +52,7 @@
 - 판정: `관계자 직접 언급` / `공식 확인`
 - 관계자 원문: https://x.com/thsottiaux/status/2090766694897619318
 - 현재 Banked Reset 도움말: https://help.openai.com/en/articles/11369540-using-codex-with-your-chatgpt-plan
-- 해석 제한: 같은 게시물에서 사용량 조사도 언급했지만 reset 지급의 명시된 사유는 `20M active users` 이정표다. 사용량 오류 보상으로 재분류하지 않는다.
+- 해석 제한: 같은 날 별도 게시물에서 사용량 조사 내용이 공개됐지만 reset 지급의 명시된 사유는 `20M active users` 이정표다. 사용량 오류 보상으로 재분류하지 않는다.
 
 ### 2026-08-19 · Claude Code +50% 주간 한도 프로모션 종료
 
