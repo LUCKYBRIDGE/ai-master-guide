@@ -13,6 +13,7 @@ import {
   FlaskConical,
   Gauge,
   Info,
+  Newspaper,
   ShieldCheck,
 } from 'lucide-react';
 import {
@@ -37,14 +38,16 @@ import {
   type ArtifactBenchmarkMetric,
   type SourceReference,
 } from '../data/modelRankingData';
+import { MajorIssuesView } from './MajorIssuesView';
 
-type ViewId = 'specs' | 'independent' | 'published' | 'methodology';
+type ViewId = 'specs' | 'independent' | 'published' | 'issues' | 'methodology';
 type IndependentMetric = 'intelligenceIndex' | 'outputTokensPerSecond' | 'costPerIndexTaskUsd';
 
 const VIEW_OPTIONS: Array<{ id: ViewId; label: string; hint: string; icon: React.ElementType }> = [
   { id: 'specs', label: '공식 사양·요금', hint: '제공사 API 문서', icon: Database },
   { id: 'independent', label: '독립 동일조건 측정', hint: 'Artificial Analysis', icon: Gauge },
   { id: 'published', label: '실제 공개 평가', hint: '코딩·업무·산출물', icon: BarChart3 },
+  { id: 'issues', label: '주요 이슈·변경사항', hint: '사용량 · 정책 · 장애 · 보상', icon: Newspaper },
   { id: 'methodology', label: '근거·검증 방법', hint: '출처와 한계', icon: ShieldCheck },
 ];
 
@@ -1008,7 +1011,7 @@ export const ModelRankingComparisonView: React.FC = () => {
 
       <EvidenceNotice />
 
-      <nav className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4" aria-label="모델 비교 자료 종류">
+      <nav className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5" aria-label="모델 비교 자료 종류">
         {VIEW_OPTIONS.map((option) => {
           const Icon = option.icon;
           const isActive = activeView === option.id;
@@ -1038,6 +1041,7 @@ export const ModelRankingComparisonView: React.FC = () => {
       {activeView === 'specs' && <SpecsView />}
       {activeView === 'independent' && <IndependentView />}
       {activeView === 'published' && <PublishedView />}
+      {activeView === 'issues' && <MajorIssuesView />}
       {activeView === 'methodology' && <MethodologyView />}
     </div>
   );
