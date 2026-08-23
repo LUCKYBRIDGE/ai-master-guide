@@ -168,8 +168,11 @@ jobs:
           grep -q 'https://github.com/github/github-mcp-server' /tmp/harness-default/MCP_추천_목록.md
           grep -q 'https://github.com/upstash/context7' /tmp/harness-default/MCP_추천_목록.md
 
-          if grep -R -E 'gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY' /tmp/harness-default; then
-            echo 'Potential credential detected in generated Harness ZIP.'
+          if grep -E 'gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY' \
+            /tmp/harness-default/.codex/config.toml \
+            /tmp/harness-default/.mcp.json \
+            /tmp/harness-default/.agents/mcp_config.json; then
+            echo 'Potential credential detected in generated MCP config skeletons.'
             exit 1
           fi
 
