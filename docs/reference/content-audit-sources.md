@@ -27,7 +27,8 @@ AI Development Harness v2의 클라이언트별 경로·DESIGN.md·MCP 근거는
 | `.agents/skills`가 세 도구에서 100% 자동 공유 | 자동 발견 경로와 스킬 메타데이터 지원은 제품별로 다름 | 이식 가능한 절차 원본으로 설명하고 자동 호환 보증 제거 |
 | Harness에서 공통 원본과 클라이언트 설정이 명확히 분리되지 않음 | Codex·Claude Code·Antigravity는 프로젝트 지침·Skill·MCP의 네이티브 경로가 서로 다름 | Harness v2를 `AGENTS.md`·`DESIGN.md`·`.agents/skills` 공통 원본 + 도구별 native adapter 구조로 교체 |
 | Claude가 `.agents/skills`를 자동 공유한다고 가정 | Claude Code의 프로젝트 Skill 네이티브 경로는 `.claude/skills/<skill>/SKILL.md` | canonical `.agents/skills`에서 동일 내용을 `.claude/skills`로 생성하고 drift 검증 helper 추가 |
-| MCP를 사용하지 않아도 manifest와 3개 MCP config가 항상 생성됨 | MCP는 선택 capability이며 빈 선택에서도 핵심 프로젝트 하네스는 유효해야 함 | 기본 MCP 선택을 비우고 하나 이상 선택한 경우에만 neutral manifest, Codex/Claude/Antigravity native config와 필요한 `.env.example` 생성 |
+| Harness가 선택한 MCP를 ZIP 안의 세 클라이언트 config에 자동 주입 | MCP 연결·인증·권한은 사용자 환경 소유이고 추천 목록과 실제 연결 상태를 구분해야 함 | `.codex/config.toml`, `.mcp.json`, `.agents/mcp_config.json`은 서버가 비어 있는 골격만 생성하고 root `MCP_추천_목록.md`에서 Playwright·GitHub·Context7의 용도와 공식 링크만 안내 |
+| 현재 연결된 Skill·MCP·내장 도구를 구분하지 않고 고정 capability를 가정 | 클라이언트와 세션마다 실제 사용 가능한 capability가 다름 | 기본 `capability-router` Skill을 추가해 현재 세션에서 실제 사용 가능한 Skill·MCP·내장 도구를 먼저 확인하고, 연결되지 않은 MCP를 있다고 가정하지 않도록 함 |
 | 디자인 규칙이 `DESIGN.md`와 `docs/design/tokens.md`로 갈릴 수 있음 | 동일 토큰을 두 원본으로 유지하면 drift 위험이 있음 | root `DESIGN.md`를 canonical design contract로 두고 `docs/design/`은 구성요소·반응형·접근성 등 구현 상세만 기록하도록 역할 분리 |
 | Google Stitch가 10초 안에 `DESIGN.md` 생성 | Google은 `DESIGN.md` import/export 기능은 안내하지만 고정 생성 시간은 보증하지 않음 | 기능은 유지하고 시간 보증 제거, 공식 Google 출처 연결 |
 | Figma 수치를 주면 완벽 일치 | 브라우저·폰트·콘텐츠·반응형 조건에 따라 차이가 발생 | 구현 참고자료로 수정하고 실제 화면 비교 필요 명시 |
@@ -58,6 +59,7 @@ AI Development Harness v2의 클라이언트별 경로·DESIGN.md·MCP 근거는
 - [MCP 공식 reference servers](https://github.com/modelcontextprotocol/servers): 현재 유지관리 목록, archived 목록, reference implementation의 운영 주의사항
 - [Microsoft Playwright MCP](https://github.com/microsoft/playwright-mcp): 공식 실행 명령과 Node.js 전제조건
 - [GitHub 공식 MCP Server](https://github.com/github/github-mcp-server): 원격/로컬 서버, Docker 이미지, Claude 명령, 최소 권한·read-only/toolset 안내
+- [Context7 MCP](https://github.com/upstash/context7): 최신 라이브러리·프레임워크·SDK 문서와 코드 예시 조회용 MCP
 - [Brave 공식 Search MCP Server](https://github.com/brave/brave-search-mcp-server): 현재 npm 패키지와 stdio 실행 방식
 - [Claude Code memory/CLAUDE.md 문서](https://docs.anthropic.com/en/docs/claude-code/memory): 프로젝트 지침과 import 동작
 - [Claude Code MCP 문서](https://docs.anthropic.com/en/docs/claude-code/mcp): 프로젝트 `.mcp.json`, scope, 환경변수와 보안 경계
@@ -113,4 +115,5 @@ AI Development Harness v2의 클라이언트별 경로·DESIGN.md·MCP 근거는
 11. 주요 이슈의 `lastCheckedAt`을 최신순 정렬 키로 잘못 사용하지 않았는가?
 12. 사용자 자체 계산과 미확인 원인을 공식 사실처럼 표시하지 않았는가?
 13. AI 개발 하네스에서 공통 Source of Truth와 클라이언트별 native adapter를 구분했는가?
-14. MCP 미선택 상태를 유효하게 처리하고 실제 secret·approval·sandbox·trust를 프로젝트 ZIP에 고정하지 않았는가?
+14. MCP config 골격에 서버·secret·approval·sandbox·trust를 자동 주입하지 않고, 실제 연결과 권한 설정을 사용자 환경에 남겼는가?
+15. capability router가 추천 목록이나 빈 config를 실제 연결 상태로 오인하지 않고 현재 세션의 capability를 확인하는가?

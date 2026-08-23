@@ -1,5 +1,5 @@
 export type HarnessClientId = 'codex' | 'claude' | 'antigravity';
-export type HarnessSkillCategory = 'Planning' | 'Implementation' | 'Quality' | 'Release' | 'UI' | 'Security';
+export type HarnessSkillCategory = 'Planning' | 'Implementation' | 'Quality' | 'Release' | 'UI' | 'Security' | 'Orchestration';
 
 export interface HarnessClientCompatibility {
   id: HarnessClientId;
@@ -19,20 +19,18 @@ export interface HarnessSkillDefinition {
   content: string;
 }
 
-export interface HarnessMcpDefinition {
+export interface HarnessMcpGuide {
   id: string;
   name: string;
   description: string;
-  defaultSelected: boolean;
-  needsAuth: boolean;
-  command: string;
-  args: string[];
-  requiredEnv?: string[];
+  officialUrl: string;
+  commandExample: string;
+  note: string;
 }
 
 export interface GeneratedHarnessFile {
   path: string;
-  role: 'canonical' | 'adapter' | 'mirror' | 'documentation' | 'helper' | 'secret-template';
+  role: 'canonical' | 'adapter' | 'mirror' | 'documentation' | 'helper';
   consumers: string[];
   description: string;
   content: string;
@@ -113,6 +111,7 @@ This is the canonical project-wide working agreement for Codex, Claude Code thro
 ## Source-of-truth map
 - AGENTS.md: shared rules, commands, safety constraints, and definition of done.
 - DESIGN.md: shared visual source of truth for UI-related work.
+- MCP_추천_목록.md: human-readable MCP recommendations and official links; it does not mean those MCPs are installed or connected.
 - docs/architecture/: current architecture and boundaries.
 - docs/design/: implementation notes that extend DESIGN.md without duplicating its tokens.
 - docs/plans/: approved implementation plans.
@@ -120,7 +119,6 @@ This is the canonical project-wide working agreement for Codex, Claude Code thro
 - docs/tasks/: handoff and long-running task state.
 - docs/reference/: durable project references and source notes.
 - .agents/skills/: canonical reusable skills.
-- docs/ai-harness/mcp-manifest.json: optional canonical MCP capability manifest when MCP is selected.
 
 Do not create a second project-wide rule file containing another copy of these rules.
 
@@ -131,11 +129,17 @@ Do not create a second project-wide rule file containing another copy of these r
 - For UI work, read DESIGN.md and verify the rendered result.
 - Keep client-specific adapters thin.
 
+## Skills, tools, and MCP
+- Inspect the capabilities actually available in the current client/session before choosing a tool.
+- Use project skills when they match the task; use an MCP tool only when it is actually connected and useful.
+- Never infer MCP availability from MCP_추천_목록.md or an empty config skeleton.
+- If no suitable MCP is connected, continue with available built-in tools or a safe manual workflow.
+- Do not install, authenticate, or grant external-service access unless the user explicitly requests it.
+
 ## Security boundary
-The harness standardizes project context and capabilities, not security bypasses.
 - Never commit real secrets, tokens, cookies, or credentials.
-- Keep approval, sandbox, trust, and auto-execution settings local to each AI client.
-- Prefer least-privilege and read-only external-tool access until write access is intentionally needed.
+- Keep approval, sandbox, trust, auto-execution, MCP credentials, and external write permissions client-local.
+- Prefer least-privilege/read-only access until write access is intentionally required.
 - Require explicit approval for destructive data operations, force pushes, credential changes, or production-impacting actions.
 
 ## Verification
@@ -146,16 +150,18 @@ The harness standardizes project context and capabilities, not security bypasses
 5. State any check that could not run; missing evidence is not a passing result.
 
 ## Client adapters
-- Codex: AGENTS.md and .agents/skills/ directly; optional MCP config at .codex/config.toml.
-- Claude Code: CLAUDE.md imports AGENTS.md; .claude/skills/ mirrors canonical skills; optional project MCP at .mcp.json.
-- Antigravity: .agents/rules/project-core.md bridges shared context; .agents/skills/ is canonical; optional workspace MCP at .agents/mcp_config.json.
+- Codex: AGENTS.md and .agents/skills/ directly; .codex/config.toml is an intentionally minimal project-local skeleton.
+- Claude Code: CLAUDE.md imports AGENTS.md; .claude/skills/ mirrors Harness-managed canonical skills; .mcp.json starts empty.
+- Antigravity: .agents/rules/project-core.md bridges shared context; .agents/skills/ is canonical; .agents/mcp_config.json starts empty.
+- MCP server entries are intentionally not pre-populated. Users connect only what they actually need.
 `;
 
 const CLAUDE_MD = `@AGENTS.md
 
 # Claude Code adapter
 - Use project skills from .claude/skills/. Harness-managed skills mirror canonical .agents/skills/.
-- If this package contains .mcp.json, it was generated from docs/ai-harness/mcp-manifest.json.
+- The included .mcp.json is an empty project skeleton. Add MCP servers only when this project actually needs them.
+- MCP_추천_목록.md is a recommendation list, not an availability signal.
 - Keep Claude-only behavior here; do not duplicate shared rules.
 `;
 
@@ -166,35 +172,40 @@ const ANTIGRAVITY_PROJECT_CORE = `# Antigravity project-core bridge
 
 Use AGENTS.md as the shared project contract and DESIGN.md as the visual source of truth for UI work. Canonical project skills live in .agents/skills/.
 
-If this package contains .agents/mcp_config.json, it was generated from docs/ai-harness/mcp-manifest.json.
+The included .agents/mcp_config.json is intentionally empty. Connect external MCP servers in the installed workspace only when needed. MCP_추천_목록.md is reference material, not proof that a server is available.
 
 Keep approval, trust, and execution-permission choices in Antigravity. Configure this workspace rule's activation mode in Antigravity rather than encoding an approval bypass in the project package.
 `;
 
+const CODEX_CONFIG_TOML = `# Codex project configuration skeleton.
+# MCP servers are intentionally not preconfigured.
+# Add project-specific Codex settings only after confirming they are appropriate for this repository.
+# Keep model, sandbox, approval, trust, and credentials client-local unless the project explicitly requires otherwise.
+`;
+
+const EMPTY_MCP_JSON = `${JSON.stringify({ mcpServers: {} }, null, 2)}\n`;
+
 const HARNESS_README = `# Portable AI Development Harness v2
 
-The goal is behavioral parity from shared sources, not identical client config files or identical model behavior.
+The goal is shared project knowledge with thin native adapters, not identical client configuration or identical model behavior.
 
-Always-present canonical sources:
+Included portable core:
 - AGENTS.md
 - DESIGN.md
+- MCP_추천_목록.md
 - .agents/skills/
+- CLAUDE.md and Harness-managed mirrors under .claude/skills/
+- .agents/rules/project-core.md
+- empty client config skeletons for Codex, Claude Code MCP, and Antigravity MCP
+- durable docs/ structure
 
-Always-present native adapters:
-- Claude Code: CLAUDE.md and harness-managed mirrors under .claude/skills/
-- Antigravity: .agents/rules/project-core.md
+MCP servers are intentionally not pre-populated. External connections depend on the user's installed client, account, credentials, trust settings, runtime, and required permissions. MCP_추천_목록.md provides a short reference list and official links only.
 
-Optional MCP layer:
-- Canonical: docs/ai-harness/mcp-manifest.json
-- Codex: .codex/config.toml
-- Claude Code: .mcp.json
-- Antigravity: .agents/mcp_config.json
-
-The MCP layer is generated only when at least one MCP capability is selected. No MCP selection still produces a valid core harness.
+The capability-router skill must inspect the tools actually available in the current session. A recommendation or empty config file does not mean an MCP server is connected.
 
 The sync helper updates only canonical skill paths inside .claude/skills and preserves unrelated Claude-only skills. It intentionally does not delete stale extra directories automatically; review them manually before removal.
 
-Do not synchronize model choice, sandboxing, trust, auto-approval, destructive-command permissions, or credentials. After editing canonical skills or an included MCP manifest, run:
+After editing canonical skills, run:
 
 node scripts/sync-ai-harness.mjs
 node scripts/validate-ai-harness.mjs
@@ -206,11 +217,50 @@ const COMPATIBILITY_MD = `# Client compatibility
 | --- | --- | --- | --- | --- |
 | Project contract | AGENTS.md | native | CLAUDE.md import | project-core rule bridge |
 | Design | DESIGN.md | project context | project context | rule bridge import |
-| Skills | .agents/skills/ | native | .claude/skills/ mirror | native |
-| MCP, when selected | mcp-manifest.json | .codex/config.toml | .mcp.json | .agents/mcp_config.json |
+| Skills | .agents/skills/ | native | .claude/skills/ Harness mirror | native |
+| MCP config skeleton | no shared server list | .codex/config.toml | .mcp.json | .agents/mcp_config.json |
+| MCP server entries | user-owned | user adds locally | user adds locally | user adds locally |
 | Security approvals | client-local | client-local | client-local | client-local |
 
-One canonical source plus thin native adapters reduces silent drift while preserving each client's supported format. Presence of these files does not bypass client trust or activation controls.
+The package keeps native file locations visible without pretending that external services are portable project dependencies. MCP server entries, credentials, permissions, and account authorization remain user-owned.
+`;
+
+const MCP_RECOMMENDATIONS_MD = `# MCP 추천 목록
+
+이 파일은 **추천 목록과 공식 링크**만 제공합니다. 아래 MCP가 설치되었거나 현재 AI 클라이언트에 연결되어 있다는 뜻이 아닙니다.
+
+실제 연결은 프로젝트에 필요할 때 사용자가 Codex, Claude Code, Antigravity 등 각 클라이언트에서 직접 진행하세요. 인증이 필요한 서비스는 최소 권한으로 시작하고, 쓰기 권한은 실제 작업에 필요할 때만 추가하는 것을 권장합니다.
+
+## 1. Playwright MCP
+
+- 용도: 실제 브라우저 조작, UI 확인, 폼 입력, 반응형·브라우저 기반 QA
+- 추천 상황: 웹 UI를 실제 브라우저에서 확인해야 할 때
+- 공식 프로젝트: https://github.com/microsoft/playwright-mcp
+- 실행 예시: \`npx -y @playwright/mcp@latest\`
+- 비고: 프로젝트가 브라우저 자동화를 필요로 할 때만 연결하세요.
+
+## 2. GitHub MCP Server
+
+- 용도: 저장소, Issue, Pull Request 등 GitHub 작업을 AI 클라이언트에서 다룰 때
+- 추천 상황: GitHub 정보를 직접 읽거나 명시적으로 승인된 GitHub 작업을 수행할 때
+- 공식 프로젝트: https://github.com/github/github-mcp-server
+- 비고: 계정 인증과 저장소 권한은 사용자가 직접 설정해야 합니다. 가능하면 read-only 또는 최소 권한으로 시작하세요.
+
+## 3. Context7 MCP
+
+- 용도: 라이브러리·프레임워크·SDK의 최신 문서와 코드 예시 조회
+- 추천 상황: 버전 변화가 잦은 API, 설정, 마이그레이션, 라이브러리 문법을 확인할 때
+- 공식 프로젝트: https://github.com/upstash/context7
+- 프로젝트 사이트: https://context7.com
+- 비고: 일반적인 코드 작성 자체보다 최신 외부 문서 확인이 필요한 작업에 적합합니다.
+
+## 사용 원칙
+
+1. MCP는 많을수록 좋은 것이 아닙니다. 현재 프로젝트에 실제로 필요한 것만 연결하세요.
+2. \`capability-router\` Skill은 현재 세션에서 실제 사용 가능한 Skill·MCP·내장 도구를 먼저 확인해야 합니다.
+3. 이 추천 목록에 있다고 해서 연결된 MCP로 간주하지 않습니다.
+4. 계정 인증, 토큰, workspace trust, 승인 정책, 쓰기 권한은 Harness ZIP에 넣지 않습니다.
+5. MCP 제품과 설정 방식은 바뀔 수 있으므로 연결 시점에 공식 문서를 다시 확인하세요.
 `;
 
 const SYNC_SCRIPT = `import fs from 'node:fs';
@@ -219,7 +269,6 @@ import path from 'node:path';
 const root = process.cwd();
 const canonicalSkills = path.join(root, '.agents', 'skills');
 const claudeSkills = path.join(root, '.claude', 'skills');
-const manifestPath = path.join(root, 'docs', 'ai-harness', 'mcp-manifest.json');
 
 function copyTreeMerge(source, target) {
   if (!fs.existsSync(source)) return;
@@ -232,38 +281,8 @@ function copyTreeMerge(source, target) {
   }
 }
 
-function q(value) { return JSON.stringify(String(value)); }
-function renderJson(servers) {
-  const mcpServers = {};
-  for (const [name, server] of Object.entries(servers)) {
-    mcpServers[name] = { command: server.command, args: server.args || [] };
-  }
-  return JSON.stringify({ mcpServers }, null, 2) + '\\n';
-}
-function renderCodex(servers) {
-  const lines = ['# Generated from docs/ai-harness/mcp-manifest.json.', '# Keep model, sandbox, approval, trust, and credentials client-local.', ''];
-  for (const [name, server] of Object.entries(servers)) {
-    lines.push('[mcp_servers.' + name + ']');
-    lines.push('command = ' + q(server.command));
-    lines.push('args = [' + (server.args || []).map(q).join(', ') + ']');
-    if (server.requiredEnv?.length) lines.push('env_vars = [' + server.requiredEnv.map(q).join(', ') + ']');
-    lines.push('');
-  }
-  return lines.join('\\n') + '\\n';
-}
-
 copyTreeMerge(canonicalSkills, claudeSkills);
-
-if (fs.existsSync(manifestPath)) {
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-  fs.mkdirSync(path.join(root, '.codex'), { recursive: true });
-  fs.writeFileSync(path.join(root, '.codex', 'config.toml'), renderCodex(manifest.servers), 'utf8');
-  fs.writeFileSync(path.join(root, '.mcp.json'), renderJson(manifest.servers), 'utf8');
-  fs.writeFileSync(path.join(root, '.agents', 'mcp_config.json'), renderJson(manifest.servers), 'utf8');
-  console.log('AI harness skills and MCP adapters synchronized.');
-} else {
-  console.log('AI harness skills synchronized. No MCP manifest present; MCP configs were left untouched.');
-}
+console.log('AI harness skills synchronized. Existing unrelated Claude-only skills were preserved.');
 `;
 
 const VALIDATE_SCRIPT = `import fs from 'node:fs';
@@ -271,8 +290,16 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 
 const root = process.cwd();
-const manifestPath = path.join(root, 'docs', 'ai-harness', 'mcp-manifest.json');
-const required = ['AGENTS.md','CLAUDE.md','DESIGN.md','.agents/rules/project-core.md'];
+const required = [
+  'AGENTS.md',
+  'CLAUDE.md',
+  'DESIGN.md',
+  'MCP_추천_목록.md',
+  '.codex/config.toml',
+  '.mcp.json',
+  '.agents/rules/project-core.md',
+  '.agents/mcp_config.json',
+];
 const errors = required.filter((p) => !fs.existsSync(path.join(root, p))).map((p) => 'Missing required file: ' + p);
 
 function files(base) {
@@ -286,28 +313,6 @@ function files(base) {
   return out.sort();
 }
 function hash(file) { return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'); }
-function q(value) { return JSON.stringify(String(value)); }
-function renderJson(servers) {
-  const mcpServers = {};
-  for (const [name, server] of Object.entries(servers)) mcpServers[name] = { command: server.command, args: server.args || [] };
-  return JSON.stringify({ mcpServers }, null, 2) + '\\n';
-}
-function renderCodex(servers) {
-  const lines = ['# Generated from docs/ai-harness/mcp-manifest.json.', '# Keep model, sandbox, approval, trust, and credentials client-local.', ''];
-  for (const [name, server] of Object.entries(servers)) {
-    lines.push('[mcp_servers.' + name + ']');
-    lines.push('command = ' + q(server.command));
-    lines.push('args = [' + (server.args || []).map(q).join(', ') + ']');
-    if (server.requiredEnv?.length) lines.push('env_vars = [' + server.requiredEnv.map(q).join(', ') + ']');
-    lines.push('');
-  }
-  return lines.join('\\n') + '\\n';
-}
-function expectContent(relative, expected) {
-  const full = path.join(root, relative);
-  if (!fs.existsSync(full)) errors.push('Missing generated MCP adapter: ' + relative);
-  else if (fs.readFileSync(full, 'utf8') !== expected) errors.push('MCP adapter drift: ' + relative);
-}
 
 const canonical = path.join(root, '.agents', 'skills');
 const mirror = path.join(root, '.claude', 'skills');
@@ -318,20 +323,31 @@ for (const relative of files(canonical)) {
   else if (hash(source) !== hash(target)) errors.push('Skill mirror drift: ' + relative);
 }
 
-if (fs.existsSync(manifestPath)) {
-  const text = fs.readFileSync(manifestPath, 'utf8');
-  if (/gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY/.test(text)) errors.push('Potential credential detected in MCP manifest.');
-  const manifest = JSON.parse(text);
-  expectContent('.codex/config.toml', renderCodex(manifest.servers));
-  expectContent('.mcp.json', renderJson(manifest.servers));
-  expectContent('.agents/mcp_config.json', renderJson(manifest.servers));
+for (const relative of ['.mcp.json', '.agents/mcp_config.json']) {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(path.join(root, relative), 'utf8'));
+    if (!parsed.mcpServers || typeof parsed.mcpServers !== 'object' || Array.isArray(parsed.mcpServers)) errors.push('Invalid MCP skeleton: ' + relative);
+    else if (Object.keys(parsed.mcpServers).length !== 0) errors.push('MCP skeleton must not pre-populate servers: ' + relative);
+  } catch {
+    errors.push('Invalid JSON config: ' + relative);
+  }
+}
+
+const codexConfig = fs.existsSync(path.join(root, '.codex', 'config.toml')) ? fs.readFileSync(path.join(root, '.codex', 'config.toml'), 'utf8') : '';
+if (/\[mcp_servers\./.test(codexConfig)) errors.push('Codex config must not pre-populate MCP servers.');
+
+const scanTargets = ['.codex/config.toml', '.mcp.json', '.agents/mcp_config.json'];
+for (const relative of scanTargets) {
+  if (!fs.existsSync(path.join(root, relative))) continue;
+  const text = fs.readFileSync(path.join(root, relative), 'utf8');
+  if (/gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY/.test(text)) errors.push('Potential credential detected: ' + relative);
 }
 
 if (errors.length) {
   console.error(errors.join('\\n'));
   process.exit(1);
 }
-console.log('AI harness parity validation passed.');
+console.log('AI harness portability validation passed.');
 `;
 
 function skill(
@@ -359,24 +375,24 @@ export const CLIENT_COMPATIBILITY: HarnessClientCompatibility[] = [
     name: 'OpenAI Codex',
     projectContract: 'AGENTS.md',
     skills: '.agents/skills/<skill>/SKILL.md',
-    mcp: '선택 시 .codex/config.toml',
-    note: '공통 계약과 canonical skills를 직접 사용. 모델·sandbox·approval·trust 값은 생성하지 않음.',
+    mcp: '.codex/config.toml 골격 · 서버는 사용자 추가',
+    note: '공통 계약과 canonical skills를 직접 사용. config는 제공하되 MCP·model·sandbox·approval·trust 값은 선설정하지 않음.',
   },
   {
     id: 'claude',
     name: 'Claude Code',
     projectContract: 'CLAUDE.md → @AGENTS.md',
     skills: '.claude/skills/<skill>/SKILL.md',
-    mcp: '선택 시 .mcp.json',
-    note: '공통 규칙은 import하고 선택된 canonical skill을 네이티브 경로에 동일 생성. 다른 Claude 전용 skill은 보존.',
+    mcp: '.mcp.json 빈 골격 · 서버는 사용자 추가',
+    note: '공통 규칙은 import하고 Harness-managed canonical skill만 네이티브 경로에 동일 생성. 다른 Claude 전용 skill은 보존.',
   },
   {
     id: 'antigravity',
     name: 'Google Antigravity',
     projectContract: '.agents/rules/project-core.md → AGENTS.md',
     skills: '.agents/skills/<skill>/SKILL.md',
-    mcp: '선택 시 .agents/mcp_config.json',
-    note: 'workspace rule bridge와 canonical skills를 사용. rule activation과 권한은 클라이언트에서 결정.',
+    mcp: '.agents/mcp_config.json 빈 골격 · 서버는 사용자 추가',
+    note: 'workspace rule bridge와 canonical skills를 사용. MCP 연결·rule activation·권한은 설치된 클라이언트에서 결정.',
   },
 ];
 
@@ -386,74 +402,40 @@ export const HARNESS_SKILLS: HarnessSkillDefinition[] = [
   skill('debug', 'Debug', 'Quality', '재현→근본 원인→최소 패치→회귀 검증', 'Diagnoses reproducible defects and should be used when tracing failures to root cause.', `1. Reproduce or precisely characterize the failure.\n2. Trace data/control flow to the earliest incorrect assumption.\n3. Distinguish root cause from symptoms.\n4. Apply the smallest fix that restores the intended invariant.\n5. Run the closest regression checks and report unavailable evidence explicitly.`, true),
   skill('code-review', 'Code review', 'Quality', '정확성·타입·보안·접근성·회귀·검증을 순서대로 리뷰', 'Reviews repository diffs and should be used to assess correctness, safety, maintainability, and evidence gaps.', `Review scope and behavior first, then edge states, destructive/security risk, types, architecture, UI accessibility/responsiveness, dependency/config changes, verification evidence, documentation accuracy, and rollback. Report concrete findings; do not manufacture defects.`, true),
   skill('verify-release', 'Verify release', 'Release', '정확한 SHA를 고정해 PR·미리보기·배포를 분리 검증', 'Verifies release candidates and should be used before merge or deployment decisions.', `1. Pin the exact head SHA.\n2. Confirm base, changed-file scope, and conflicts.\n3. Run available build/type/test/lint checks against that SHA.\n4. Verify applicable normal, empty, error, mobile, desktop, and accessibility states.\n5. Separate deployment status from browser/runtime verification.\n6. Never treat failed, pending, stale, or unavailable required evidence as passing.`, true),
+  skill('capability-router', 'Capability router', 'Orchestration', '현재 세션의 Skill·MCP·내장 도구를 확인하고 가장 적합한 capability로 작업을 라우팅', 'Inspects currently available skills, MCP tools, and built-in capabilities and should be used to choose the smallest suitable toolchain without assuming unavailable integrations.', `1. Read the task and AGENTS.md before choosing a capability.\n2. Inventory what is actually available in the current client/session: project skills, connected MCP tools, and built-in tools.\n3. Prefer a matching project skill for repeatable procedure. Use a specific MCP only when it is actually connected and materially improves the task.\n4. Treat MCP_추천_목록.md as reference only; never infer availability from that file or from an empty config skeleton.\n5. If no suitable MCP is connected, continue with available built-in tools or a safe manual workflow instead of failing or inventing a connection.\n6. Do not install, authenticate, or grant access to an MCP service unless the user explicitly requests it.\n7. For external writes or destructive actions, use the narrowest permission available and respect the client's confirmation/approval boundary.\n8. Re-evaluate the route after a tool failure or when the task changes.`, true),
   skill('browser-qa', 'Browser QA', 'UI', '실제 브라우저에서 데스크톱·모바일·키보드·콘솔을 검증', 'Verifies rendered UI behavior and should be used for browser, responsive, accessibility, or console checks.', `Open the real preview/local build, exercise the main and relevant empty/error flows, check desktop and mobile widths, use keyboard navigation, and inspect console/network for JavaScript, CSS, asset, and MIME errors. Record the tested URL and SHA.`),
   skill('git-pr', 'Git PR', 'Release', '한 작업 한 브랜치·PR 원칙과 head SHA 기반 검증', 'Prepares focused Git branches and pull requests and should be used for repository review workflows.', `Start from the intended base, keep one coherent task per PR, review the full diff, never force push or bypass checks without explicit authority, record the head SHA, and merge only after explicit user approval and the agreed verification gate.`),
   skill('security-review', 'Security review', 'Security', '비밀정보·권한·파괴적 작업·최소 권한을 검토', 'Reviews secrets, permissions, and destructive-operation risk and should be used for security-sensitive changes.', `Identify credentials, PII, privileged APIs, and destructive operations. Keep secrets in approved environment/secret stores, prefer least privilege/read-only access, verify authorization separately from authentication, and do not weaken sandbox, approval, or trust controls for convenience.`),
 ];
 
-export const HARNESS_MCP_PRESETS: HarnessMcpDefinition[] = [
+export const HARNESS_MCP_GUIDES: HarnessMcpGuide[] = [
   {
     id: 'playwright',
-    name: 'Playwright',
-    description: 'Microsoft Playwright MCP for browser automation and real UI verification.',
-    defaultSelected: false,
-    needsAuth: false,
-    command: 'npx',
-    args: ['-y', '@playwright/mcp@latest'],
+    name: 'Playwright MCP',
+    description: '실제 브라우저 조작과 UI 검증이 필요한 웹 프로젝트용.',
+    officialUrl: 'https://github.com/microsoft/playwright-mcp',
+    commandExample: 'npx -y @playwright/mcp@latest',
+    note: '브라우저 자동화가 실제로 필요할 때 사용자가 각 클라이언트에 직접 연결.',
   },
   {
-    id: 'github-readonly',
-    name: 'GitHub (read-only)',
-    description: 'GitHub official MCP server in Docker with read-only mode enabled by default.',
-    defaultSelected: false,
-    needsAuth: true,
-    command: 'docker',
-    args: ['run', '-i', '--rm', '-e', 'GITHUB_PERSONAL_ACCESS_TOKEN', '-e', 'GITHUB_READ_ONLY=1', 'ghcr.io/github/github-mcp-server'],
-    requiredEnv: ['GITHUB_PERSONAL_ACCESS_TOKEN'],
+    id: 'github',
+    name: 'GitHub MCP Server',
+    description: 'Repository, Issue, Pull Request 등 GitHub 작업을 AI 클라이언트에서 다룰 때 사용.',
+    officialUrl: 'https://github.com/github/github-mcp-server',
+    commandExample: '공식 문서의 현재 설치 방법 확인',
+    note: '인증과 repository 권한은 사용자가 직접 설정. 가능하면 read-only/최소 권한부터 시작.',
+  },
+  {
+    id: 'context7',
+    name: 'Context7 MCP',
+    description: '라이브러리·프레임워크·SDK의 최신 문서와 코드 예시 확인용.',
+    officialUrl: 'https://github.com/upstash/context7',
+    commandExample: '공식 문서의 현재 설치 방법 확인',
+    note: '최신 외부 문서가 중요한 API·설정·마이그레이션 작업에 적합.',
   },
 ];
 
 export const DEFAULT_SKILL_IDS = HARNESS_SKILLS.filter((item) => item.defaultSelected).map((item) => item.id);
-export const DEFAULT_MCP_IDS = HARNESS_MCP_PRESETS.filter((item) => item.defaultSelected).map((item) => item.id);
-
-function renderManifest(servers: HarnessMcpDefinition[]): string {
-  const entries = Object.fromEntries(
-    servers.map((server) => [
-      server.id,
-      {
-        transport: 'stdio',
-        command: server.command,
-        args: server.args,
-        ...(server.requiredEnv?.length ? { requiredEnv: server.requiredEnv } : {}),
-      },
-    ]),
-  );
-  return `${JSON.stringify({ schemaVersion: 1, servers: entries }, null, 2)}\n`;
-}
-
-function renderJsonMcp(servers: HarnessMcpDefinition[]): string {
-  return `${JSON.stringify({ mcpServers: Object.fromEntries(servers.map((server) => [server.id, { command: server.command, args: server.args }])) }, null, 2)}\n`;
-}
-
-function renderCodexMcp(servers: HarnessMcpDefinition[]): string {
-  const q = (value: string) => JSON.stringify(value);
-  const lines = ['# Generated from docs/ai-harness/mcp-manifest.json.', '# Keep model, sandbox, approval, trust, and credentials client-local.', ''];
-  servers.forEach((server) => {
-    lines.push(`[mcp_servers.${server.id}]`);
-    lines.push(`command = ${q(server.command)}`);
-    lines.push(`args = [${server.args.map(q).join(', ')}]`);
-    if (server.requiredEnv?.length) lines.push(`env_vars = [${server.requiredEnv.map(q).join(', ')}]`);
-    lines.push('');
-  });
-  return `${lines.join('\n')}\n`;
-}
-
-function envExample(servers: HarnessMcpDefinition[]): string {
-  const names = Array.from(new Set(servers.flatMap((server) => server.requiredEnv ?? [])));
-  return names.length
-    ? ['# Configure real values outside Git.', '# Never commit real credentials.', ...names.map((name) => `${name}=`), ''].join('\n')
-    : '';
-}
 
 function assertUniquePaths(files: GeneratedHarnessFile[]): void {
   const seen = new Set<string>();
@@ -465,14 +447,17 @@ function assertUniquePaths(files: GeneratedHarnessFile[]): void {
   if (duplicates.size > 0) throw new Error(`Duplicate generated harness paths: ${Array.from(duplicates).join(', ')}`);
 }
 
-export function buildHarnessFiles(selectedSkillIds: string[], selectedMcpIds: string[]): GeneratedHarnessFile[] {
+export function buildHarnessFiles(selectedSkillIds: string[]): GeneratedHarnessFile[] {
   const skills = HARNESS_SKILLS.filter((item) => selectedSkillIds.includes(item.id));
-  const servers = HARNESS_MCP_PRESETS.filter((item) => selectedMcpIds.includes(item.id));
   const files: GeneratedHarnessFile[] = [
     { path: 'AGENTS.md', role: 'canonical', consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'], description: '공통 프로젝트 계약과 source-of-truth 지도', content: SHARED_AGENTS_MD },
     { path: 'DESIGN.md', role: 'canonical', consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'], description: 'Google alpha 형식 기반 공통 디자인 시스템 원본', content: DESIGN_MD_TEMPLATE },
+    { path: 'MCP_추천_목록.md', role: 'documentation', consumers: ['Human', 'AI clients'], description: '자동 연결 없이 MCP 용도와 공식 링크만 제공하는 한글 추천 문서', content: MCP_RECOMMENDATIONS_MD },
     { path: 'CLAUDE.md', role: 'adapter', consumers: ['Claude Code'], description: 'AGENTS.md를 import하는 Claude Code 어댑터', content: CLAUDE_MD },
+    { path: '.codex/config.toml', role: 'adapter', consumers: ['Codex'], description: 'MCP를 선설정하지 않은 Codex project config 골격', content: CODEX_CONFIG_TOML },
+    { path: '.mcp.json', role: 'adapter', consumers: ['Claude Code'], description: '서버가 비어 있는 Claude Code project MCP 골격', content: EMPTY_MCP_JSON },
     { path: '.agents/rules/project-core.md', role: 'adapter', consumers: ['Antigravity'], description: 'AGENTS.md와 DESIGN.md를 연결하는 Antigravity workspace rule', content: ANTIGRAVITY_PROJECT_CORE },
+    { path: '.agents/mcp_config.json', role: 'adapter', consumers: ['Antigravity'], description: '서버가 비어 있는 Antigravity workspace MCP 골격', content: EMPTY_MCP_JSON },
     { path: 'docs/architecture/overview.md', role: 'documentation', consumers: ['All'], description: '실제 저장소 아키텍처 기록 위치', content: '# Architecture\n\nRecord the current system architecture after inspecting the real repository. Keep this descriptive, not aspirational.\n' },
     { path: 'docs/design/README.md', role: 'documentation', consumers: ['All'], description: 'DESIGN.md를 중복하지 않는 구현 상세 문서 위치', content: '# Design implementation notes\n\nDESIGN.md is the canonical design contract. Store component behavior, responsive exceptions, accessibility notes, and implementation details here without copying token values into a second source of truth.\n' },
     { path: 'docs/plans/README.md', role: 'documentation', consumers: ['All'], description: '승인된 구현 계획 보관 위치', content: '# Plans\n\nStore approved implementation plans here with scope, risks, validation, and rollback.\n' },
@@ -481,27 +466,15 @@ export function buildHarnessFiles(selectedSkillIds: string[], selectedMcpIds: st
     { path: 'docs/reference/README.md', role: 'documentation', consumers: ['All'], description: '프로젝트 근거·정책·도메인 자료 보관 위치', content: '# Reference\n\nStore durable project references, external source notes, policies, and domain constraints here. Re-check time-sensitive sources before relying on them.\n' },
     { path: 'docs/ai-harness/README.md', role: 'documentation', consumers: ['All'], description: '하네스 사용법과 보안 경계', content: HARNESS_README },
     { path: 'docs/ai-harness/compatibility.md', role: 'documentation', consumers: ['All'], description: '세 도구 호환성 표', content: COMPATIBILITY_MD },
-    { path: 'scripts/sync-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'canonical skill과 선택된 MCP adapter 동기화', content: SYNC_SCRIPT },
-    { path: 'scripts/validate-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'canonical skill mirror, 선택된 MCP adapter, credential 위험 검사', content: VALIDATE_SCRIPT },
-    { path: 'README.ai-harness.md', role: 'documentation', consumers: ['Human'], description: '다운로드 패키지 적용 순서', content: '# AI Harness v2 setup\n\n1. Review before overwriting an existing project.\n2. Fill AGENTS.md with real commands and boundaries.\n3. Replace DESIGN.md sample tokens with the project design system.\n4. If MCP files are included, configure required credentials outside Git.\n5. Run node scripts/sync-ai-harness.mjs and node scripts/validate-ai-harness.mjs. The sync helper preserves unrelated Claude-only skill directories.\n6. Review each client\'s trust, approval, sandbox, and MCP prompts locally.\n' },
+    { path: 'scripts/sync-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'canonical skill을 Claude native path로 안전하게 동기화', content: SYNC_SCRIPT },
+    { path: 'scripts/validate-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'skill mirror와 빈 MCP config 골격을 검증', content: VALIDATE_SCRIPT },
+    { path: 'README.ai-harness.md', role: 'documentation', consumers: ['Human'], description: '다운로드 패키지 적용 순서', content: '# AI Harness v2 setup\n\n1. Review before overwriting an existing project.\n2. Fill AGENTS.md with real commands and boundaries.\n3. Replace DESIGN.md sample tokens with the project design system.\n4. Review MCP_추천_목록.md and connect only the external tools the project actually needs. Empty config skeletons do not mean an MCP is installed.\n5. Run node scripts/sync-ai-harness.mjs and node scripts/validate-ai-harness.mjs. The sync helper preserves unrelated Claude-only skill directories.\n6. Review each client\'s trust, approval, sandbox, MCP credentials, and external write permissions locally.\n' },
   ];
 
   skills.forEach((item) => {
     files.push({ path: `.agents/skills/${item.id}/SKILL.md`, role: 'canonical', consumers: ['Codex', 'Antigravity'], description: `${item.name} canonical skill`, content: item.content });
     files.push({ path: `.claude/skills/${item.id}/SKILL.md`, role: 'mirror', consumers: ['Claude Code'], description: `${item.name} Claude native mirror`, content: item.content });
   });
-
-  if (servers.length > 0) {
-    files.push(
-      { path: 'docs/ai-harness/mcp-manifest.json', role: 'canonical', consumers: ['Harness sync', 'Human'], description: '선택 MCP capability의 중립 공통 manifest', content: renderManifest(servers) },
-      { path: '.codex/config.toml', role: 'adapter', consumers: ['Codex'], description: '선택 MCP를 위한 Codex project adapter', content: renderCodexMcp(servers) },
-      { path: '.mcp.json', role: 'adapter', consumers: ['Claude Code'], description: '선택 MCP를 위한 Claude Code project adapter', content: renderJsonMcp(servers) },
-      { path: '.agents/mcp_config.json', role: 'adapter', consumers: ['Antigravity'], description: '선택 MCP를 위한 Antigravity workspace adapter', content: renderJsonMcp(servers) },
-    );
-
-    const env = envExample(servers);
-    if (env) files.push({ path: '.env.example', role: 'secret-template', consumers: ['Human', 'Runtime'], description: '필요한 환경변수 이름만 포함하는 템플릿', content: env });
-  }
 
   assertUniquePaths(files);
   return files.sort((a, b) => a.path.localeCompare(b.path));
