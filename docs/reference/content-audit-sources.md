@@ -2,12 +2,13 @@
 
 ## 감사 범위
 
-- 검토일: 2026-08-23
+- 검토일: 2026-08-24
 - 대상: 현재 앱에서 접근 가능한 모델 비교, 주요 이슈·변경사항, 디자인 사전 설계, 프로젝트 하네스, MCP, 개발 로드맵, 인프라 가이드와 공개 README/아키텍처 문서
 - 원칙: 숫자와 순위는 측정 조건이 있는 원문만 사용하고, 제품 기능·명령·보안 지침은 공식 1차 자료를 우선한다.
 
 모델 비교의 벤치마크별 원문과 해석 제한은 [model-comparison-sources.md](model-comparison-sources.md)에 별도로 기록한다.
 주요 이슈·변경사항의 날짜·영향 범위·사용자 논의 규모 판정 근거는 [major-issues-sources.md](major-issues-sources.md)에 별도로 기록한다.
+AI Development Harness v2의 클라이언트별 경로·DESIGN.md·MCP 근거는 [ai-harness-v2-sources.md](ai-harness-v2-sources.md)에 별도로 기록한다.
 
 ### 공개 범위와 레거시 자료의 구분
 
@@ -24,6 +25,10 @@
 | `@modelcontextprotocol/server-docker` | MCP 공식 서버 목록과 Docker 공식 안내에서 해당 패키지를 현재 공식 서버로 확인할 수 없음 | 목록에서 제거. Docker MCP Toolkit은 서버 패키지가 아닌 별도 gateway/catalog로 구분 |
 | 루트 `mcp.json` 하나로 Claude·Codex·Antigravity 자동 호환 | 클라이언트별 설정 경로와 JSON 스키마가 다름 | Antigravity workspace 예시를 `.agents/mcp_config.json`으로 표시하고 다른 클라이언트는 변환·공식 문서 확인 필요 명시 |
 | `.agents/skills`가 세 도구에서 100% 자동 공유 | 자동 발견 경로와 스킬 메타데이터 지원은 제품별로 다름 | 이식 가능한 절차 원본으로 설명하고 자동 호환 보증 제거 |
+| Harness에서 공통 원본과 클라이언트 설정이 명확히 분리되지 않음 | Codex·Claude Code·Antigravity는 프로젝트 지침·Skill·MCP의 네이티브 경로가 서로 다름 | Harness v2를 `AGENTS.md`·`DESIGN.md`·`.agents/skills` 공통 원본 + 도구별 native adapter 구조로 교체 |
+| Claude가 `.agents/skills`를 자동 공유한다고 가정 | Claude Code의 프로젝트 Skill 네이티브 경로는 `.claude/skills/<skill>/SKILL.md` | canonical `.agents/skills`에서 동일 내용을 `.claude/skills`로 생성하고 drift 검증 helper 추가 |
+| MCP를 사용하지 않아도 manifest와 3개 MCP config가 항상 생성됨 | MCP는 선택 capability이며 빈 선택에서도 핵심 프로젝트 하네스는 유효해야 함 | 기본 MCP 선택을 비우고 하나 이상 선택한 경우에만 neutral manifest, Codex/Claude/Antigravity native config와 필요한 `.env.example` 생성 |
+| 디자인 규칙이 `DESIGN.md`와 `docs/design/tokens.md`로 갈릴 수 있음 | 동일 토큰을 두 원본으로 유지하면 drift 위험이 있음 | root `DESIGN.md`를 canonical design contract로 두고 `docs/design/`은 구성요소·반응형·접근성 등 구현 상세만 기록하도록 역할 분리 |
 | Google Stitch가 10초 안에 `DESIGN.md` 생성 | Google은 `DESIGN.md` import/export 기능은 안내하지만 고정 생성 시간은 보증하지 않음 | 기능은 유지하고 시간 보증 제거, 공식 Google 출처 연결 |
 | Figma 수치를 주면 완벽 일치 | 브라우저·폰트·콘텐츠·반응형 조건에 따라 차이가 발생 | 구현 참고자료로 수정하고 실제 화면 비교 필요 명시 |
 | bcrypt “암호화”, 고정 salt 10, JWT 15분/7일을 보편 정답으로 제시 | 비밀번호는 해시해야 하며 알고리즘·비용·세션 정책은 현재 지침과 위협 모델에 따라 결정 | Argon2id 우선 검토, 세션/토큰 비교, CSRF/XSS·회전·취소·MFA 범위 포함 |
@@ -47,16 +52,25 @@
 
 ### MCP와 AI 도구 설정
 
+- [OpenAI Codex AGENTS.md 가이드](https://developers.openai.com/codex/guides/agents-md): 프로젝트 지침 계층과 `AGENTS.md` discovery
+- [OpenAI Codex Skills](https://developers.openai.com/codex/skills): `.agents/skills` 기반 프로젝트 Skill 구조
+- [OpenAI Codex MCP](https://developers.openai.com/codex/mcp): Codex MCP 구성과 project config
 - [MCP 공식 reference servers](https://github.com/modelcontextprotocol/servers): 현재 유지관리 목록, archived 목록, reference implementation의 운영 주의사항
 - [Microsoft Playwright MCP](https://github.com/microsoft/playwright-mcp): 공식 실행 명령과 Node.js 전제조건
 - [GitHub 공식 MCP Server](https://github.com/github/github-mcp-server): 원격/로컬 서버, Docker 이미지, Claude 명령, 최소 권한·read-only/toolset 안내
 - [Brave 공식 Search MCP Server](https://github.com/brave/brave-search-mcp-server): 현재 npm 패키지와 stdio 실행 방식
-- [Claude Code MCP 문서](https://docs.anthropic.com/en/docs/claude-code/mcp): `claude mcp add`, `--env`, `--` 구분과 scope 안내
-- [Google Antigravity MCP 문서](https://antigravity.google/docs/mcp): 전역·workspace 설정 경로, `mcpServers` 스키마, 권한과 인증
+- [Claude Code memory/CLAUDE.md 문서](https://docs.anthropic.com/en/docs/claude-code/memory): 프로젝트 지침과 import 동작
+- [Claude Code MCP 문서](https://docs.anthropic.com/en/docs/claude-code/mcp): 프로젝트 `.mcp.json`, scope, 환경변수와 보안 경계
+- [Claude Agent Skills](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview): 프로젝트 Skill의 `SKILL.md` 형식과 경로
+- [Google Antigravity Rules](https://antigravity.google/docs/ide-rules): workspace `.agents/rules/`와 rule context
+- [Google Antigravity Skills](https://antigravity.google/docs/skills/): workspace `.agents/skills/`와 `SKILL.md`
+- [Google Antigravity MCP 문서](https://antigravity.google/docs/mcp): workspace 설정 경로, `mcpServers` 스키마, 권한과 인증
 - [Docker MCP Toolkit](https://docs.docker.com/ai/mcp-catalog-and-toolkit/get-started/): Docker Desktop 기반 catalog와 gateway의 현재 성격
 
 ### 디자인 도구
 
+- [Google Labs DESIGN.md 공개](https://blog.google/innovation-and-ai/models-and-research/google-labs/stitch-design-md/): DESIGN.md draft 공개와 Stitch import/export
+- [Google DESIGN.md specification repository](https://github.com/google-labs-code/design.md): alpha 사양, YAML front matter와 Markdown 구조
 - [Google Stitch AI-native UI design 업데이트](https://blog.google/innovation-and-ai/models-and-research/google-labs/stitch-ai-ui-design/): URL 기반 디자인 시스템 추출과 `DESIGN.md` import/export
 - [Google Developers의 Stitch 소개](https://developers.googleblog.com/en/stitch-a-new-way-to-design-uis/): 텍스트·이미지 입력, 프론트엔드 코드, Figma 이동 기능
 
@@ -98,3 +112,5 @@
 10. 주요 이슈에서 사용자 논의 규모와 공식 영향 범위를 분리했는가?
 11. 주요 이슈의 `lastCheckedAt`을 최신순 정렬 키로 잘못 사용하지 않았는가?
 12. 사용자 자체 계산과 미확인 원인을 공식 사실처럼 표시하지 않았는가?
+13. AI 개발 하네스에서 공통 Source of Truth와 클라이언트별 native adapter를 구분했는가?
+14. MCP 미선택 상태를 유효하게 처리하고 실제 secret·approval·sandbox·trust를 프로젝트 ZIP에 고정하지 않았는가?
