@@ -34,3 +34,140 @@ jobs:
 
       - name: Build production app
         run: npm run build
+
+      - name: Start Vite preview
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/vite-preview.log 2>&1 &
+          echo $! > /tmp/vite-preview.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/vite-preview.log
+          exit 1
+
+      - name: Install temporary Playwright Chromium
+        run: |
+          mkdir -p /tmp/pw
+          cd /tmp/pw
+          npm init -y > /dev/null
+          npm install playwright@latest --no-save
+          npx playwright install --with-deps chromium
+
+      - name: Browser and ZIP smoke test
+        run: |
+          cat > /tmp/pw/harness-smoke.cjs <<'EOF'
+          const { chromium } = require('playwright');
+
+          async function main() {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+            const browserErrors = [];
+
+            page.on('console', (message) => {
+              if (message.type() === 'error') browserErrors.push('console: ' + message.text());
+            });
+            page.on('pageerror', (error) => browserErrors.push('pageerror: ' + error.message));
+
+            await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            await page.getByRole('button', { name: /개발 환경 & 맞춤 ZIP 다운/ }).click();
+            await page.getByRole('heading', { name: '하나의 프로젝트 규칙, 세 도구의 네이티브 환경' }).waitFor();
+
+            const codexPath = page.getByText('.codex/config.toml', { exact: true });
+            if (await codexPath.count()) throw new Error('Codex MCP adapter is present before any MCP selection.');
+
+            await page.getByRole('button', { name: /^Browser QA/ }).click();
+            await page.getByText('.agents/skills/browser-qa/SKILL.md', { exact: true }).waitFor();
+            await page.getByText('.claude/skills/browser-qa/SKILL.md', { exact: true }).waitFor();
+
+            await page.getByRole('button', { name: '기본값' }).click();
+            if (await page.getByText('.agents/skills/browser-qa/SKILL.md', { exact: true }).count()) {
+              throw new Error('Optional Browser QA skill remained after reset.');
+            }
+
+            let downloadPromise = page.waitForEvent('download');
+            await page.getByRole('button', { name: /Harness v2 ZIP 다운로드/ }).click();
+            let download = await downloadPromise;
+            await download.saveAs('/tmp/harness-default.zip');
+
+            await page.getByRole('button', { name: /^Playwright/ }).click();
+            await page.getByText('.codex/config.toml', { exact: true }).waitFor();
+            await page.getByText('.mcp.json', { exact: true }).waitFor();
+            await page.getByText('.agents/mcp_config.json', { exact: true }).waitFor();
+
+            downloadPromise = page.waitForEvent('download');
+            await page.getByRole('button', { name: /Harness v2 ZIP 다운로드/ }).click();
+            download = await downloadPromise;
+            await download.saveAs('/tmp/harness-playwright.zip');
+
+            await page.getByRole('button', { name: /^GitHub \(read-only\)/ }).click();
+            await page.getByText('.env.example', { exact: true }).waitFor();
+
+            downloadPromise = page.waitForEvent('download');
+            await page.getByRole('button', { name: /Harness v2 ZIP 다운로드/ }).click();
+            download = await downloadPromise;
+            await download.saveAs('/tmp/harness-github.zip');
+
+            await page.screenshot({ path: '/tmp/harness-desktop.png', fullPage: true });
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.reload({ waitUntil: 'networkidle' });
+            await page.getByRole('button', { name: /개발 환경 & 맞춤 ZIP 다운/ }).click();
+            await page.getByRole('heading', { name: '하나의 프로젝트 규칙, 세 도구의 네이티브 환경' }).waitFor();
+            await page.screenshot({ path: '/tmp/harness-mobile.png', fullPage: true });
+
+            if (browserErrors.length) throw new Error(browserErrors.join('\n'));
+            await browser.close();
+          }
+
+          main().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          EOF
+          cd /tmp/pw
+          node harness-smoke.cjs
+
+      - name: Validate downloaded Harness ZIPs
+        run: |
+          rm -rf /tmp/harness-default /tmp/harness-playwright /tmp/harness-github
+          mkdir -p /tmp/harness-default /tmp/harness-playwright /tmp/harness-github
+          unzip -q /tmp/harness-default.zip -d /tmp/harness-default
+          unzip -q /tmp/harness-playwright.zip -d /tmp/harness-playwright
+          unzip -q /tmp/harness-github.zip -d /tmp/harness-github
+
+          test -f /tmp/harness-default/AGENTS.md
+          test -f /tmp/harness-default/CLAUDE.md
+          test -f /tmp/harness-default/DESIGN.md
+          test -f /tmp/harness-default/.agents/rules/project-core.md
+          test ! -e /tmp/harness-default/.codex/config.toml
+          test ! -e /tmp/harness-default/.mcp.json
+          test ! -e /tmp/harness-default/.agents/mcp_config.json
+
+          cd /tmp/harness-default
+          node scripts/validate-ai-harness.mjs
+          mkdir -p .claude/skills/claude-only
+          printf '%s\n' '---' 'name: claude-only' 'description: Claude-only preservation probe.' '---' '# Claude-only skill' > .claude/skills/claude-only/SKILL.md
+          node scripts/sync-ai-harness.mjs
+          test -f .claude/skills/claude-only/SKILL.md
+          node scripts/validate-ai-harness.mjs
+
+          test -f /tmp/harness-playwright/.codex/config.toml
+          test -f /tmp/harness-playwright/.mcp.json
+          test -f /tmp/harness-playwright/.agents/mcp_config.json
+          test ! -e /tmp/harness-playwright/.env.example
+          cd /tmp/harness-playwright
+          node scripts/sync-ai-harness.mjs
+          node scripts/validate-ai-harness.mjs
+
+          test -f /tmp/harness-github/.env.example
+          grep -q '^GITHUB_PERSONAL_ACCESS_TOKEN=$' /tmp/harness-github/.env.example
+          grep -q 'GITHUB_PERSONAL_ACCESS_TOKEN' /tmp/harness-github/.codex/config.toml
+          if grep -R -E 'gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY' /tmp/harness-github; then
+            echo 'Potential credential detected in generated Harness ZIP.'
+            exit 1
+          fi
+          cd /tmp/harness-github
+          node scripts/sync-ai-harness.mjs
+          node scripts/validate-ai-harness.mjs
