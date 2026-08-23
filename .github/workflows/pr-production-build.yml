@@ -75,9 +75,11 @@ jobs:
             await page.getByRole('button', { name: /개발 환경 & 맞춤 ZIP 다운/ }).click();
             await page.getByRole('heading', { name: '하나의 프로젝트 규칙, 세 도구의 네이티브 환경' }).waitFor();
 
-            for (const path of ['.codex/config.toml', '.mcp.json', '.agents/mcp_config.json', 'MCP_추천_목록.md']) {
+            for (const path of ['.codex/config.toml', '.mcp.json', '.agents/mcp_config.json']) {
               await page.getByText(path, { exact: true }).waitFor();
             }
+            await page.getByRole('button', { name: /^MCP_추천_목록\.md/ }).waitFor();
+
             for (const path of ['.agents/skills/capability-router/SKILL.md', '.claude/skills/capability-router/SKILL.md']) {
               await page.getByText(path, { exact: true }).waitFor();
             }
@@ -115,7 +117,7 @@ jobs:
             await page.reload({ waitUntil: 'networkidle' });
             await page.getByRole('button', { name: /개발 환경 & 맞춤 ZIP 다운/ }).click();
             await page.getByRole('heading', { name: '하나의 프로젝트 규칙, 세 도구의 네이티브 환경' }).waitFor();
-            await page.getByText('MCP_추천_목록.md', { exact: true }).waitFor();
+            await page.getByRole('button', { name: /^MCP_추천_목록\.md/ }).waitFor();
             await page.screenshot({ path: '/tmp/harness-mobile.png', fullPage: true });
 
             if (browserErrors.length) throw new Error(browserErrors.join('\n'));
