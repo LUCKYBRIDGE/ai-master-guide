@@ -154,7 +154,7 @@ The harness standardizes project context and capabilities, not security bypasses
 const CLAUDE_MD = `@AGENTS.md
 
 # Claude Code adapter
-- Use project skills from .claude/skills/. They mirror canonical .agents/skills/.
+- Use project skills from .claude/skills/. Harness-managed skills mirror canonical .agents/skills/.
 - If this package contains .mcp.json, it was generated from docs/ai-harness/mcp-manifest.json.
 - Keep Claude-only behavior here; do not duplicate shared rules.
 `;
@@ -181,7 +181,7 @@ Always-present canonical sources:
 - .agents/skills/
 
 Always-present native adapters:
-- Claude Code: CLAUDE.md and .claude/skills/
+- Claude Code: CLAUDE.md and harness-managed mirrors under .claude/skills/
 - Antigravity: .agents/rules/project-core.md
 
 Optional MCP layer:
@@ -191,6 +191,8 @@ Optional MCP layer:
 - Antigravity: .agents/mcp_config.json
 
 The MCP layer is generated only when at least one MCP capability is selected. No MCP selection still produces a valid core harness.
+
+The sync helper updates only canonical skill paths inside .claude/skills and preserves unrelated Claude-only skills. It intentionally does not delete stale extra directories automatically; review them manually before removal.
 
 Do not synchronize model choice, sandboxing, trust, auto-approval, destructive-command permissions, or credentials. After editing canonical skills or an included MCP manifest, run:
 
@@ -215,16 +217,17 @@ const SYNC_SCRIPT = `import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
+const canonicalSkills = path.join(root, '.agents', 'skills');
+const claudeSkills = path.join(root, '.claude', 'skills');
 const manifestPath = path.join(root, 'docs', 'ai-harness', 'mcp-manifest.json');
 
-function copyDir(source, target) {
-  fs.rmSync(target, { recursive: true, force: true });
-  fs.mkdirSync(target, { recursive: true });
+function copyTreeMerge(source, target) {
   if (!fs.existsSync(source)) return;
+  fs.mkdirSync(target, { recursive: true });
   for (const entry of fs.readdirSync(source, { withFileTypes: true })) {
     const from = path.join(source, entry.name);
     const to = path.join(target, entry.name);
-    if (entry.isDirectory()) copyDir(from, to);
+    if (entry.isDirectory()) copyTreeMerge(from, to);
     else fs.copyFileSync(from, to);
   }
 }
@@ -249,7 +252,7 @@ function renderCodex(servers) {
   return lines.join('\\n') + '\\n';
 }
 
-copyDir(path.join(root, '.agents', 'skills'), path.join(root, '.claude', 'skills'));
+copyTreeMerge(canonicalSkills, claudeSkills);
 
 if (fs.existsSync(manifestPath)) {
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
@@ -269,8 +272,8 @@ import crypto from 'node:crypto';
 
 const root = process.cwd();
 const manifestPath = path.join(root, 'docs', 'ai-harness', 'mcp-manifest.json');
-const baseRequired = ['AGENTS.md','CLAUDE.md','DESIGN.md','.agents/rules/project-core.md'];
-const errors = baseRequired.filter((p) => !fs.existsSync(path.join(root, p))).map((p) => 'Missing required file: ' + p);
+const required = ['AGENTS.md','CLAUDE.md','DESIGN.md','.agents/rules/project-core.md'];
+const errors = required.filter((p) => !fs.existsSync(path.join(root, p))).map((p) => 'Missing required file: ' + p);
 
 function files(base) {
   if (!fs.existsSync(base)) return [];
@@ -308,12 +311,12 @@ function expectContent(relative, expected) {
 
 const canonical = path.join(root, '.agents', 'skills');
 const mirror = path.join(root, '.claude', 'skills');
-const a = files(canonical);
-const b = files(mirror);
-if (JSON.stringify(a) !== JSON.stringify(b)) errors.push('Claude skills mirror file set differs from canonical skills.');
-else a.forEach((relative) => {
-  if (hash(path.join(canonical, relative)) !== hash(path.join(mirror, relative))) errors.push('Skill mirror drift: ' + relative);
-});
+for (const relative of files(canonical)) {
+  const source = path.join(canonical, relative);
+  const target = path.join(mirror, relative);
+  if (!fs.existsSync(target)) errors.push('Missing Claude skill mirror: ' + relative);
+  else if (hash(source) !== hash(target)) errors.push('Skill mirror drift: ' + relative);
+}
 
 if (fs.existsSync(manifestPath)) {
   const text = fs.readFileSync(manifestPath, 'utf8');
@@ -365,7 +368,7 @@ export const CLIENT_COMPATIBILITY: HarnessClientCompatibility[] = [
     projectContract: 'CLAUDE.md → @AGENTS.md',
     skills: '.claude/skills/<skill>/SKILL.md',
     mcp: '선택 시 .mcp.json',
-    note: '공통 규칙은 import하고 canonical skill을 네이티브 경로로 동일 복제.',
+    note: '공통 규칙은 import하고 선택된 canonical skill을 네이티브 경로에 동일 생성. 다른 Claude 전용 skill은 보존.',
   },
   {
     id: 'antigravity',
@@ -378,75 +381,14 @@ export const CLIENT_COMPATIBILITY: HarnessClientCompatibility[] = [
 ];
 
 export const HARNESS_SKILLS: HarnessSkillDefinition[] = [
-  skill(
-    'plan-feature',
-    'Plan feature',
-    'Planning',
-    '코드 수정 전 저장소·요구사항·위험·검증 계획을 확정',
-    'Plan repository changes before implementation; inspect structure, constraints, risks, and validation evidence before editing.',
-    `1. Read AGENTS.md and relevant architecture, design, and plan documents.\n2. Inspect the actual files likely to change and find reusable patterns.\n3. Define behavior, edge states, exclusions, rollback, and exact files.\n4. Define verification using commands that really exist.\n5. Stop for approval when the project workflow requires it.\n\nDo not invent architecture, commands, APIs, or completion evidence.`,
-    true,
-  ),
-  skill(
-    'implement-feature',
-    'Implement feature',
-    'Implementation',
-    '승인 범위만 최소 변경으로 구현하고 실제 검증 증거를 기록',
-    'Implement an approved feature or content change using existing project patterns and narrow diffs.',
-    `1. Re-check the branch and relevant files before writing.\n2. Reuse established components, utilities, data shapes, and styles.\n3. Avoid unrelated refactors and unauthorized dependencies.\n4. Run actual applicable build/type/test/lint commands.\n5. For visible changes, verify representative desktop/mobile behavior where tooling permits.\n6. Review the final diff for secrets, generated output, and unrelated files.`,
-    true,
-  ),
-  skill(
-    'debug',
-    'Debug',
-    'Quality',
-    '재현→근본 원인→최소 패치→회귀 검증',
-    'Diagnose a reproducible defect, identify root cause, and apply the smallest safe correction.',
-    `1. Reproduce or precisely characterize the failure.\n2. Trace data/control flow to the earliest incorrect assumption.\n3. Distinguish root cause from symptoms.\n4. Apply the smallest fix that restores the intended invariant.\n5. Run the closest regression checks and report unavailable evidence explicitly.`,
-    true,
-  ),
-  skill(
-    'code-review',
-    'Code review',
-    'Quality',
-    '정확성·타입·보안·접근성·회귀·검증을 순서대로 리뷰',
-    'Review a diff or pull request for correctness, safety, maintainability, and evidence gaps.',
-    `Review scope and behavior first, then edge states, destructive/security risk, types, architecture, UI accessibility/responsiveness, dependency/config changes, verification evidence, documentation accuracy, and rollback. Report concrete findings; do not manufacture defects.`,
-    true,
-  ),
-  skill(
-    'verify-release',
-    'Verify release',
-    'Release',
-    '정확한 SHA를 고정해 PR·미리보기·배포를 분리 검증',
-    'Verify a release candidate, pull request, or deployment without treating missing checks as passing.',
-    `1. Pin the exact head SHA.\n2. Confirm base, changed-file scope, and conflicts.\n3. Run available build/type/test/lint checks against that SHA.\n4. Verify applicable normal, empty, error, mobile, desktop, and accessibility states.\n5. Separate deployment status from browser/runtime verification.\n6. Never treat failed, pending, stale, or unavailable required evidence as passing.`,
-    true,
-  ),
-  skill(
-    'browser-qa',
-    'Browser QA',
-    'UI',
-    '실제 브라우저에서 데스크톱·모바일·키보드·콘솔을 검증',
-    'Use browser tooling to verify responsive, interaction, accessibility, and console behavior.',
-    `Open the real preview/local build, exercise the main and relevant empty/error flows, check desktop and mobile widths, use keyboard navigation, and inspect console/network for JavaScript, CSS, asset, and MIME errors. Record the tested URL and SHA.`,
-  ),
-  skill(
-    'git-pr',
-    'Git PR',
-    'Release',
-    '한 작업 한 브랜치·PR 원칙과 head SHA 기반 검증',
-    'Prepare a focused Git branch and pull request while preserving repository safety constraints.',
-    `Start from the intended base, keep one coherent task per PR, review the full diff, never force push or bypass checks without explicit authority, record the head SHA, and merge only after explicit user approval and the agreed verification gate.`,
-  ),
-  skill(
-    'security-review',
-    'Security review',
-    'Security',
-    '비밀정보·권한·파괴적 작업·최소 권한을 검토',
-    'Review security boundaries, secrets, permissions, and destructive-operation risk.',
-    `Identify credentials, PII, privileged APIs, and destructive operations. Keep secrets in approved environment/secret stores, prefer least privilege/read-only access, verify authorization separately from authentication, and do not weaken sandbox, approval, or trust controls for convenience.`,
-  ),
+  skill('plan-feature', 'Plan feature', 'Planning', '코드 수정 전 저장소·요구사항·위험·검증 계획을 확정', 'Plans repository changes before implementation and should be used before broad or risky edits.', `1. Read AGENTS.md and relevant architecture, design, and plan documents.\n2. Inspect the actual files likely to change and find reusable patterns.\n3. Define behavior, edge states, exclusions, rollback, and exact files.\n4. Define verification using commands that really exist.\n5. Stop for approval when the project workflow requires it.\n\nDo not invent architecture, commands, APIs, or completion evidence.`, true),
+  skill('implement-feature', 'Implement feature', 'Implementation', '승인 범위만 최소 변경으로 구현하고 실제 검증 증거를 기록', 'Implements an approved feature or content change and should be used for scoped repository edits.', `1. Re-check the branch and relevant files before writing.\n2. Reuse established components, utilities, data shapes, and styles.\n3. Avoid unrelated refactors and unauthorized dependencies.\n4. Run actual applicable build/type/test/lint commands.\n5. For visible changes, verify representative desktop/mobile behavior where tooling permits.\n6. Review the final diff for secrets, generated output, and unrelated files.`, true),
+  skill('debug', 'Debug', 'Quality', '재현→근본 원인→최소 패치→회귀 검증', 'Diagnoses reproducible defects and should be used when tracing failures to root cause.', `1. Reproduce or precisely characterize the failure.\n2. Trace data/control flow to the earliest incorrect assumption.\n3. Distinguish root cause from symptoms.\n4. Apply the smallest fix that restores the intended invariant.\n5. Run the closest regression checks and report unavailable evidence explicitly.`, true),
+  skill('code-review', 'Code review', 'Quality', '정확성·타입·보안·접근성·회귀·검증을 순서대로 리뷰', 'Reviews repository diffs and should be used to assess correctness, safety, maintainability, and evidence gaps.', `Review scope and behavior first, then edge states, destructive/security risk, types, architecture, UI accessibility/responsiveness, dependency/config changes, verification evidence, documentation accuracy, and rollback. Report concrete findings; do not manufacture defects.`, true),
+  skill('verify-release', 'Verify release', 'Release', '정확한 SHA를 고정해 PR·미리보기·배포를 분리 검증', 'Verifies release candidates and should be used before merge or deployment decisions.', `1. Pin the exact head SHA.\n2. Confirm base, changed-file scope, and conflicts.\n3. Run available build/type/test/lint checks against that SHA.\n4. Verify applicable normal, empty, error, mobile, desktop, and accessibility states.\n5. Separate deployment status from browser/runtime verification.\n6. Never treat failed, pending, stale, or unavailable required evidence as passing.`, true),
+  skill('browser-qa', 'Browser QA', 'UI', '실제 브라우저에서 데스크톱·모바일·키보드·콘솔을 검증', 'Verifies rendered UI behavior and should be used for browser, responsive, accessibility, or console checks.', `Open the real preview/local build, exercise the main and relevant empty/error flows, check desktop and mobile widths, use keyboard navigation, and inspect console/network for JavaScript, CSS, asset, and MIME errors. Record the tested URL and SHA.`),
+  skill('git-pr', 'Git PR', 'Release', '한 작업 한 브랜치·PR 원칙과 head SHA 기반 검증', 'Prepares focused Git branches and pull requests and should be used for repository review workflows.', `Start from the intended base, keep one coherent task per PR, review the full diff, never force push or bypass checks without explicit authority, record the head SHA, and merge only after explicit user approval and the agreed verification gate.`),
+  skill('security-review', 'Security review', 'Security', '비밀정보·권한·파괴적 작업·최소 권한을 검토', 'Reviews secrets, permissions, and destructive-operation risk and should be used for security-sensitive changes.', `Identify credentials, PII, privileged APIs, and destructive operations. Keep secrets in approved environment/secret stores, prefer least privilege/read-only access, verify authorization separately from authentication, and do not weaken sandbox, approval, or trust controls for convenience.`),
 ];
 
 export const HARNESS_MCP_PRESETS: HarnessMcpDefinition[] = [
@@ -490,24 +432,12 @@ function renderManifest(servers: HarnessMcpDefinition[]): string {
 }
 
 function renderJsonMcp(servers: HarnessMcpDefinition[]): string {
-  return `${JSON.stringify(
-    {
-      mcpServers: Object.fromEntries(
-        servers.map((server) => [server.id, { command: server.command, args: server.args }]),
-      ),
-    },
-    null,
-    2,
-  )}\n`;
+  return `${JSON.stringify({ mcpServers: Object.fromEntries(servers.map((server) => [server.id, { command: server.command, args: server.args }])) }, null, 2)}\n`;
 }
 
 function renderCodexMcp(servers: HarnessMcpDefinition[]): string {
   const q = (value: string) => JSON.stringify(value);
-  const lines = [
-    '# Generated from docs/ai-harness/mcp-manifest.json.',
-    '# Keep model, sandbox, approval, trust, and credentials client-local.',
-    '',
-  ];
+  const lines = ['# Generated from docs/ai-harness/mcp-manifest.json.', '# Keep model, sandbox, approval, trust, and credentials client-local.', ''];
   servers.forEach((server) => {
     lines.push(`[mcp_servers.${server.id}]`);
     lines.push(`command = ${q(server.command)}`);
@@ -539,172 +469,38 @@ export function buildHarnessFiles(selectedSkillIds: string[], selectedMcpIds: st
   const skills = HARNESS_SKILLS.filter((item) => selectedSkillIds.includes(item.id));
   const servers = HARNESS_MCP_PRESETS.filter((item) => selectedMcpIds.includes(item.id));
   const files: GeneratedHarnessFile[] = [
-    {
-      path: 'AGENTS.md',
-      role: 'canonical',
-      consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'],
-      description: '공통 프로젝트 계약과 source-of-truth 지도',
-      content: SHARED_AGENTS_MD,
-    },
-    {
-      path: 'DESIGN.md',
-      role: 'canonical',
-      consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'],
-      description: 'Google alpha 형식 기반 공통 디자인 시스템 원본',
-      content: DESIGN_MD_TEMPLATE,
-    },
-    {
-      path: 'CLAUDE.md',
-      role: 'adapter',
-      consumers: ['Claude Code'],
-      description: 'AGENTS.md를 import하는 Claude Code 어댑터',
-      content: CLAUDE_MD,
-    },
-    {
-      path: '.agents/rules/project-core.md',
-      role: 'adapter',
-      consumers: ['Antigravity'],
-      description: 'AGENTS.md와 DESIGN.md를 연결하는 Antigravity workspace rule',
-      content: ANTIGRAVITY_PROJECT_CORE,
-    },
-    {
-      path: 'docs/architecture/overview.md',
-      role: 'documentation',
-      consumers: ['All'],
-      description: '실제 저장소 아키텍처 기록 위치',
-      content: '# Architecture\n\nRecord the current system architecture after inspecting the real repository. Keep this descriptive, not aspirational.\n',
-    },
-    {
-      path: 'docs/design/README.md',
-      role: 'documentation',
-      consumers: ['All'],
-      description: 'DESIGN.md를 중복하지 않는 구현 상세 문서 위치',
-      content: '# Design implementation notes\n\nDESIGN.md is the canonical design contract. Store component behavior, responsive exceptions, accessibility notes, and implementation details here without copying token values into a second source of truth.\n',
-    },
-    {
-      path: 'docs/plans/README.md',
-      role: 'documentation',
-      consumers: ['All'],
-      description: '승인된 구현 계획 보관 위치',
-      content: '# Plans\n\nStore approved implementation plans here with scope, risks, validation, and rollback.\n',
-    },
-    {
-      path: 'docs/decisions/README.md',
-      role: 'documentation',
-      consumers: ['All'],
-      description: '기술 의사결정 보관 위치',
-      content: '# Decisions\n\nStore durable architecture decisions with context, alternatives, consequences, and date.\n',
-    },
-    {
-      path: 'docs/tasks/README.md',
-      role: 'documentation',
-      consumers: ['All'],
-      description: '세션 간 작업 상태와 handoff',
-      content: '# Tasks and handoff\n\nRecord durable task status, verified evidence, remaining work, and blockers.\n',
-    },
-    {
-      path: 'docs/reference/README.md',
-      role: 'documentation',
-      consumers: ['All'],
-      description: '프로젝트 근거·정책·도메인 자료 보관 위치',
-      content: '# Reference\n\nStore durable project references, external source notes, policies, and domain constraints here. Re-check time-sensitive sources before relying on them.\n',
-    },
-    {
-      path: 'docs/ai-harness/README.md',
-      role: 'documentation',
-      consumers: ['All'],
-      description: '하네스 사용법과 보안 경계',
-      content: HARNESS_README,
-    },
-    {
-      path: 'docs/ai-harness/compatibility.md',
-      role: 'documentation',
-      consumers: ['All'],
-      description: '세 도구 호환성 표',
-      content: COMPATIBILITY_MD,
-    },
-    {
-      path: 'scripts/sync-ai-harness.mjs',
-      role: 'helper',
-      consumers: ['Node.js'],
-      description: 'canonical skill과 선택된 MCP adapter 동기화',
-      content: SYNC_SCRIPT,
-    },
-    {
-      path: 'scripts/validate-ai-harness.mjs',
-      role: 'helper',
-      consumers: ['Node.js'],
-      description: 'skill mirror, 선택된 MCP adapter, credential 위험 검사',
-      content: VALIDATE_SCRIPT,
-    },
-    {
-      path: 'README.ai-harness.md',
-      role: 'documentation',
-      consumers: ['Human'],
-      description: '다운로드 패키지 적용 순서',
-      content: '# AI Harness v2 setup\n\n1. Review before overwriting an existing project.\n2. Fill AGENTS.md with real commands and boundaries.\n3. Replace DESIGN.md sample tokens with the project design system.\n4. If MCP files are included, configure required credentials outside Git.\n5. Run node scripts/sync-ai-harness.mjs and node scripts/validate-ai-harness.mjs.\n6. Review each client\'s trust, approval, sandbox, and MCP prompts locally.\n',
-    },
+    { path: 'AGENTS.md', role: 'canonical', consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'], description: '공통 프로젝트 계약과 source-of-truth 지도', content: SHARED_AGENTS_MD },
+    { path: 'DESIGN.md', role: 'canonical', consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'], description: 'Google alpha 형식 기반 공통 디자인 시스템 원본', content: DESIGN_MD_TEMPLATE },
+    { path: 'CLAUDE.md', role: 'adapter', consumers: ['Claude Code'], description: 'AGENTS.md를 import하는 Claude Code 어댑터', content: CLAUDE_MD },
+    { path: '.agents/rules/project-core.md', role: 'adapter', consumers: ['Antigravity'], description: 'AGENTS.md와 DESIGN.md를 연결하는 Antigravity workspace rule', content: ANTIGRAVITY_PROJECT_CORE },
+    { path: 'docs/architecture/overview.md', role: 'documentation', consumers: ['All'], description: '실제 저장소 아키텍처 기록 위치', content: '# Architecture\n\nRecord the current system architecture after inspecting the real repository. Keep this descriptive, not aspirational.\n' },
+    { path: 'docs/design/README.md', role: 'documentation', consumers: ['All'], description: 'DESIGN.md를 중복하지 않는 구현 상세 문서 위치', content: '# Design implementation notes\n\nDESIGN.md is the canonical design contract. Store component behavior, responsive exceptions, accessibility notes, and implementation details here without copying token values into a second source of truth.\n' },
+    { path: 'docs/plans/README.md', role: 'documentation', consumers: ['All'], description: '승인된 구현 계획 보관 위치', content: '# Plans\n\nStore approved implementation plans here with scope, risks, validation, and rollback.\n' },
+    { path: 'docs/decisions/README.md', role: 'documentation', consumers: ['All'], description: '기술 의사결정 보관 위치', content: '# Decisions\n\nStore durable architecture decisions with context, alternatives, consequences, and date.\n' },
+    { path: 'docs/tasks/README.md', role: 'documentation', consumers: ['All'], description: '세션 간 작업 상태와 handoff', content: '# Tasks and handoff\n\nRecord durable task status, verified evidence, remaining work, and blockers.\n' },
+    { path: 'docs/reference/README.md', role: 'documentation', consumers: ['All'], description: '프로젝트 근거·정책·도메인 자료 보관 위치', content: '# Reference\n\nStore durable project references, external source notes, policies, and domain constraints here. Re-check time-sensitive sources before relying on them.\n' },
+    { path: 'docs/ai-harness/README.md', role: 'documentation', consumers: ['All'], description: '하네스 사용법과 보안 경계', content: HARNESS_README },
+    { path: 'docs/ai-harness/compatibility.md', role: 'documentation', consumers: ['All'], description: '세 도구 호환성 표', content: COMPATIBILITY_MD },
+    { path: 'scripts/sync-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'canonical skill과 선택된 MCP adapter 동기화', content: SYNC_SCRIPT },
+    { path: 'scripts/validate-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'canonical skill mirror, 선택된 MCP adapter, credential 위험 검사', content: VALIDATE_SCRIPT },
+    { path: 'README.ai-harness.md', role: 'documentation', consumers: ['Human'], description: '다운로드 패키지 적용 순서', content: '# AI Harness v2 setup\n\n1. Review before overwriting an existing project.\n2. Fill AGENTS.md with real commands and boundaries.\n3. Replace DESIGN.md sample tokens with the project design system.\n4. If MCP files are included, configure required credentials outside Git.\n5. Run node scripts/sync-ai-harness.mjs and node scripts/validate-ai-harness.mjs. The sync helper preserves unrelated Claude-only skill directories.\n6. Review each client\'s trust, approval, sandbox, and MCP prompts locally.\n' },
   ];
 
   skills.forEach((item) => {
-    files.push({
-      path: `.agents/skills/${item.id}/SKILL.md`,
-      role: 'canonical',
-      consumers: ['Codex', 'Antigravity'],
-      description: `${item.name} canonical skill`,
-      content: item.content,
-    });
-    files.push({
-      path: `.claude/skills/${item.id}/SKILL.md`,
-      role: 'mirror',
-      consumers: ['Claude Code'],
-      description: `${item.name} Claude native mirror`,
-      content: item.content,
-    });
+    files.push({ path: `.agents/skills/${item.id}/SKILL.md`, role: 'canonical', consumers: ['Codex', 'Antigravity'], description: `${item.name} canonical skill`, content: item.content });
+    files.push({ path: `.claude/skills/${item.id}/SKILL.md`, role: 'mirror', consumers: ['Claude Code'], description: `${item.name} Claude native mirror`, content: item.content });
   });
 
   if (servers.length > 0) {
     files.push(
-      {
-        path: 'docs/ai-harness/mcp-manifest.json',
-        role: 'canonical',
-        consumers: ['Harness sync', 'Human'],
-        description: '선택 MCP capability의 중립 공통 manifest',
-        content: renderManifest(servers),
-      },
-      {
-        path: '.codex/config.toml',
-        role: 'adapter',
-        consumers: ['Codex'],
-        description: '선택 MCP를 위한 Codex project adapter',
-        content: renderCodexMcp(servers),
-      },
-      {
-        path: '.mcp.json',
-        role: 'adapter',
-        consumers: ['Claude Code'],
-        description: '선택 MCP를 위한 Claude Code project adapter',
-        content: renderJsonMcp(servers),
-      },
-      {
-        path: '.agents/mcp_config.json',
-        role: 'adapter',
-        consumers: ['Antigravity'],
-        description: '선택 MCP를 위한 Antigravity workspace adapter',
-        content: renderJsonMcp(servers),
-      },
+      { path: 'docs/ai-harness/mcp-manifest.json', role: 'canonical', consumers: ['Harness sync', 'Human'], description: '선택 MCP capability의 중립 공통 manifest', content: renderManifest(servers) },
+      { path: '.codex/config.toml', role: 'adapter', consumers: ['Codex'], description: '선택 MCP를 위한 Codex project adapter', content: renderCodexMcp(servers) },
+      { path: '.mcp.json', role: 'adapter', consumers: ['Claude Code'], description: '선택 MCP를 위한 Claude Code project adapter', content: renderJsonMcp(servers) },
+      { path: '.agents/mcp_config.json', role: 'adapter', consumers: ['Antigravity'], description: '선택 MCP를 위한 Antigravity workspace adapter', content: renderJsonMcp(servers) },
     );
 
     const env = envExample(servers);
-    if (env) {
-      files.push({
-        path: '.env.example',
-        role: 'secret-template',
-        consumers: ['Human', 'Runtime'],
-        description: '필요한 환경변수 이름만 포함하는 템플릿',
-        content: env,
-      });
-    }
+    if (env) files.push({ path: '.env.example', role: 'secret-template', consumers: ['Human', 'Runtime'], description: '필요한 환경변수 이름만 포함하는 템플릿', content: env });
   }
 
   assertUniquePaths(files);
