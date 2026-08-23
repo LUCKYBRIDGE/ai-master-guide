@@ -142,7 +142,7 @@ export const MAJOR_ISSUES: MajorIssue[] = [
       detail: '8월 21일 관계자 설명 기준으로 조사는 진행 중이며, 전체적인 비정상 현상은 관측되지 않았다고 밝혔다.',
     },
     displayDate: '2026-08-21 업데이트',
-    lastMajorUpdateAt: '2026-08-21T11:43:19Z',
+    lastMajorUpdateAt: '2026-08-21T05:39:04Z',
     periodStart: '2026년 8월 중순경',
     officialMentionAt: '2026-08-21',
     lastCheckedAt: '2026-08-23',
@@ -164,9 +164,9 @@ export const MAJOR_ISSUES: MajorIssue[] = [
       '8월 17일 전용 메가스레드가 운영됐고, 8월 18~21일 사이 별개의 고반응 스레드에서 반복 보고가 확인됐다. 반응 수는 실제 피해 사용자 비율로 환산하지 않는다.',
     sources: [
       {
-        title: 'Codex 사용량 조사 및 20M banked reset 관련 관계자 발언',
+        title: 'Codex usage limits 차이 조사와 지원되지 않는 sub2api 사용 안내',
         publisher: 'Tibo Sottiaux / OpenAI',
-        url: 'https://x.com/thsottiaux/status/2090766694897619318',
+        url: 'https://x.com/thsottiaux/status/2090675027670978569',
         sourceType: 'staff',
         publishedAt: '2026-08-21',
       },
@@ -207,13 +207,13 @@ export const MAJOR_ISSUES: MajorIssue[] = [
       detail: '관계자 발표 기준 Codex와 ChatGPT Work 사용자에게 저장형 reset을 지급한다고 안내했다.',
     },
     displayDate: '2026-08-21',
-    lastMajorUpdateAt: '2026-08-21T11:43:18Z',
+    lastMajorUpdateAt: '2026-08-21T11:43:19Z',
     officialMentionAt: '2026-08-21',
     lastCheckedAt: '2026-08-23',
     datePrecision: 'exact',
     affectedScope: ['Codex 사용자', 'ChatGPT Work 사용자'],
     summary:
-      'Codex가 2천만 active users를 넘긴 것을 기념해 Banked Reset을 지급한다고 관계자가 발표했다. 같은 게시물에서 사용량 빠른 소진 보고를 조사 중이라고 언급했지만, reset 지급 사유 자체는 오류 보상이 아니라 사용자 수 이정표 기념으로 설명됐다.',
+      'Codex가 2천만 active users를 넘긴 것을 기념해 Banked Reset을 지급한다고 관계자가 발표했다. 같은 날 별도 게시물에서 사용량 빠른 소진 보고에 대한 조사 내용을 설명했지만, reset 지급 사유 자체는 오류 보상이 아니라 사용자 수 이정표 기념으로 설명됐다.',
     confirmedFacts: [
       'Banked Reset은 즉시 사용하지 않고 보관했다가 필요할 때 적용할 수 있는 reset 형태다.',
       '8월 21일 발표의 명시적 사유는 2천만 active users 달성 기념이다.',
