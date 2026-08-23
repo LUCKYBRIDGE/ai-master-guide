@@ -1,5 +1,12 @@
 export type HarnessClientId = 'codex' | 'claude' | 'antigravity';
-export type HarnessSkillCategory = 'Planning' | 'Implementation' | 'Quality' | 'Release' | 'UI' | 'Security' | 'Orchestration';
+export type HarnessSkillCategory =
+  | 'Planning'
+  | 'Implementation'
+  | 'Quality'
+  | 'Release'
+  | 'UI'
+  | 'Security'
+  | 'Orchestration';
 
 export interface HarnessClientCompatibility {
   id: HarnessClientId;
@@ -183,7 +190,10 @@ const CODEX_CONFIG_TOML = `# Codex project configuration skeleton.
 # Keep model, sandbox, approval, trust, and credentials client-local unless the project explicitly requires otherwise.
 `;
 
-const EMPTY_MCP_JSON = `${JSON.stringify({ mcpServers: {} }, null, 2)}\n`;
+const EMPTY_MCP_JSON = `{
+  "mcpServers": {}
+}
+`;
 
 const HARNESS_README = `# Portable AI Development Harness v2
 
@@ -236,7 +246,7 @@ const MCP_RECOMMENDATIONS_MD = `# MCP 추천 목록
 - 용도: 실제 브라우저 조작, UI 확인, 폼 입력, 반응형·브라우저 기반 QA
 - 추천 상황: 웹 UI를 실제 브라우저에서 확인해야 할 때
 - 공식 프로젝트: https://github.com/microsoft/playwright-mcp
-- 실행 예시: \`npx -y @playwright/mcp@latest\`
+- 실행 예시: npx -y @playwright/mcp@latest
 - 비고: 프로젝트가 브라우저 자동화를 필요로 할 때만 연결하세요.
 
 ## 2. GitHub MCP Server
@@ -257,7 +267,7 @@ const MCP_RECOMMENDATIONS_MD = `# MCP 추천 목록
 ## 사용 원칙
 
 1. MCP는 많을수록 좋은 것이 아닙니다. 현재 프로젝트에 실제로 필요한 것만 연결하세요.
-2. \`capability-router\` Skill은 현재 세션에서 실제 사용 가능한 Skill·MCP·내장 도구를 먼저 확인해야 합니다.
+2. capability-router Skill은 현재 세션에서 실제 사용 가능한 Skill·MCP·내장 도구를 먼저 확인해야 합니다.
 3. 이 추천 목록에 있다고 해서 연결된 MCP로 간주하지 않습니다.
 4. 계정 인증, 토큰, workspace trust, 승인 정책, 쓰기 권한은 Harness ZIP에 넣지 않습니다.
 5. MCP 제품과 설정 방식은 바뀔 수 있으므로 연결 시점에 공식 문서를 다시 확인하세요.
@@ -334,13 +344,14 @@ for (const relative of ['.mcp.json', '.agents/mcp_config.json']) {
 }
 
 const codexConfig = fs.existsSync(path.join(root, '.codex', 'config.toml')) ? fs.readFileSync(path.join(root, '.codex', 'config.toml'), 'utf8') : '';
-if (/\[mcp_servers\./.test(codexConfig)) errors.push('Codex config must not pre-populate MCP servers.');
+if (codexConfig.includes('[mcp_servers.')) errors.push('Codex config must not pre-populate MCP servers.');
 
 const scanTargets = ['.codex/config.toml', '.mcp.json', '.agents/mcp_config.json'];
+const suspiciousMarkers = ['ghp_', 'gho_', 'ghu_', 'ghs_', 'ghr_', 'sk-', 'BEGIN PRIVATE KEY', 'BEGIN RSA PRIVATE KEY', 'BEGIN EC PRIVATE KEY', 'BEGIN OPENSSH PRIVATE KEY'];
 for (const relative of scanTargets) {
   if (!fs.existsSync(path.join(root, relative))) continue;
   const text = fs.readFileSync(path.join(root, relative), 'utf8');
-  if (/gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY/.test(text)) errors.push('Potential credential detected: ' + relative);
+  if (suspiciousMarkers.some((marker) => text.includes(marker))) errors.push('Potential credential detected: ' + relative);
 }
 
 if (errors.length) {
@@ -397,15 +408,84 @@ export const CLIENT_COMPATIBILITY: HarnessClientCompatibility[] = [
 ];
 
 export const HARNESS_SKILLS: HarnessSkillDefinition[] = [
-  skill('plan-feature', 'Plan feature', 'Planning', '코드 수정 전 저장소·요구사항·위험·검증 계획을 확정', 'Plans repository changes before implementation and should be used before broad or risky edits.', `1. Read AGENTS.md and relevant architecture, design, and plan documents.\n2. Inspect the actual files likely to change and find reusable patterns.\n3. Define behavior, edge states, exclusions, rollback, and exact files.\n4. Define verification using commands that really exist.\n5. Stop for approval when the project workflow requires it.\n\nDo not invent architecture, commands, APIs, or completion evidence.`, true),
-  skill('implement-feature', 'Implement feature', 'Implementation', '승인 범위만 최소 변경으로 구현하고 실제 검증 증거를 기록', 'Implements an approved feature or content change and should be used for scoped repository edits.', `1. Re-check the branch and relevant files before writing.\n2. Reuse established components, utilities, data shapes, and styles.\n3. Avoid unrelated refactors and unauthorized dependencies.\n4. Run actual applicable build/type/test/lint commands.\n5. For visible changes, verify representative desktop/mobile behavior where tooling permits.\n6. Review the final diff for secrets, generated output, and unrelated files.`, true),
-  skill('debug', 'Debug', 'Quality', '재현→근본 원인→최소 패치→회귀 검증', 'Diagnoses reproducible defects and should be used when tracing failures to root cause.', `1. Reproduce or precisely characterize the failure.\n2. Trace data/control flow to the earliest incorrect assumption.\n3. Distinguish root cause from symptoms.\n4. Apply the smallest fix that restores the intended invariant.\n5. Run the closest regression checks and report unavailable evidence explicitly.`, true),
-  skill('code-review', 'Code review', 'Quality', '정확성·타입·보안·접근성·회귀·검증을 순서대로 리뷰', 'Reviews repository diffs and should be used to assess correctness, safety, maintainability, and evidence gaps.', `Review scope and behavior first, then edge states, destructive/security risk, types, architecture, UI accessibility/responsiveness, dependency/config changes, verification evidence, documentation accuracy, and rollback. Report concrete findings; do not manufacture defects.`, true),
-  skill('verify-release', 'Verify release', 'Release', '정확한 SHA를 고정해 PR·미리보기·배포를 분리 검증', 'Verifies release candidates and should be used before merge or deployment decisions.', `1. Pin the exact head SHA.\n2. Confirm base, changed-file scope, and conflicts.\n3. Run available build/type/test/lint checks against that SHA.\n4. Verify applicable normal, empty, error, mobile, desktop, and accessibility states.\n5. Separate deployment status from browser/runtime verification.\n6. Never treat failed, pending, stale, or unavailable required evidence as passing.`, true),
-  skill('capability-router', 'Capability router', 'Orchestration', '현재 세션의 Skill·MCP·내장 도구를 확인하고 가장 적합한 capability로 작업을 라우팅', 'Inspects currently available skills, MCP tools, and built-in capabilities and should be used to choose the smallest suitable toolchain without assuming unavailable integrations.', `1. Read the task and AGENTS.md before choosing a capability.\n2. Inventory what is actually available in the current client/session: project skills, connected MCP tools, and built-in tools.\n3. Prefer a matching project skill for repeatable procedure. Use a specific MCP only when it is actually connected and materially improves the task.\n4. Treat MCP_추천_목록.md as reference only; never infer availability from that file or from an empty config skeleton.\n5. If no suitable MCP is connected, continue with available built-in tools or a safe manual workflow instead of failing or inventing a connection.\n6. Do not install, authenticate, or grant access to an MCP service unless the user explicitly requests it.\n7. For external writes or destructive actions, use the narrowest permission available and respect the client's confirmation/approval boundary.\n8. Re-evaluate the route after a tool failure or when the task changes.`, true),
-  skill('browser-qa', 'Browser QA', 'UI', '실제 브라우저에서 데스크톱·모바일·키보드·콘솔을 검증', 'Verifies rendered UI behavior and should be used for browser, responsive, accessibility, or console checks.', `Open the real preview/local build, exercise the main and relevant empty/error flows, check desktop and mobile widths, use keyboard navigation, and inspect console/network for JavaScript, CSS, asset, and MIME errors. Record the tested URL and SHA.`),
-  skill('git-pr', 'Git PR', 'Release', '한 작업 한 브랜치·PR 원칙과 head SHA 기반 검증', 'Prepares focused Git branches and pull requests and should be used for repository review workflows.', `Start from the intended base, keep one coherent task per PR, review the full diff, never force push or bypass checks without explicit authority, record the head SHA, and merge only after explicit user approval and the agreed verification gate.`),
-  skill('security-review', 'Security review', 'Security', '비밀정보·권한·파괴적 작업·최소 권한을 검토', 'Reviews secrets, permissions, and destructive-operation risk and should be used for security-sensitive changes.', `Identify credentials, PII, privileged APIs, and destructive operations. Keep secrets in approved environment/secret stores, prefer least privilege/read-only access, verify authorization separately from authentication, and do not weaken sandbox, approval, or trust controls for convenience.`),
+  skill(
+    'plan-feature',
+    'Plan feature',
+    'Planning',
+    '코드 수정 전 저장소·요구사항·위험·검증 계획을 확정',
+    'Plans repository changes before implementation and should be used before broad or risky edits.',
+    `1. Read AGENTS.md and relevant architecture, design, and plan documents.\n2. Inspect the actual files likely to change and find reusable patterns.\n3. Define behavior, edge states, exclusions, rollback, and exact files.\n4. Define verification using commands that really exist.\n5. Stop for approval when the project workflow requires it.\n\nDo not invent architecture, commands, APIs, or completion evidence.`,
+    true,
+  ),
+  skill(
+    'implement-feature',
+    'Implement feature',
+    'Implementation',
+    '승인 범위만 최소 변경으로 구현하고 실제 검증 증거를 기록',
+    'Implements an approved feature or content change and should be used for scoped repository edits.',
+    `1. Re-check the branch and relevant files before writing.\n2. Reuse established components, utilities, data shapes, and styles.\n3. Avoid unrelated refactors and unauthorized dependencies.\n4. Run actual applicable build/type/test/lint commands.\n5. For visible changes, verify representative desktop/mobile behavior where tooling permits.\n6. Review the final diff for secrets, generated output, and unrelated files.`,
+    true,
+  ),
+  skill(
+    'debug',
+    'Debug',
+    'Quality',
+    '재현→근본 원인→최소 패치→회귀 검증',
+    'Diagnoses reproducible defects and should be used when tracing failures to root cause.',
+    `1. Reproduce or precisely characterize the failure.\n2. Trace data/control flow to the earliest incorrect assumption.\n3. Distinguish root cause from symptoms.\n4. Apply the smallest fix that restores the intended invariant.\n5. Run the closest regression checks and report unavailable evidence explicitly.`,
+    true,
+  ),
+  skill(
+    'code-review',
+    'Code review',
+    'Quality',
+    '정확성·타입·보안·접근성·회귀·검증을 순서대로 리뷰',
+    'Reviews repository diffs and should be used to assess correctness, safety, maintainability, and evidence gaps.',
+    `Review scope and behavior first, then edge states, destructive/security risk, types, architecture, UI accessibility/responsiveness, dependency/config changes, verification evidence, documentation accuracy, and rollback. Report concrete findings; do not manufacture defects.`,
+    true,
+  ),
+  skill(
+    'verify-release',
+    'Verify release',
+    'Release',
+    '정확한 SHA를 고정해 PR·미리보기·배포를 분리 검증',
+    'Verifies release candidates and should be used before merge or deployment decisions.',
+    `1. Pin the exact head SHA.\n2. Confirm base, changed-file scope, and conflicts.\n3. Run available build/type/test/lint checks against that SHA.\n4. Verify applicable normal, empty, error, mobile, desktop, and accessibility states.\n5. Separate deployment status from browser/runtime verification.\n6. Never treat failed, pending, stale, or unavailable required evidence as passing.`,
+    true,
+  ),
+  skill(
+    'capability-router',
+    'Capability router',
+    'Orchestration',
+    '현재 세션의 Skill·MCP·내장 도구를 확인하고 가장 적합한 capability로 작업을 라우팅',
+    'Inspects currently available skills, MCP tools, and built-in capabilities and should be used to choose the smallest suitable toolchain without assuming unavailable integrations.',
+    `1. Read the task and AGENTS.md before choosing a capability.\n2. Inventory what is actually available in the current client/session: project skills, connected MCP tools, and built-in tools.\n3. Prefer a matching project skill for repeatable procedure. Use a specific MCP only when it is actually connected and materially improves the task.\n4. Treat MCP_추천_목록.md as reference only; never infer availability from that file or from an empty config skeleton.\n5. If no suitable MCP is connected, continue with available built-in tools or a safe manual workflow instead of failing or inventing a connection.\n6. Do not install, authenticate, or grant access to an MCP service unless the user explicitly requests it.\n7. For external writes or destructive actions, use the narrowest permission available and respect the client's confirmation/approval boundary.\n8. Re-evaluate the route after a tool failure or when the task changes.`,
+    true,
+  ),
+  skill(
+    'browser-qa',
+    'Browser QA',
+    'UI',
+    '실제 브라우저에서 데스크톱·모바일·키보드·콘솔을 검증',
+    'Verifies rendered UI behavior and should be used for browser, responsive, accessibility, or console checks.',
+    `Open the real preview/local build, exercise the main and relevant empty/error flows, check desktop and mobile widths, use keyboard navigation, and inspect console/network for JavaScript, CSS, asset, and MIME errors. Record the tested URL and SHA.`,
+  ),
+  skill(
+    'git-pr',
+    'Git PR',
+    'Release',
+    '한 작업 한 브랜치·PR 원칙과 head SHA 기반 검증',
+    'Prepares focused Git branches and pull requests and should be used for repository review workflows.',
+    `Start from the intended base, keep one coherent task per PR, review the full diff, never force push or bypass checks without explicit authority, record the head SHA, and merge only after explicit user approval and the agreed verification gate.`,
+  ),
+  skill(
+    'security-review',
+    'Security review',
+    'Security',
+    '비밀정보·권한·파괴적 작업·최소 권한을 검토',
+    'Reviews secrets, permissions, and destructive-operation risk and should be used for security-sensitive changes.',
+    `Identify credentials, PII, privileged APIs, and destructive operations. Keep secrets in approved environment/secret stores, prefer least privilege/read-only access, verify authorization separately from authentication, and do not weaken sandbox, approval, or trust controls for convenience.`,
+  ),
 ];
 
 export const HARNESS_MCP_GUIDES: HarnessMcpGuide[] = [
