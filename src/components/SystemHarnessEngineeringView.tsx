@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Copy,
   Download,
+  ExternalLink,
   FileCode2,
   FileText,
   FolderArchive,
@@ -23,9 +24,8 @@ import {
 import {
   buildHarnessFiles,
   CLIENT_COMPATIBILITY,
-  DEFAULT_MCP_IDS,
   DEFAULT_SKILL_IDS,
-  HARNESS_MCP_PRESETS,
+  HARNESS_MCP_GUIDES,
   HARNESS_SKILLS,
   type GeneratedHarnessFile,
 } from '../data/aiHarnessV2Data';
@@ -40,7 +40,6 @@ const ROLE_LABELS: Record<GeneratedHarnessFile['role'], string> = {
   mirror: '동기화 미러',
   documentation: '프로젝트 문서',
   helper: '동기화·검증',
-  'secret-template': '환경변수 템플릿',
 };
 
 const ROLE_STYLES: Record<GeneratedHarnessFile['role'], string> = {
@@ -49,21 +48,16 @@ const ROLE_STYLES: Record<GeneratedHarnessFile['role'], string> = {
   mirror: 'border-purple-500/30 bg-purple-500/10 text-purple-300',
   documentation: 'border-slate-600 bg-slate-800/70 text-slate-300',
   helper: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300',
-  'secret-template': 'border-amber-500/30 bg-amber-500/10 text-amber-300',
 };
 
 export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringViewProps> = ({ onCopy }) => {
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>(DEFAULT_SKILL_IDS);
-  const [selectedMcpIds, setSelectedMcpIds] = useState<string[]>(DEFAULT_MCP_IDS);
   const [selectedFilePath, setSelectedFilePath] = useState<string>('AGENTS.md');
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
   const [isZipping, setIsZipping] = useState(false);
   const [zipError, setZipError] = useState<string | null>(null);
 
-  const generatedFiles = useMemo(
-    () => buildHarnessFiles(selectedSkillIds, selectedMcpIds),
-    [selectedSkillIds, selectedMcpIds],
-  );
+  const generatedFiles = useMemo(() => buildHarnessFiles(selectedSkillIds), [selectedSkillIds]);
 
   const currentFile = useMemo(
     () => generatedFiles.find((file) => file.path === selectedFilePath) ?? generatedFiles[0],
@@ -84,13 +78,8 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
     setSelectedSkillIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
   };
 
-  const toggleMcp = (id: string) => {
-    setSelectedMcpIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
-  };
-
   const resetHarness = () => {
     setSelectedSkillIds(DEFAULT_SKILL_IDS);
-    setSelectedMcpIds(DEFAULT_MCP_IDS);
     setSelectedFilePath('AGENTS.md');
     setZipError(null);
   };
@@ -112,7 +101,7 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = `portable-ai-harness-v2-${selectedSkillIds.length}skills-${selectedMcpIds.length}mcp.zip`;
+      anchor.download = `portable-ai-harness-v2-${selectedSkillIds.length}skills.zip`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
@@ -137,7 +126,7 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
             <div>
               <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">하나의 프로젝트 규칙, 세 도구의 네이티브 환경</h2>
               <p className="mt-3 text-sm sm:text-base leading-7 text-slate-300">
-                Codex·Claude Code·Antigravity가 같은 프로젝트 계약, 디자인 규칙, 스킬, MCP capability를 공유하되 각 제품이 실제로 인식하는 파일 경로와 설정 형식은 별도 어댑터로 생성합니다. 같은 내용을 세 군데 복사해 관리하는 대신 <strong className="text-white">공통 원본 → 네이티브 어댑터</strong> 구조로 drift를 줄입니다.
+                Codex·Claude Code·Antigravity가 같은 프로젝트 계약, 디자인 규칙, 공통 Skill을 활용하도록 구성합니다. MCP는 프로젝트에 미리 연결하지 않고 <strong className="text-white">빈 네이티브 config 골격 + 추천 목록</strong>만 제공해 사용자가 필요한 연결만 직접 추가합니다.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
@@ -155,15 +144,15 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
             </div>
           </div>
           <div className="w-full xl:w-[350px] shrink-0 rounded-2xl border border-amber-500/25 bg-amber-500/5 p-4">
-            <div className="flex items-center gap-2 font-bold text-amber-300"><LockKeyhole className="h-4 w-4" />보안 설정은 공통화하지 않음</div>
-            <p className="mt-2 text-xs leading-5 text-slate-300">모델 선택, sandbox, trust, auto-approval, 실제 토큰 값은 각 클라이언트의 로컬 보안 결정입니다. ZIP에는 capability와 환경변수 이름만 담고 실제 자격증명은 넣지 않습니다.</p>
+            <div className="flex items-center gap-2 font-bold text-amber-300"><LockKeyhole className="h-4 w-4" />외부 연결은 사용자 소유</div>
+            <p className="mt-2 text-xs leading-5 text-slate-300">MCP 서버, 계정 인증, 토큰, workspace trust, 쓰기 권한은 ZIP에 넣지 않습니다. 빈 config 파일은 경로 안내용이며 실제 연결 상태를 뜻하지 않습니다.</p>
           </div>
         </div>
       </section>
 
       <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6 shadow-xl">
         <div className="flex items-center gap-2"><Bot className="h-5 w-5 text-indigo-300" /><h3 className="text-lg font-bold text-white">3개 클라이언트 호환성 계층</h3></div>
-        <p className="mt-1 mb-4 text-xs sm:text-sm text-slate-400">동일한 개념을 억지로 한 파일에 넣지 않고, 각 도구의 현재 네이티브 경로로 연결합니다.</p>
+        <p className="mt-1 mb-4 text-xs sm:text-sm text-slate-400">공통 지식은 공유하되 각 클라이언트의 네이티브 경로와 외부 연결 경계는 분리합니다.</p>
         <div className="overflow-x-auto rounded-2xl border border-slate-800">
           <table className="min-w-[900px] w-full text-xs">
             <thead className="bg-slate-950 text-slate-400"><tr><th className="px-4 py-3 text-left">도구</th><th className="px-4 py-3 text-left">프로젝트 규칙</th><th className="px-4 py-3 text-left">Skills</th><th className="px-4 py-3 text-left">MCP</th><th className="px-4 py-3 text-left">설계 원칙</th></tr></thead>
@@ -185,23 +174,27 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
               return <button key={skill.id} type="button" aria-pressed={selected} onClick={() => toggleSkill(skill.id)} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-purple-500/40 bg-purple-500/10' : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'}`}><div className="flex items-start gap-3"><span className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-md border ${selected ? 'border-purple-400 bg-purple-500 text-white' : 'border-slate-600 text-transparent'}`}><Check className="h-3.5 w-3.5" /></span><div><div className="font-bold text-white">{skill.name}</div><div className="mt-0.5 text-[10px] uppercase tracking-wide text-purple-300">{skill.category}</div><p className="mt-2 text-xs leading-5 text-slate-400">{skill.shortDescription}</p></div></div></button>;
             })}
           </div>
+          <div className="mt-4 rounded-2xl border border-purple-500/20 bg-purple-500/5 p-4 text-xs leading-5 text-slate-300"><Sparkles className="mr-1 inline h-4 w-4 text-purple-300" /><strong className="text-white">Capability router</strong>는 MCP가 하나도 없어도 정상 작동합니다. 현재 세션에서 실제 사용 가능한 Skill·MCP·내장 도구를 확인한 뒤 가장 적합한 경로를 고르며, 추천 목록에 있다는 이유만으로 MCP가 연결됐다고 간주하지 않습니다.</div>
         </div>
 
         <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6 shadow-xl">
-          <div className="flex items-center justify-between gap-3 mb-4"><div><div className="flex items-center gap-2"><ServerCog className="h-5 w-5 text-cyan-300" /><h3 className="font-bold text-white">MCP capability 선택</h3></div><p className="mt-1 text-xs text-slate-400">한 manifest에서 Codex TOML, Claude JSON, Antigravity JSON을 각각 생성합니다.</p></div><span className="rounded-lg bg-cyan-500/10 px-2 py-1 text-xs font-bold text-cyan-300">{selectedMcpIds.length}/{HARNESS_MCP_PRESETS.length}</span></div>
+          <div className="flex items-center justify-between gap-3 mb-4"><div><div className="flex items-center gap-2"><ServerCog className="h-5 w-5 text-cyan-300" /><h3 className="font-bold text-white">MCP 추천 목록</h3></div><p className="mt-1 text-xs text-slate-400">ZIP 최상위의 <span className="font-mono text-cyan-300">MCP_추천_목록.md</span>와 동일한 방향의 참고 카탈로그입니다.</p></div><span className="rounded-lg bg-cyan-500/10 px-2 py-1 text-xs font-bold text-cyan-300">자동 연결 안 함</span></div>
           <div className="space-y-3">
-            {HARNESS_MCP_PRESETS.map((server) => {
-              const selected = selectedMcpIds.includes(server.id);
-              return <button key={server.id} type="button" aria-pressed={selected} onClick={() => toggleMcp(server.id)} className={`w-full rounded-2xl border p-4 text-left transition ${selected ? 'border-cyan-500/40 bg-cyan-500/10' : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'}`}><div className="flex items-start gap-3"><span className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-md border ${selected ? 'border-cyan-400 bg-cyan-500 text-slate-950' : 'border-slate-600 text-transparent'}`}><Check className="h-3.5 w-3.5" /></span><div className="flex-1"><div className="flex flex-wrap items-center gap-2"><span className="font-bold text-white">{server.name}</span>{server.needsAuth && <span className="rounded-md border border-amber-500/25 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-300">환경변수 필요</span>}</div><p className="mt-2 text-xs leading-5 text-slate-400">{server.description}</p><div className="mt-2 font-mono text-[10px] text-slate-500">{server.command} {server.args.join(' ')}</div></div></div></button>;
-            })}
+            {HARNESS_MCP_GUIDES.map((server) => (
+              <div key={server.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-2"><div><div className="font-bold text-white">{server.name}</div><p className="mt-1 text-xs leading-5 text-slate-400">{server.description}</p></div><a href={server.officialUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg border border-cyan-500/25 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-bold text-cyan-300 hover:bg-cyan-500/15">공식 링크<ExternalLink className="h-3 w-3" /></a></div>
+                <div className="mt-3 rounded-lg bg-slate-950 px-3 py-2 font-mono text-[10px] text-slate-500">{server.commandExample}</div>
+                <p className="mt-2 text-[11px] leading-5 text-slate-500">{server.note}</p>
+              </div>
+            ))}
           </div>
-          <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-xs leading-5 text-slate-400"><ShieldCheck className="mr-1 inline h-4 w-4 text-emerald-300" />GitHub preset은 공식 서버의 read-only 모드를 사용합니다. 쓰기 권한은 실제 필요가 있을 때 별도로 검토하세요.</div>
+          <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-xs leading-5 text-slate-400"><ShieldCheck className="mr-1 inline h-4 w-4 text-emerald-300" />추천 목록은 설치 여부와 무관합니다. 실제 연결·인증·권한 부여는 사용자가 각 AI 클라이언트에서 직접 진행합니다.</div>
         </div>
       </section>
 
       <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6 shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div><div className="flex items-center gap-2"><FolderArchive className="h-5 w-5 text-emerald-300" /><h3 className="text-lg font-bold text-white">생성 패키지</h3></div><p className="mt-1 text-xs sm:text-sm text-slate-400">핵심 원본은 한 번만 관리하고, 나머지는 각 클라이언트가 실제로 읽는 위치로 생성합니다.</p></div>
+          <div><div className="flex items-center gap-2"><FolderArchive className="h-5 w-5 text-emerald-300" /><h3 className="text-lg font-bold text-white">생성 패키지</h3></div><p className="mt-1 text-xs sm:text-sm text-slate-400">공통 원본과 Skill은 실제로 생성하고, MCP는 비어 있는 네이티브 config 골격과 한글 추천 문서만 포함합니다.</p></div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs text-slate-300">전체 <strong className="text-white">{counts.total}</strong></span>
             <span className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-300">원본 {counts.canonical}</span>
@@ -235,8 +228,8 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
       <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {[
           { icon: Sparkles, title: 'Portable Core', text: 'AGENTS.md · DESIGN.md · docs · canonical skills를 프로젝트 지식의 중심으로 둡니다.' },
-          { icon: TerminalSquare, title: 'Native Adapters', text: 'Codex TOML, Claude JSON/skills, Antigravity rule/MCP를 각 제품 규격으로 생성합니다.' },
-          { icon: ShieldCheck, title: 'Parity Check', text: 'sync/validate 스크립트로 skill mirror와 MCP adapter drift를 다시 확인할 수 있습니다.' },
+          { icon: TerminalSquare, title: 'Native Skeletons', text: 'Codex/Claude/Antigravity용 config 경로는 제공하지만 MCP 서버 항목은 비워 둡니다.' },
+          { icon: ShieldCheck, title: 'Capability Routing', text: '라우터 Skill이 현재 실제 사용 가능한 Skill·MCP·내장 도구만 보고 작업 경로를 선택합니다.' },
         ].map(({ icon: Icon, title, text }) => <div key={title} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4"><Icon className="h-5 w-5 text-emerald-300" /><div className="mt-2 font-bold text-white">{title}</div><p className="mt-1 text-xs leading-5 text-slate-400">{text}</p></div>)}
       </section>
     </div>
