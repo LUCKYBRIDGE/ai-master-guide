@@ -75,6 +75,8 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
   }, [generatedFiles]);
 
   const toggleSkill = (id: string) => {
+    const skill = HARNESS_SKILLS.find((item) => item.id === id);
+    if (skill?.defaultSelected) return;
     setSelectedSkillIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
   };
 
@@ -182,14 +184,15 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
 
       <section className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6 shadow-xl">
-          <div className="flex items-center justify-between gap-3 mb-4"><div><div className="flex items-center gap-2"><Workflow className="h-5 w-5 text-purple-300" /><h3 className="font-bold text-white">공통 Skills 선택</h3></div><p className="mt-1 text-xs text-slate-400">.agents/skills를 canonical source로 만들고 Claude 경로에는 같은 내용을 생성합니다.</p></div><span className="rounded-lg bg-purple-500/10 px-2 py-1 text-xs font-bold text-purple-300">{selectedSkillIds.length}/{HARNESS_SKILLS.length}</span></div>
+          <div className="flex items-center justify-between gap-3 mb-4"><div><div className="flex items-center gap-2"><Workflow className="h-5 w-5 text-purple-300" /><h3 className="font-bold text-white">공통 Skills</h3></div><p className="mt-1 text-xs text-slate-400">Harness 계약이 직접 참조하는 Core Skill은 항상 포함하고, 프로젝트 특화 Skill만 선택적으로 추가합니다. .agents/skills가 canonical source이고 Claude 경로에는 같은 내용을 생성합니다.</p></div><span className="rounded-lg bg-purple-500/10 px-2 py-1 text-xs font-bold text-purple-300">{selectedSkillIds.length}/{HARNESS_SKILLS.length}</span></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {HARNESS_SKILLS.map((skill) => {
               const selected = selectedSkillIds.includes(skill.id);
-              return <button key={skill.id} type="button" aria-pressed={selected} onClick={() => toggleSkill(skill.id)} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-purple-500/40 bg-purple-500/10' : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'}`}><div className="flex items-start gap-3"><span className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-md border ${selected ? 'border-purple-400 bg-purple-500 text-white' : 'border-slate-600 text-transparent'}`}><Check className="h-3.5 w-3.5" /></span><div><div className="font-bold text-white">{skill.name}</div><div className="mt-0.5 text-[10px] uppercase tracking-wide text-purple-300">{skill.category}</div><p className="mt-2 text-xs leading-5 text-slate-400">{skill.shortDescription}</p></div></div></button>;
+              const core = skill.defaultSelected;
+              return <button key={skill.id} type="button" aria-pressed={selected} disabled={core} onClick={() => toggleSkill(skill.id)} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-purple-500/40 bg-purple-500/10' : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'} ${core ? 'cursor-default' : ''}`}><div className="flex items-start gap-3"><span className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-md border ${selected ? 'border-purple-400 bg-purple-500 text-white' : 'border-slate-600 text-transparent'}`}><Check className="h-3.5 w-3.5" /></span><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><div className="font-bold text-white">{skill.name}</div>{core && <span className="rounded-md border border-purple-500/25 bg-purple-500/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-purple-300">Core</span>}</div><div className="mt-0.5 text-[10px] uppercase tracking-wide text-purple-300">{skill.category}</div><p className="mt-2 text-xs leading-5 text-slate-400">{skill.shortDescription}</p></div></div></button>;
             })}
           </div>
-          <div className="mt-4 rounded-2xl border border-purple-500/20 bg-purple-500/5 p-4 text-xs leading-5 text-slate-300"><Sparkles className="mr-1 inline h-4 w-4 text-purple-300" /><strong className="text-white">기본 흐름</strong>은 dedicated Skill 안의 evidence loop입니다. <strong className="text-white">Continue work</strong>는 현재 context가 부족한 recovery에서만 <span className="font-mono text-purple-200">ACTIVE.md → checkpoint → plan → actual repo</span>를 사용하고, Capability router는 capability 선택이 실제로 애매한 복합 작업에서만 사용합니다.</div>
+          <div className="mt-4 rounded-2xl border border-purple-500/20 bg-purple-500/5 p-4 text-xs leading-5 text-slate-300"><Sparkles className="mr-1 inline h-4 w-4 text-purple-300" /><strong className="text-white">기본 흐름</strong>은 Core Skill 안의 evidence loop입니다. <strong className="text-white">Continue work</strong>는 현재 context가 부족한 recovery에서만 <span className="font-mono text-purple-200">ACTIVE.md → checkpoint → plan → actual repo</span>를 사용하고, Capability router는 capability 선택이 실제로 애매한 복합 작업에서만 사용합니다.</div>
         </div>
 
         <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6 shadow-xl">
@@ -209,7 +212,7 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
 
       <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6 shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div><div className="flex items-center gap-2"><FolderArchive className="h-5 w-5 text-emerald-300" /><h3 className="text-lg font-bold text-white">생성 패키지</h3></div><p className="mt-1 text-xs sm:text-sm text-slate-400">공통 원본·focused Skill·필요할 때만 쓰는 portable task state를 생성하고, MCP는 비어 있는 네이티브 config 골격과 추천 문서만 포함합니다.</p></div>
+          <div><div className="flex items-center gap-2"><FolderArchive className="h-5 w-5 text-emerald-300" /><h3 className="text-lg font-bold text-white">생성 패키지</h3></div><p className="mt-1 text-xs sm:text-sm text-slate-400">공통 원본·focused Skill·필요할 때만 쓰는 portable task state를 생성하고, MCP는 비어 있는 네이티브 config starter와 추천 문서만 포함합니다.</p></div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs text-slate-300">전체 <strong className="text-white">{counts.total}</strong></span>
             <span className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-300">원본 {counts.canonical}</span>
