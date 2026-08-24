@@ -75,7 +75,7 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
   }, [generatedFiles]);
 
   const coreSkillCount = DEFAULT_SKILL_IDS.length;
-  const optionalSelectedCount = selectedSkillIds.filter((id) => !DEFAULT_SKILL_IDS.includes(id)).length;
+  const optionalSelectedCount = selectedSkillIds.filter((id) => !DEFAULT_SKILL_IDS.some((coreId) => coreId === id)).length;
   const optionalSkillCount = HARNESS_SKILLS.length - coreSkillCount;
 
   const toggleSkill = (id: string) => {
