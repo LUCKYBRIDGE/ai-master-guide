@@ -3,9 +3,11 @@
 ## Audit scope
 
 - Verified: 2026-08-24
-- Goal: provide a **project-neutral** portable Harness that works well in one coding client and also allows Codex, Claude Code, and Google Antigravity to share durable project instructions, Skills, plans, and execution state across sessions/clients.
-- Primary execution model: inspect/explore -> plan when needed -> implement -> observe/evaluate -> correct -> re-verify -> complete.
-- Cross-session/cross-client continuation is a portability layer on top of the core single-client lifecycle, not a prerequisite for it.
+- Goal: provide a **project-neutral** portable Harness that works efficiently in one coding client and preserves continuity when the **user explicitly chooses** to continue in another client.
+- Primary execution model: `inspect/explore -> plan when needed -> implement -> observe/evaluate -> correct -> re-verify -> complete`.
+- Default client policy: **stay in the current AI client**. The Harness does not continuously compare vendors/models, choose a cheaper/stronger client, or switch clients autonomously.
+- Cross-session recovery and cross-client handoff are portability layers on top of the core single-client lifecycle, not prerequisites for it.
+- PLAN / BUILD / REVIEW / VERIFY may be recorded as handoff role metadata, but they are not mandatory separate invocations or an automatic orchestration pipeline.
 - Tests are one feedback mechanism, not a universal Harness requirement. The loop uses the strongest proportional evidence actually available in the repository/runtime.
 
 Active website sources:
@@ -15,7 +17,7 @@ Active website sources:
 
 ## Architecture rule
 
-The Harness does **not** assume a language, framework, package manager, database, test runner, deployment platform, visual theme, MCP server, subagent, or external AI client.
+The Harness does **not** assume a language, framework, package manager, database, test runner, deployment platform, visual theme, MCP server, subagent, external AI client, or preferred vendor/model.
 
 It uses:
 1. a canonical root `AGENTS.md` project contract;
@@ -24,11 +26,11 @@ It uses:
 4. focused lifecycle Skills rather than one giant mandatory orchestration Skill;
 5. client-native adapters only where discovery behavior differs;
 6. exact Skill mirrors only where the native Skill path differs;
-7. `docs/tasks/ACTIVE.md` + plan/checkpoint files only when durable state is actually useful;
+7. `docs/tasks/ACTIVE.md` + plan/checkpoint files only when durable state is actually useful or the user explicitly requests cross-client handoff;
 8. minimal client config **starters** without pre-populated MCP servers;
 9. behavior evals that separate package shape from real agent behavior.
 
-Model choice, trust, sandboxing, auto-approval, credentials, external-service authentication, destructive permissions, MCP connections, Antigravity Rule activation, and external-agent availability remain client-local.
+Model/client choice, trust, sandboxing, auto-approval, credentials, external-service authentication, destructive permissions, MCP connections, Antigravity Rule activation, and external-agent availability remain user/client-local.
 
 For existing repositories, generated canonical/adapter/config files are **merge candidates**, not blind overwrite instructions.
 
@@ -61,18 +63,18 @@ Harness lessons applied here:
 
 ### Anthropic Claude Code: verification closes the loop
 
-Anthropic's current Claude Code best-practices/how-it-works guidance emphasizes giving Claude ways to verify its work and describes an agentic gather-context -> act -> verify -> repeat pattern. Explore/plan/code is useful, but planning is not a mandatory stopping point when execution was requested.
+Anthropic's Claude Code guidance emphasizes giving Claude ways to verify its work and describes an agentic gather-context -> act -> verify -> repeat pattern. Explore/plan/code is useful, but planning is not a mandatory stopping point when execution was requested.
 
 Sources:
 - https://code.claude.com/docs/en/best-practices
 - https://code.claude.com/docs/en/how-claude-code-works
 - https://docs.anthropic.com/en/docs/claude-code/overview
 
-Harness lesson: the same project contract should support end-to-end work inside a single Claude Code session and should make verification feedback actionable.
+Harness lesson: the same project contract should support end-to-end work inside a single Claude Code session and make verification feedback actionable.
 
 ### Google Antigravity: establish verification loops
 
-Google Antigravity's best-practices documentation explicitly recommends establishing local verification mechanisms and iterating from their output.
+Google Antigravity's best-practices documentation recommends establishing local verification mechanisms and iterating from their output.
 
 Source:
 - https://antigravity.google/docs/cli/best-practices/
@@ -98,7 +100,7 @@ The Harness deliberately avoids adding a mandatory `engineering-loop` meta-Skill
 9. Broaden verification as confidence grows.
 10. Complete only when applicable criteria are satisfied, or stop with an explicit blocker.
 
-### Failure classification
+### Failure classification and progress invariant
 
 A failed check is not automatically a product-code defect. Before another edit, distinguish among:
 - implementation defect;
@@ -106,10 +108,6 @@ A failed check is not automatically a product-code defect. Before another edit, 
 - verifier/tooling/environment problem;
 - flaky or external dependency;
 - insufficient observability.
-
-This prevents an agent from modifying correct product code merely to silence a broken verifier.
-
-### Progress invariant
 
 A meaningful retry must produce new evidence or change at least one of:
 - hypothesis;
@@ -122,7 +120,7 @@ Repeating an identical failed action without new information is not a valid loop
 
 ### Proportional evidence
 
-Tests are useful when they exist and cover the changed behavior, but the Harness does not require every repository or task to have tests. Possible feedback includes:
+Possible feedback includes:
 - focused test/regression check;
 - type/static validation;
 - lint/formatter diagnostics;
@@ -134,23 +132,17 @@ Tests are useful when they exist and cover the changed behavior, but the Harness
 
 The strongest practical evidence depends on the actual repository and task.
 
-### Loop boundaries
+### Loop boundaries and entropy control
 
-- Keep loop effort proportional to risk and scope.
-- Do not repeat an identical failed action without new information.
+- Keep effort proportional to risk and scope.
 - Do not hide or downgrade failed verification.
 - Do not claim success when required evidence is unavailable.
 - Do not create `ACTIVE.md`/task-log noise for every loop iteration.
 - If materially different attempts stop producing progress, re-check assumptions, environment, scope, verifier quality, and missing tooling.
 - If still blocked, report the blocker and safest next action instead of looping indefinitely.
+- Remove accidental scratch scripts, debug logging, stale notes, dead code, duplicate helpers, and workaround complexity before completion.
 
-### Entropy control
-
-Repeated agent iteration can leave temporary scripts, debug logs, duplicated helpers, stale task notes, dead code, or workaround complexity. The final loop therefore includes diff/hygiene review and removal of unintended residue.
-
-Repeated failure can also reveal a durable Harness gap. When in scope, the long-term correction may be a focused regression check, clearer repository instruction, stronger observability, reusable helper, or architecture clarification rather than another prompt workaround.
-
-## Single-client lifecycle
+## Current-client-first lifecycle
 
 The default workflow must work in Codex alone, Claude Code alone, or Antigravity alone.
 
@@ -161,26 +153,59 @@ Examples:
 - explicit plan-only request: `plan-feature` -> stop;
 - merge/release readiness: normal implementation verification plus `verify-release` as an exact-revision gate.
 
-`capability-router` is not required merely to move from plan to implementation.
+The agent should **not** pause to compare Codex vs Claude Code vs Antigravity during ordinary work. It continues in the current client until the user explicitly asks for a transfer.
+
+## User-driven cross-client handoff
+
+Cross-client support is intentionally **passive until requested**.
+
+Trigger examples:
+- “이제 Codex로 넘길래.”
+- “Claude Code에서 이어서 할 거야.”
+- “Antigravity에서는 검증만 할래.”
+
+At that point the sender persists the minimum durable state needed for continuity:
+- goal/scope;
+- exact branch/revision when relevant;
+- completed work;
+- verification evidence and checks not run;
+- unresolved risks/questions;
+- one best Next action.
+
+Optional handoff metadata:
+- target client, only if the user named it;
+- next role: `PLAN | BUILD | REVIEW | VERIFY`, only when useful/requested;
+- read-only mode for review/verification-only transfer;
+- exact review target/revision.
+
+These labels are descriptive state, not a scheduler. The Harness does not automatically invoke the receiving AI, compare prices, choose a destination, or start agent-to-agent review loops.
+
+The receiving client uses `continue-work` only when durable recovery is actually needed, reconciles checkpoint claims against repository reality, and then resumes its normal evidence loop.
 
 ## Core Skills vs optional Skills
 
-The generated contract directly refers to the following Core Skills, so the website keeps them included as structural parts of Harness v2 rather than presenting them as removable options:
+The locked Core set is deliberately small:
 - `plan-feature`
 - `continue-work`
 - `implement-feature`
 - `debug`
 - `code-review`
 - `verify-release`
-- `capability-router`
 
-Optional project-specific Skills remain selectable:
+Optional Skills:
+- `capability-router`
 - `browser-qa`
 - `git-pr`
 - `security-review`
 - `fresh-context-review`
 
-This avoids generating an `AGENTS.md`/behavior-eval contract that references a Skill the same package omitted. In the current website generator, `defaultSelected` denotes this locked Core set; optional Skills are not selected by default and remain toggleable. Direct programmatic callers of `buildHarnessFiles()` are internal implementation detail and should pass the Core IDs; the public UI is the supported package-generation path.
+### Why `capability-router` is optional
+
+A meta-router should not become a tax on every request. Clear tasks go directly to their focused Skill. When selected, `capability-router` only coordinates ambiguous or multi-capability work **inside the current client**. It must not select or switch to another AI client.
+
+### Why `fresh-context-review` is optional
+
+`fresh-context-review` provides one bounded independent read-only pass in the current client. If the user explicitly wants another AI client to review, the Harness prepares a concise review handoff with an exact revision/read-only scope instead of autonomously invoking or selecting another client.
 
 ## Durable session-independent state
 
@@ -189,17 +214,17 @@ This avoids generating an `AGENTS.md`/behavior-eval contract that references a S
 If the active session already has sufficient reliable context:
 - continue the current workflow directly.
 
-If recovery is needed:
+If durable recovery or explicit handoff is needed:
 - `docs/tasks/ACTIVE.md` = discovery index;
 - `docs/plans/<task-id>.md` = durable approved intent;
-- `docs/tasks/<task-id>.md` = current execution reality.
+- `docs/tasks/<task-id>.md` = current execution reality and optional handoff metadata.
 
 Active-index consistency:
 - ACTIVE.md contains resumable `active`, `paused`, or `blocked` work;
 - a retained checkpoint may use `completed`;
 - completed work is removed from ACTIVE.md so it is not advertised as resumable active work.
 
-The receiving session/client reconciles checkpoint claims against actual repository revision, diff, files, and verification evidence before continuing.
+Repository revision, diff, files, and verification evidence override stale checkpoint text.
 
 ## Codex compatibility
 
@@ -211,30 +236,24 @@ Sources:
 - https://developers.openai.com/codex/guides/agents-md
 - https://learn.chatgpt.com/docs/agent-configuration/agents-md
 
-Harness mapping: root `AGENTS.md` defines the same portable scoped-resolution rule. Codex consumes the hierarchy natively; other clients emulate the shared rule where necessary.
+Harness mapping: root `AGENTS.md` defines the portable scoped-resolution rule; Codex consumes the hierarchy natively.
 
-### Skills
+### Skills and project config
 
 Sources:
 - https://developers.openai.com/codex/skills
 - https://learn.chatgpt.com/docs/build-skills
 - https://github.com/openai/skills
-
-Harness mapping: canonical Skill source `.agents/skills/`.
-
-### Project config and MCP
-
-Sources:
 - https://developers.openai.com/codex/mcp
 - https://developers.openai.com/codex/config-reference
 
-Harness mapping: comment-only `.codex/config.toml` in the downloaded starter; configured project MCP entries are allowed after adoption.
+Harness mapping: canonical Skill source `.agents/skills/`; comment-only `.codex/config.toml` starter with no pre-populated MCP servers.
 
 ## Claude Code compatibility
 
 ### Project instructions
 
-Anthropic documents `CLAUDE.md` project memory and supports importing existing project instructions with `@AGENTS.md`.
+Anthropic documents `CLAUDE.md` project memory and importing existing project instructions with `@AGENTS.md`.
 
 Sources:
 - https://code.claude.com/docs/en/memory
@@ -244,24 +263,16 @@ Harness mapping:
 - root `CLAUDE.md` imports root `@AGENTS.md`;
 - nested AGENTS semantics are explicitly emulated before nested-scope edits;
 - same-session continuation proceeds directly when context is sufficient;
-- durable recovery uses repository task state instead of requiring Claude conversation memory.
+- explicit transfer uses repository task state rather than requiring Claude conversation memory.
 
-### Skills
+### Skills and MCP
 
 Sources:
 - https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview
 - https://docs.anthropic.com/en/docs/claude-code/slash-commands
-
-Harness mapping: exact Harness-managed mirrors under `.claude/skills/`.
-
-The provided sync helper is intentionally **merge-only** so unrelated Claude-only Skills survive. Consequence: if a canonical Harness Skill is deleted or renamed, an obsolete Harness-managed Claude mirror must be removed intentionally; sync does not guess ownership and delete arbitrary Claude-only content.
-
-### Project MCP
-
-Source:
 - https://docs.anthropic.com/en/docs/claude-code/mcp
 
-Harness mapping: valid root `.mcp.json` starter with `"mcpServers": {}`; non-empty valid configuration is permitted after adoption.
+Harness mapping: exact Harness-managed mirrors under `.claude/skills/`; valid root `.mcp.json` starter with `"mcpServers": {}`. The sync helper remains merge-only so unrelated Claude-only Skills survive.
 
 ## Google Antigravity compatibility
 
@@ -274,38 +285,29 @@ Sources:
 
 Harness mapping:
 - active-directory/root `AGENTS.md` is the portable project contract;
-- `.agents/rules/project-core.md` is only an **optional thin workspace Rule note**;
+- `.agents/rules/project-core.md` is only an optional thin workspace Rule note;
 - shared correctness does not depend on that file being active;
-- Antigravity Rule activation can be Manual, Always On, Model Decision, or Glob and is therefore client/workspace-local;
-- the optional note does not re-import the full AGENTS/DESIGN context;
+- Antigravity Rule activation remains client/workspace-local;
 - DESIGN.md remains on-demand for UI/design work.
 
-This corrects the earlier “bridge” framing. A file merely existing under `.agents/rules` is not proof that it is an Always On bridge.
-
-### Skills
+### Skills and workspace MCP
 
 Sources:
 - https://antigravity.google/docs/ide/skills/
 - https://antigravity.google/docs/skills/
-
-Harness mapping: Antigravity directly consumes canonical `.agents/skills/`.
-
-### Workspace MCP
-
-Sources:
 - https://antigravity.google/docs/mcp
 - https://antigravity.google/docs/cli/gcli-migration/
 
-Harness mapping: valid `.agents/mcp_config.json` starter with `"mcpServers": {}`; users may configure servers after adoption.
+Harness mapping: Antigravity directly consumes canonical `.agents/skills/`; `.agents/mcp_config.json` starts with `"mcpServers": {}` and may be configured by the user after adoption.
 
 ## DESIGN.md structural audit
 
 Google's current `design.md` alpha spec defines the recognized Markdown section order:
-1. `Overview` (alias: Brand & Style)
+1. `Overview`
 2. `Colors`
 3. `Typography`
-4. `Layout` (alias: Layout & Spacing)
-5. `Elevation & Depth` (alias: Elevation)
+4. `Layout`
+5. `Elevation & Depth`
 6. `Shapes`
 7. `Components`
 8. `Do's and Don'ts`
@@ -315,12 +317,7 @@ Sources:
 - https://github.com/google-labs-code/design.md/blob/main/docs/spec.md
 - https://github.com/google-labs-code/design.md/blob/main/packages/cli/src/linter/spec-config.yaml
 
-Audit correction:
-- previous neutral starter headings such as `Status`, `Spacing and layout`, and combined `Shapes and elevation` were understandable prose but not the cleanest alpha-spec starter;
-- the generated template now uses the canonical section order above;
-- project Sources stay as a subsection under Overview;
-- accessibility constraints are preserved in the prose/Do's and Don'ts instead of inventing an extra required canonical section;
-- no palette/font/framework values are invented.
+The generated template uses this section order, keeps Sources under Overview, preserves accessibility guidance in prose, and invents no palette/font/framework values.
 
 Optional official linter:
 - `npx @google/design.md lint DESIGN.md`
@@ -329,28 +326,20 @@ The package is not added as a dependency to AI Master Guide.
 
 ## Validator structural audit
 
-A reusable validator must distinguish an untouched downloaded starter from a real adopted project.
-
-Previous problem:
-- the validator required MCP server maps to remain empty forever;
-- a user who legitimately configured MCP after adopting the Harness would therefore fail validation.
-
-Corrected modes:
+Two modes are intentionally separated:
 - `node scripts/validate-ai-harness.mjs`
-  - project mode;
+  - adopted-project mode;
   - validates required Harness shape, Skill mirrors, MCP JSON shape, contract markers, behavior-eval markers, and credential indicators;
   - valid configured MCP servers are allowed.
 - `node scripts/validate-ai-harness.mjs --starter`
-  - strict downloaded-starter mode;
-  - additionally requires intentionally empty MCP starters;
+  - untouched-starter mode;
+  - additionally requires empty MCP starters;
   - checks DESIGN.md canonical section order;
-  - checks the generated Antigravity Rule note does not re-import AGENTS/DESIGN.
+  - checks the Antigravity Rule note does not re-import AGENTS/DESIGN.
 
-This keeps “safe starter defaults” separate from “valid user configuration after adoption.”
+Current contract markers include `User-driven cross-client handoff`. Behavior-eval markers include the single-client fixture, verification-loop fixture, no-auto-switch scenario, explicit handoff fixture, and explicit review-only handoff.
 
 ## File/folder role audit
-
-Current generated structure intentionally separates roles:
 
 - `AGENTS.md` — canonical project execution contract.
 - `CLAUDE.md` — thin Claude import/adapter, not a duplicate contract.
@@ -360,11 +349,11 @@ Current generated structure intentionally separates roles:
 - `.agents/rules/project-core.md` — optional Antigravity note, never canonical policy.
 - `.codex/config.toml`, `.mcp.json`, `.agents/mcp_config.json` — native config starters, not proof of connected MCPs.
 - `docs/architecture/` — current architecture description.
-- `docs/design/` — supplemental implementation notes; not duplicate design tokens.
+- `docs/design/` — supplemental implementation notes.
 - `docs/plans/` — durable future intent only when useful.
 - `docs/decisions/` — durable architecture decisions.
-- `docs/tasks/ACTIVE.md` — resumable work index only.
-- `docs/tasks/<task-id>.md` — current checkpoint reality.
+- `docs/tasks/ACTIVE.md` — resumable work/explicit handoff index only.
+- `docs/tasks/<task-id>.md` — current checkpoint reality and optional handoff metadata.
 - `docs/reference/` — durable source/reference notes.
 - `docs/ai-harness/` — Harness-specific compatibility/behavior guidance.
 - `scripts/sync-ai-harness.mjs` — merge-only Skill mirror helper.
@@ -390,25 +379,27 @@ Generated `docs/ai-harness/behavior-evals.md` covers:
 - broad plan -> implement -> verify continuity;
 - explicit plan-only behavior;
 - same-session continuation without unnecessary durable recovery;
+- **no cross-client handoff requested -> stay in current client**;
+- explicit cross-client handoff -> compact repository state only;
+- explicit review/verify-only handoff -> exact revision/read-only scope;
 - verification failure classification;
 - verifier/environment failure vs code failure;
 - bounded failure/re-diagnosis behavior;
 - no unnecessary handoff artifacts for single-session work;
 - cleanup of temporary loop residue;
-- completed durable-task ACTIVE cleanup;
-- configured MCP acceptance in project-mode validation;
 - root-to-target scoped AGENTS resolution;
+- optional current-client capability-router behavior;
 - zero-MCP fallback;
 - optional Antigravity Rule behavior;
-- cross-client durable resume in all three directions;
+- three receiving-client resume directions after explicit user handoff;
 - existing-config merge safety.
 
-Static validation can verify package invariants and the presence of these contracts. Real-client behavior must still be sampled in actual Codex/Claude Code/Antigravity because file compatibility does not mathematically guarantee identical model behavior.
+Static validation can verify package invariants and the presence of these contracts. Real-client behavior must still be sampled in actual Codex/Claude Code/Antigravity because file compatibility and CI do not mathematically guarantee identical model behavior.
 
 ## Generation boundaries
 
 Always generated:
-- `AGENTS.md` with project-neutral scoped instructions, end-to-end continuity, bounded evidence loop, security, verification, and handoff rules;
+- `AGENTS.md` with project-neutral scoped instructions, end-to-end continuity, bounded evidence loop, security, verification, and user-driven handoff rules;
 - `CLAUDE.md` thin root import/adapter;
 - neutral alpha-spec `DESIGN.md` starter;
 - empty client MCP/config starters;
@@ -418,10 +409,10 @@ Always generated:
 - `docs/ai-harness/compatibility.md`;
 - `docs/ai-harness/behavior-evals.md`;
 - sync/validation helpers;
-- Core focused Skills and their Claude mirrors;
+- six Core focused Skills and their Claude mirrors;
 - any user-selected optional Skills and mirrors.
 
-Never generated automatically:
+Never generated or decided automatically:
 - framework/package-manager/database/deployment assumptions;
 - fake build/test/deploy commands;
 - arbitrary design tokens;
@@ -430,14 +421,14 @@ Never generated automatically:
 - client trust/sandbox/approval settings;
 - Antigravity Rule activation state;
 - destructive permissions;
-- fictional subagents or external-client connectivity.
+- external-client connectivity;
+- which AI client should plan/build/review/verify;
+- price/performance-based AI switching.
 
-## Latest validation evidence boundary
+## Validation evidence boundary
 
-The latest previously executed validation-only run was GitHub Actions run `32721817897` (#18), and it succeeded on the Harness source revision that existed **before** the final Loop/structure static-audit corrections in this pass.
+The previous validation-only run `32721817897` (#18) succeeded on an earlier Harness revision. It is **not** evidence for the current user-driven-handoff revision.
 
-The latest pass deliberately did **not** run another build/browser/ZIP test because the user requested the structural/semantic corrections without requiring another test execution. Therefore:
-- the old successful run remains evidence for the earlier revision only;
-- it is not presented as proof of the latest head;
-- the newest corrections were checked by static source/structure analysis against current official client/spec documentation;
-- real client semantic behavior still requires the generated behavior-eval scenarios when stronger empirical evidence is desired.
+A new validation-only run must succeed against the final source head before this pass is described as fully validated. Until then, the current changes are source-level architecture updates only.
+
+Real Codex/Claude Code/Antigravity semantic behavior remains a separate empirical behavior-eval concern even after CI/build/browser/ZIP validation passes.
