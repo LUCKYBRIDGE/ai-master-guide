@@ -46,115 +46,108 @@ export interface GeneratedHarnessFile {
 export const DESIGN_MD_TEMPLATE = `---
 version: alpha
 name: Project Design System
-description: Shared visual source of truth for humans and AI coding agents.
-colors:
-  primary: "#4F46E5"
-  secondary: "#7C3AED"
-  background: "#020617"
-  surface: "#0F172A"
-  text-primary: "#F8FAFC"
-  text-muted: "#94A3B8"
-  success: "#10B981"
-  danger: "#EF4444"
-typography:
-  heading:
-    fontFamily: "Pretendard, -apple-system, BlinkMacSystemFont, sans-serif"
-    fontSize: 24px
-    fontWeight: 700
-    lineHeight: 1.25
-  body:
-    fontFamily: "Pretendard, -apple-system, BlinkMacSystemFont, sans-serif"
-    fontSize: 14px
-    fontWeight: 400
-    lineHeight: 1.6
-rounded:
-  sm: 8px
-  md: 12px
-  lg: 16px
-spacing:
-  xs: 4px
-  sm: 8px
-  md: 16px
-  lg: 24px
-  xl: 32px
+description: Neutral design contract starter. Populate it only from verified project or design-source evidence.
 ---
 
 # Project Design System
 
-## Overview
-Keep the interface coherent, accessible, and consistent across screens. YAML tokens are normative; prose explains how to apply them.
+## Status
+This starter is intentionally neutral. It does not choose colors, typography, spacing, component libraries, CSS frameworks, or visual style for the project.
+
+Before relying on this file for UI work:
+1. Inspect the repository's existing styles, tokens, components, screenshots, and design sources.
+2. Preserve established visual language unless the task explicitly changes it.
+3. Replace the guidance below with verified project-specific values and decisions.
+4. If no design system exists yet, establish one explicitly instead of silently inventing defaults.
+
+## Sources
+Document the authoritative design sources for this project, such as an existing token file, Figma library, Stitch DESIGN.md, production UI, or approved specification.
 
 ## Colors
-Use primary for main actions and selection states. Preserve readable contrast and never communicate state by color alone.
+Record semantic color tokens and their intended uses only after verifying the project's actual palette. Include contrast and state requirements where relevant.
 
 ## Typography
-Use a stable hierarchy and readable line lengths. Do not shrink text simply to solve layout problems.
+Record the actual font families, sizes, weights, line heights, and hierarchy used by the project. Do not introduce a font merely because it appears in this starter.
 
-## Layout
-Use the spacing scale consistently and verify representative mobile and desktop widths.
+## Spacing and layout
+Record the project's spacing scale, breakpoints, container behavior, grid rules, and representative responsive states.
 
-## Shapes
-Use the rounded scale consistently for controls, cards, and containers.
+## Shapes and elevation
+Record border radius, borders, shadows, and elevation patterns that are actually part of the project.
 
 ## Components
-Document project-specific button, form, navigation, table, modal, and feedback patterns here as the product evolves.
+Document project-specific behavior and states for buttons, forms, navigation, tables, dialogs, feedback, loading, empty, and error states.
+
+## Accessibility
+Record keyboard, focus, contrast, reduced-motion, semantic markup, and assistive-technology requirements that apply to the project.
 
 ## Do's and Don'ts
-- Reuse existing components and tokens before introducing variants.
-- Verify keyboard focus, contrast, responsive behavior, loading, empty, and error states.
-- Do not hard-code a framework, CSS library, state library, or component library unless the repository actually uses it.
-- Do not treat this alpha-format file as a substitute for real browser visual QA.
+- Reuse existing components and verified tokens before introducing variants.
+- Verify representative desktop and mobile behavior for visible changes.
+- Do not infer a framework, component library, state library, or styling system without repository evidence.
+- Do not replace an established project design system with this neutral starter.
+- Do not treat this alpha-format file as a substitute for rendered browser or device QA.
 `;
 
 const SHARED_AGENTS_MD = `# AGENTS.md - Shared Project Contract
 
-This is the canonical project-wide working agreement for Codex, Claude Code through CLAUDE.md, Antigravity through its workspace rule bridge, and human contributors.
+This file is the canonical project-wide working agreement for Codex, Claude Code through CLAUDE.md, Antigravity through its workspace rule bridge, and human contributors.
+
+It is intentionally project-neutral. Do not assume a language, framework, package manager, database, test runner, hosting provider, or deployment model until the repository proves it.
 
 ## Inspect before assuming
-- Read the repository before naming the framework, runtime, package manager, test runner, database, or deployment target.
-- Use commands that are actually defined in the repository. Report unavailable checks explicitly.
-- Preserve unrelated work and prefer the smallest coherent change.
+- Read the repository before naming the stack, runtime, package manager, test runner, database, deployment target, generated directories, or source-of-truth files.
+- Use commands that actually exist in the repository. Report unavailable checks explicitly instead of inventing replacements.
+- Preserve unrelated work and prefer the smallest coherent change that satisfies the request.
+- Treat existing project-specific instructions as authoritative when they are more specific and do not conflict with higher-priority safety constraints.
 
 ## Source-of-truth map
-- AGENTS.md: shared rules, commands, safety constraints, and definition of done.
-- DESIGN.md: shared visual source of truth for UI-related work.
+- AGENTS.md: shared project rules, safety constraints, verification policy, and project map.
+- DESIGN.md: project visual contract for UI-related work; the downloaded starter is deliberately neutral until adapted from real project evidence.
 - MCP_추천_목록.md: human-readable MCP recommendations and official links; it does not mean those MCPs are installed or connected.
 - docs/architecture/: current architecture and boundaries.
-- docs/design/: implementation notes that extend DESIGN.md without duplicating its tokens.
+- docs/design/: implementation notes that extend DESIGN.md without duplicating its canonical values.
 - docs/plans/: approved implementation plans.
 - docs/decisions/: durable architecture decisions.
 - docs/tasks/: handoff and long-running task state.
 - docs/reference/: durable project references and source notes.
-- .agents/skills/: canonical reusable skills.
+- .agents/skills/: canonical reusable project skills.
 
-Do not create a second project-wide rule file containing another copy of these rules.
+Do not create a second project-wide rule file containing another copy of these rules. Client adapters should stay thin.
+
+## Project-specific adaptation
+- This starter deliberately contains no fake build, test, deploy, database, or release commands.
+- When adapting it to a real repository, record only verified commands, protected paths, generated outputs, deployment boundaries, and domain invariants.
+- In an existing project, merge this contract with useful local instructions instead of replacing project knowledge wholesale.
 
 ## Implementation discipline
-- Reuse existing patterns before creating abstractions.
+- Reuse established patterns before creating abstractions.
 - Add dependencies only when necessary and authorized.
-- Never edit generated build output as source.
-- For UI work, read DESIGN.md and verify the rendered result.
-- Keep client-specific adapters thin.
+- Never edit generated build output as if it were source.
+- For UI work, inspect DESIGN.md and the actual rendered product. If DESIGN.md is still a neutral starter, derive project-specific facts from real evidence before treating it as normative.
+- Keep client-specific adapters thin and keep client-local permissions out of the shared contract.
 
 ## Skills, tools, and MCP
-- Inspect the capabilities actually available in the current client/session before choosing a tool.
-- Use project skills when they match the task; use an MCP tool only when it is actually connected and useful.
+- Use a dedicated project skill directly when the task clearly matches it.
+- Use capability-router only when capability choice is genuinely ambiguous or multiple skills/tools must be coordinated; do not route every simple task through a meta-skill.
+- Inspect capabilities actually available in the current client/session before choosing an MCP or built-in tool.
+- Use an MCP tool only when it is actually connected and materially useful.
 - Never infer MCP availability from MCP_추천_목록.md or an empty config skeleton.
 - If no suitable MCP is connected, continue with available built-in tools or a safe manual workflow.
 - Do not install, authenticate, or grant external-service access unless the user explicitly requests it.
 
 ## Security boundary
-- Never commit real secrets, tokens, cookies, or credentials.
+- Never commit real secrets, tokens, cookies, private keys, or credentials.
 - Keep approval, sandbox, trust, auto-execution, MCP credentials, and external write permissions client-local.
 - Prefer least-privilege/read-only access until write access is intentionally required.
 - Require explicit approval for destructive data operations, force pushes, credential changes, or production-impacting actions.
 
 ## Verification
-1. Run the repository's real applicable build/type/test/lint commands.
-2. Verify representative user flows for changed behavior.
-3. For visible changes, check desktop, mobile, and relevant accessibility states.
-4. Review the final diff for unrelated files, generated artifacts, secrets, stale assumptions, and broken links.
-5. State any check that could not run; missing evidence is not a passing result.
+1. Run the repository's real applicable build, type, test, lint, and validation commands.
+2. Verify representative user flows for changed behavior when applicable.
+3. For visible changes, check relevant desktop, mobile, keyboard, accessibility, and error states where tooling permits.
+4. Review the final diff for unrelated files, generated artifacts, secrets, stale assumptions, and broken references.
+5. State any check that could not run. Missing evidence is not a passing result.
 
 ## Client adapters
 - Codex: AGENTS.md and .agents/skills/ directly; .codex/config.toml is an intentionally minimal project-local skeleton.
@@ -167,7 +160,7 @@ const CLAUDE_MD = `@AGENTS.md
 
 # Claude Code adapter
 - Use project skills from .claude/skills/. Harness-managed skills mirror canonical .agents/skills/.
-- The included .mcp.json is an empty project skeleton. Add MCP servers only when this project actually needs them.
+- The included .mcp.json is an empty project skeleton. Preserve and merge an existing project config rather than overwriting it.
 - MCP_추천_목록.md is a recommendation list, not an availability signal.
 - Keep Claude-only behavior here; do not duplicate shared rules.
 `;
@@ -177,16 +170,17 @@ const ANTIGRAVITY_PROJECT_CORE = `# Antigravity project-core bridge
 @../../AGENTS.md
 @../../DESIGN.md
 
-Use AGENTS.md as the shared project contract and DESIGN.md as the visual source of truth for UI work. Canonical project skills live in .agents/skills/.
+Use AGENTS.md as the shared project contract and DESIGN.md as the visual source of truth for UI work after it has been adapted from real project evidence. Canonical project skills live in .agents/skills/.
 
-The included .agents/mcp_config.json is intentionally empty. Connect external MCP servers in the installed workspace only when needed. MCP_추천_목록.md is reference material, not proof that a server is available.
+The included .agents/mcp_config.json is intentionally empty. Preserve and merge an existing workspace config rather than overwriting it. Connect external MCP servers only when needed. MCP_추천_목록.md is reference material, not proof that a server is available.
 
 Keep approval, trust, and execution-permission choices in Antigravity. Configure this workspace rule's activation mode in Antigravity rather than encoding an approval bypass in the project package.
 `;
 
 const CODEX_CONFIG_TOML = `# Codex project configuration skeleton.
 # MCP servers are intentionally not preconfigured.
-# Add project-specific Codex settings only after confirming they are appropriate for this repository.
+# If this repository already has .codex/config.toml, merge intentionally instead of overwriting it.
+# Add project-specific settings only after confirming they are appropriate for this repository.
 # Keep model, sandbox, approval, trust, and credentials client-local unless the project explicitly requires otherwise.
 `;
 
@@ -199,9 +193,11 @@ const HARNESS_README = `# Portable AI Development Harness v2
 
 The goal is shared project knowledge with thin native adapters, not identical client configuration or identical model behavior.
 
+This package is project-neutral. It intentionally does not choose a framework, package manager, test stack, database, deployment platform, visual theme, or MCP server for the user.
+
 Included portable core:
 - AGENTS.md
-- DESIGN.md
+- DESIGN.md neutral starter
 - MCP_추천_목록.md
 - .agents/skills/
 - CLAUDE.md and Harness-managed mirrors under .claude/skills/
@@ -209,13 +205,15 @@ Included portable core:
 - empty client config skeletons for Codex, Claude Code MCP, and Antigravity MCP
 - durable docs/ structure
 
+For an existing repository, review and merge before overwriting AGENTS.md, DESIGN.md, CLAUDE.md, .codex/config.toml, .mcp.json, or .agents/mcp_config.json. Existing project knowledge and working configuration may be more specific than this starter.
+
 MCP servers are intentionally not pre-populated. External connections depend on the user's installed client, account, credentials, trust settings, runtime, and required permissions. MCP_추천_목록.md provides a short reference list and official links only.
 
-The capability-router skill must inspect the tools actually available in the current session. A recommendation or empty config file does not mean an MCP server is connected.
+Use capability-router only for ambiguous or multi-capability work. A task with an obvious dedicated skill should use that skill directly. A recommendation or empty config file never means an MCP server is connected.
 
-The sync helper updates only canonical skill paths inside .claude/skills and preserves unrelated Claude-only skills. It intentionally does not delete stale extra directories automatically; review them manually before removal.
+The sync helper updates canonical skill paths inside .claude/skills and preserves unrelated Claude-only skills. It intentionally does not delete stale extra directories automatically; review them manually before removal.
 
-After editing canonical skills, run:
+After adapting the package, run:
 
 node scripts/sync-ai-harness.mjs
 node scripts/validate-ai-harness.mjs
@@ -232,7 +230,7 @@ const COMPATIBILITY_MD = `# Client compatibility
 | MCP server entries | user-owned | user adds locally | user adds locally | user adds locally |
 | Security approvals | client-local | client-local | client-local | client-local |
 
-The package keeps native file locations visible without pretending that external services are portable project dependencies. MCP server entries, credentials, permissions, and account authorization remain user-owned.
+The package keeps native file locations visible without pretending that external services are portable project dependencies. MCP server entries, credentials, permissions, and account authorization remain user-owned. Existing native configs should be merged, not blindly overwritten.
 `;
 
 const MCP_RECOMMENDATIONS_MD = `# MCP 추천 목록
@@ -247,7 +245,7 @@ const MCP_RECOMMENDATIONS_MD = `# MCP 추천 목록
 - 추천 상황: 웹 UI를 실제 브라우저에서 확인해야 할 때
 - 공식 프로젝트: https://github.com/microsoft/playwright-mcp
 - 실행 예시: npx -y @playwright/mcp@latest
-- 비고: 프로젝트가 브라우저 자동화를 필요로 할 때만 연결하세요.
+- 비고: 웹 프로젝트가 아니거나 브라우저 자동화가 필요하지 않다면 연결할 이유가 없습니다.
 
 ## 2. GitHub MCP Server
 
@@ -267,10 +265,11 @@ const MCP_RECOMMENDATIONS_MD = `# MCP 추천 목록
 ## 사용 원칙
 
 1. MCP는 많을수록 좋은 것이 아닙니다. 현재 프로젝트에 실제로 필요한 것만 연결하세요.
-2. capability-router Skill은 현재 세션에서 실제 사용 가능한 Skill·MCP·내장 도구를 먼저 확인해야 합니다.
+2. 전용 Skill이 명확한 단순 작업은 해당 Skill을 직접 사용하고, capability-router는 여러 capability를 조합하거나 선택이 애매할 때만 사용합니다.
 3. 이 추천 목록에 있다고 해서 연결된 MCP로 간주하지 않습니다.
 4. 계정 인증, 토큰, workspace trust, 승인 정책, 쓰기 권한은 Harness ZIP에 넣지 않습니다.
-5. MCP 제품과 설정 방식은 바뀔 수 있으므로 연결 시점에 공식 문서를 다시 확인하세요.
+5. 기존 MCP config가 있는 프로젝트에 빈 골격을 덮어쓰지 말고 필요한 부분만 병합하세요.
+6. MCP 제품과 설정 방식은 바뀔 수 있으므로 연결 시점에 공식 문서를 다시 확인하세요.
 `;
 
 const SYNC_SCRIPT = `import fs from 'node:fs';
@@ -412,8 +411,8 @@ export const HARNESS_SKILLS: HarnessSkillDefinition[] = [
     'plan-feature',
     'Plan feature',
     'Planning',
-    '코드 수정 전 저장소·요구사항·위험·검증 계획을 확정',
-    'Plans repository changes before implementation and should be used before broad or risky edits.',
+    '넓거나 위험한 변경 전 저장소·요구사항·위험·검증 계획을 확정',
+    'Plans repository changes before implementation and should be used before broad, cross-cutting, ambiguous, or risky edits.',
     `1. Read AGENTS.md and relevant architecture, design, and plan documents.\n2. Inspect the actual files likely to change and find reusable patterns.\n3. Define behavior, edge states, exclusions, rollback, and exact files.\n4. Define verification using commands that really exist.\n5. Stop for approval when the project workflow requires it.\n\nDo not invent architecture, commands, APIs, or completion evidence.`,
     true,
   ),
@@ -421,9 +420,9 @@ export const HARNESS_SKILLS: HarnessSkillDefinition[] = [
     'implement-feature',
     'Implement feature',
     'Implementation',
-    '승인 범위만 최소 변경으로 구현하고 실제 검증 증거를 기록',
-    'Implements an approved feature or content change and should be used for scoped repository edits.',
-    `1. Re-check the branch and relevant files before writing.\n2. Reuse established components, utilities, data shapes, and styles.\n3. Avoid unrelated refactors and unauthorized dependencies.\n4. Run actual applicable build/type/test/lint commands.\n5. For visible changes, verify representative desktop/mobile behavior where tooling permits.\n6. Review the final diff for secrets, generated output, and unrelated files.`,
+    '명확한 범위를 최소 변경으로 구현하고 실제 검증 증거를 기록',
+    'Implements a scoped repository change and should be used when the intended behavior and edit scope are sufficiently clear.',
+    `1. Re-check the branch and relevant files before writing.\n2. Reuse established components, utilities, data shapes, and styles.\n3. Avoid unrelated refactors and unauthorized dependencies.\n4. Run actual applicable build/type/test/lint commands.\n5. For visible changes, verify representative behavior where tooling permits.\n6. Review the final diff for secrets, generated output, and unrelated files.`,
     true,
   ),
   skill(
@@ -431,7 +430,7 @@ export const HARNESS_SKILLS: HarnessSkillDefinition[] = [
     'Debug',
     'Quality',
     '재현→근본 원인→최소 패치→회귀 검증',
-    'Diagnoses reproducible defects and should be used when tracing failures to root cause.',
+    'Diagnoses reproducible defects and should be used when tracing an observed failure to its root cause.',
     `1. Reproduce or precisely characterize the failure.\n2. Trace data/control flow to the earliest incorrect assumption.\n3. Distinguish root cause from symptoms.\n4. Apply the smallest fix that restores the intended invariant.\n5. Run the closest regression checks and report unavailable evidence explicitly.`,
     true,
   ),
@@ -439,52 +438,52 @@ export const HARNESS_SKILLS: HarnessSkillDefinition[] = [
     'code-review',
     'Code review',
     'Quality',
-    '정확성·타입·보안·접근성·회귀·검증을 순서대로 리뷰',
-    'Reviews repository diffs and should be used to assess correctness, safety, maintainability, and evidence gaps.',
-    `Review scope and behavior first, then edge states, destructive/security risk, types, architecture, UI accessibility/responsiveness, dependency/config changes, verification evidence, documentation accuracy, and rollback. Report concrete findings; do not manufacture defects.`,
+    '변경 diff의 정확성·보안·회귀·유지보수성·검증 증거를 리뷰',
+    'Reviews repository diffs and should be used to assess correctness, safety, maintainability, and evidence gaps without changing code by default.',
+    `Review scope and behavior first, then edge states, destructive/security risk, types, architecture, UI accessibility/responsiveness when relevant, dependency/config changes, verification evidence, documentation accuracy, and rollback. Report concrete findings; do not manufacture defects.`,
     true,
   ),
   skill(
     'verify-release',
     'Verify release',
     'Release',
-    '정확한 SHA를 고정해 PR·미리보기·배포를 분리 검증',
-    'Verifies release candidates and should be used before merge or deployment decisions.',
-    `1. Pin the exact head SHA.\n2. Confirm base, changed-file scope, and conflicts.\n3. Run available build/type/test/lint checks against that SHA.\n4. Verify applicable normal, empty, error, mobile, desktop, and accessibility states.\n5. Separate deployment status from browser/runtime verification.\n6. Never treat failed, pending, stale, or unavailable required evidence as passing.`,
+    '정확한 revision을 기준으로 병합·릴리스·배포 전 검증 증거를 확인',
+    'Verifies a release or merge candidate and should be used before decisions that depend on a specific revision being ready.',
+    `1. Pin the exact revision or head SHA when version control is available.\n2. Confirm base, changed-file scope, and conflicts.\n3. Run available build/type/test/lint checks against that revision.\n4. Verify applicable normal, empty, error, responsive, and accessibility states.\n5. Separate deployment status from browser/runtime verification.\n6. Never treat failed, pending, stale, or unavailable required evidence as passing.`,
     true,
   ),
   skill(
     'capability-router',
     'Capability router',
     'Orchestration',
-    '현재 세션의 Skill·MCP·내장 도구를 확인하고 가장 적합한 capability로 작업을 라우팅',
-    'Inspects currently available skills, MCP tools, and built-in capabilities and should be used to choose the smallest suitable toolchain without assuming unavailable integrations.',
-    `1. Read the task and AGENTS.md before choosing a capability.\n2. Inventory what is actually available in the current client/session: project skills, connected MCP tools, and built-in tools.\n3. Prefer a matching project skill for repeatable procedure. Use a specific MCP only when it is actually connected and materially improves the task.\n4. Treat MCP_추천_목록.md as reference only; never infer availability from that file or from an empty config skeleton.\n5. If no suitable MCP is connected, continue with available built-in tools or a safe manual workflow instead of failing or inventing a connection.\n6. Do not install, authenticate, or grant access to an MCP service unless the user explicitly requests it.\n7. For external writes or destructive actions, use the narrowest permission available and respect the client's confirmation/approval boundary.\n8. Re-evaluate the route after a tool failure or when the task changes.`,
+    '여러 Skill·MCP·내장 도구를 조합해야 하거나 선택이 애매한 복합 작업을 라우팅',
+    'Coordinates capabilities when tool or skill choice is ambiguous or multiple capabilities must be combined; do not use it for simple tasks that clearly match one dedicated skill.',
+    `Use this skill only when capability selection is genuinely ambiguous or the task needs coordinated use of multiple skills, connected MCP tools, or built-in tools.\n\n1. Read the task and AGENTS.md.\n2. Inventory only capabilities actually available in the current client/session.\n3. Prefer an obvious dedicated project skill directly when one clearly matches; do not add a routing hop for simple work.\n4. Use a specific MCP only when it is actually connected and materially improves the task.\n5. Treat MCP_추천_목록.md and empty config skeletons as reference only, never as availability signals.\n6. If no suitable MCP is connected, continue with available built-in tools or a safe manual workflow.\n7. Do not install, authenticate, or grant external-service access unless the user explicitly requests it.\n8. For external writes or destructive actions, use the narrowest permission available and respect the client's approval boundary.\n9. Re-evaluate the route after a tool failure or a material change in task scope.`,
     true,
   ),
   skill(
     'browser-qa',
     'Browser QA',
     'UI',
-    '실제 브라우저에서 데스크톱·모바일·키보드·콘솔을 검증',
-    'Verifies rendered UI behavior and should be used for browser, responsive, accessibility, or console checks.',
-    `Open the real preview/local build, exercise the main and relevant empty/error flows, check desktop and mobile widths, use keyboard navigation, and inspect console/network for JavaScript, CSS, asset, and MIME errors. Record the tested URL and SHA.`,
+    '브라우저 기반 UI 작업에서 반응형·키보드·콘솔·주요 흐름을 검증',
+    'Verifies rendered browser UI and should be used only when the project has a browser surface and the task needs responsive, accessibility, interaction, or console checks.',
+    `Open the real preview or deployed test surface, exercise the main and relevant empty/error flows, check representative desktop and mobile widths, use keyboard navigation, and inspect console/network for JavaScript, CSS, asset, and MIME errors. Record the tested URL and revision when available.`,
   ),
   skill(
     'git-pr',
     'Git PR',
     'Release',
-    '한 작업 한 브랜치·PR 원칙과 head SHA 기반 검증',
-    'Prepares focused Git branches and pull requests and should be used for repository review workflows.',
+    'Git 저장소의 브랜치·diff·PR 검토와 revision 기반 검증을 보조',
+    'Prepares focused Git branches and pull requests and should be used only when the project actually uses Git and a PR-based review workflow.',
     `Start from the intended base, keep one coherent task per PR, review the full diff, never force push or bypass checks without explicit authority, record the head SHA, and merge only after explicit user approval and the agreed verification gate.`,
   ),
   skill(
     'security-review',
     'Security review',
     'Security',
-    '비밀정보·권한·파괴적 작업·최소 권한을 검토',
-    'Reviews secrets, permissions, and destructive-operation risk and should be used for security-sensitive changes.',
-    `Identify credentials, PII, privileged APIs, and destructive operations. Keep secrets in approved environment/secret stores, prefer least privilege/read-only access, verify authorization separately from authentication, and do not weaken sandbox, approval, or trust controls for convenience.`,
+    '비밀정보·권한·외부 입력·파괴적 작업·최소 권한을 검토',
+    'Reviews secrets, trust boundaries, permissions, external input, and destructive-operation risk and should be used for security-sensitive changes.',
+    `Identify credentials, PII, privileged APIs, untrusted inputs, and destructive operations. Keep secrets in approved environment or secret stores, prefer least privilege/read-only access, verify authorization separately from authentication, and do not weaken sandbox, approval, or trust controls for convenience.`,
   ),
 ];
 
@@ -492,10 +491,10 @@ export const HARNESS_MCP_GUIDES: HarnessMcpGuide[] = [
   {
     id: 'playwright',
     name: 'Playwright MCP',
-    description: '실제 브라우저 조작과 UI 검증이 필요한 웹 프로젝트용.',
+    description: '브라우저 조작과 실제 웹 UI 검증이 필요한 프로젝트용.',
     officialUrl: 'https://github.com/microsoft/playwright-mcp',
     commandExample: 'npx -y @playwright/mcp@latest',
-    note: '브라우저 자동화가 실제로 필요할 때 사용자가 각 클라이언트에 직접 연결.',
+    note: '브라우저 자동화가 실제로 필요한 프로젝트에서만 사용자가 직접 연결.',
   },
   {
     id: 'github',
@@ -530,25 +529,25 @@ function assertUniquePaths(files: GeneratedHarnessFile[]): void {
 export function buildHarnessFiles(selectedSkillIds: string[]): GeneratedHarnessFile[] {
   const skills = HARNESS_SKILLS.filter((item) => selectedSkillIds.includes(item.id));
   const files: GeneratedHarnessFile[] = [
-    { path: 'AGENTS.md', role: 'canonical', consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'], description: '공통 프로젝트 계약과 source-of-truth 지도', content: SHARED_AGENTS_MD },
-    { path: 'DESIGN.md', role: 'canonical', consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'], description: 'Google alpha 형식 기반 공통 디자인 시스템 원본', content: DESIGN_MD_TEMPLATE },
+    { path: 'AGENTS.md', role: 'canonical', consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'], description: '스택을 가정하지 않는 공통 프로젝트 계약과 source-of-truth 지도', content: SHARED_AGENTS_MD },
+    { path: 'DESIGN.md', role: 'canonical', consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'], description: '특정 테마를 강요하지 않는 중립 디자인 계약 starter', content: DESIGN_MD_TEMPLATE },
     { path: 'MCP_추천_목록.md', role: 'documentation', consumers: ['Human', 'AI clients'], description: '자동 연결 없이 MCP 용도와 공식 링크만 제공하는 한글 추천 문서', content: MCP_RECOMMENDATIONS_MD },
     { path: 'CLAUDE.md', role: 'adapter', consumers: ['Claude Code'], description: 'AGENTS.md를 import하는 Claude Code 어댑터', content: CLAUDE_MD },
     { path: '.codex/config.toml', role: 'adapter', consumers: ['Codex'], description: 'MCP를 선설정하지 않은 Codex project config 골격', content: CODEX_CONFIG_TOML },
     { path: '.mcp.json', role: 'adapter', consumers: ['Claude Code'], description: '서버가 비어 있는 Claude Code project MCP 골격', content: EMPTY_MCP_JSON },
     { path: '.agents/rules/project-core.md', role: 'adapter', consumers: ['Antigravity'], description: 'AGENTS.md와 DESIGN.md를 연결하는 Antigravity workspace rule', content: ANTIGRAVITY_PROJECT_CORE },
     { path: '.agents/mcp_config.json', role: 'adapter', consumers: ['Antigravity'], description: '서버가 비어 있는 Antigravity workspace MCP 골격', content: EMPTY_MCP_JSON },
-    { path: 'docs/architecture/overview.md', role: 'documentation', consumers: ['All'], description: '실제 저장소 아키텍처 기록 위치', content: '# Architecture\n\nRecord the current system architecture after inspecting the real repository. Keep this descriptive, not aspirational.\n' },
-    { path: 'docs/design/README.md', role: 'documentation', consumers: ['All'], description: 'DESIGN.md를 중복하지 않는 구현 상세 문서 위치', content: '# Design implementation notes\n\nDESIGN.md is the canonical design contract. Store component behavior, responsive exceptions, accessibility notes, and implementation details here without copying token values into a second source of truth.\n' },
-    { path: 'docs/plans/README.md', role: 'documentation', consumers: ['All'], description: '승인된 구현 계획 보관 위치', content: '# Plans\n\nStore approved implementation plans here with scope, risks, validation, and rollback.\n' },
+    { path: 'docs/architecture/overview.md', role: 'documentation', consumers: ['All'], description: '실제 저장소 아키텍처 기록 위치', content: '# Architecture\n\nRecord the current system architecture after inspecting the real repository. Keep this descriptive, evidence-based, and distinct from future plans.\n' },
+    { path: 'docs/design/README.md', role: 'documentation', consumers: ['All'], description: 'DESIGN.md를 중복하지 않는 구현 상세 문서 위치', content: '# Design implementation notes\n\nDESIGN.md is the canonical design contract after project-specific adaptation. Store component behavior, responsive exceptions, accessibility notes, and implementation details here without copying canonical values into a second source of truth.\n' },
+    { path: 'docs/plans/README.md', role: 'documentation', consumers: ['All'], description: '승인된 구현 계획 보관 위치', content: '# Plans\n\nStore approved implementation plans here with scope, assumptions, risks, validation, and rollback. Do not treat proposals as current architecture.\n' },
     { path: 'docs/decisions/README.md', role: 'documentation', consumers: ['All'], description: '기술 의사결정 보관 위치', content: '# Decisions\n\nStore durable architecture decisions with context, alternatives, consequences, and date.\n' },
-    { path: 'docs/tasks/README.md', role: 'documentation', consumers: ['All'], description: '세션 간 작업 상태와 handoff', content: '# Tasks and handoff\n\nRecord durable task status, verified evidence, remaining work, and blockers.\n' },
+    { path: 'docs/tasks/README.md', role: 'documentation', consumers: ['All'], description: '세션 간 작업 상태와 handoff', content: '# Tasks and handoff\n\nRecord durable task status, verified evidence, remaining work, blockers, and exact revision when useful.\n' },
     { path: 'docs/reference/README.md', role: 'documentation', consumers: ['All'], description: '프로젝트 근거·정책·도메인 자료 보관 위치', content: '# Reference\n\nStore durable project references, external source notes, policies, and domain constraints here. Re-check time-sensitive sources before relying on them.\n' },
-    { path: 'docs/ai-harness/README.md', role: 'documentation', consumers: ['All'], description: '하네스 사용법과 보안 경계', content: HARNESS_README },
+    { path: 'docs/ai-harness/README.md', role: 'documentation', consumers: ['All'], description: '범용 하네스 사용법과 보안·병합 경계', content: HARNESS_README },
     { path: 'docs/ai-harness/compatibility.md', role: 'documentation', consumers: ['All'], description: '세 도구 호환성 표', content: COMPATIBILITY_MD },
     { path: 'scripts/sync-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'canonical skill을 Claude native path로 안전하게 동기화', content: SYNC_SCRIPT },
     { path: 'scripts/validate-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'skill mirror와 빈 MCP config 골격을 검증', content: VALIDATE_SCRIPT },
-    { path: 'README.ai-harness.md', role: 'documentation', consumers: ['Human'], description: '다운로드 패키지 적용 순서', content: '# AI Harness v2 setup\n\n1. Review before overwriting an existing project.\n2. Fill AGENTS.md with real commands and boundaries.\n3. Replace DESIGN.md sample tokens with the project design system.\n4. Review MCP_추천_목록.md and connect only the external tools the project actually needs. Empty config skeletons do not mean an MCP is installed.\n5. Run node scripts/sync-ai-harness.mjs and node scripts/validate-ai-harness.mjs. The sync helper preserves unrelated Claude-only skill directories.\n6. Review each client\'s trust, approval, sandbox, MCP credentials, and external write permissions locally.\n' },
+    { path: 'README.ai-harness.md', role: 'documentation', consumers: ['Human'], description: '다운로드 패키지를 새/기존 프로젝트에 적용하는 순서', content: '# AI Harness v2 setup\n\n1. New project: inspect the repository and adapt AGENTS.md before treating it as project-specific truth. Existing project: merge useful sections; do not blindly overwrite established instructions.\n2. Record only real commands, protected paths, generated outputs, deployment boundaries, and domain invariants in AGENTS.md.\n3. DESIGN.md is intentionally neutral. Populate it only from verified project/design evidence; do not adopt imaginary starter colors or fonts.\n4. Review MCP_추천_목록.md and connect only external tools the project actually needs. Empty config skeletons do not mean an MCP is installed. Preserve and merge existing native config files.\n5. Keep only skills that help the project. Dedicated skills should be selected directly; capability-router is for ambiguous or multi-capability work.\n6. Run node scripts/sync-ai-harness.mjs and node scripts/validate-ai-harness.mjs. The sync helper preserves unrelated Claude-only skill directories.\n7. Review each client\'s trust, approval, sandbox, MCP credentials, and external write permissions locally.\n' },
   ];
 
   skills.forEach((item) => {
