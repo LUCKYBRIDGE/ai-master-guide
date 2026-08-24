@@ -165,7 +165,7 @@ Examples:
 
 ## Core Skills vs optional Skills
 
-The generated contract directly refers to the following Core Skills, so the website keeps them included as structural parts of Harness v2:
+The generated contract directly refers to the following Core Skills, so the website keeps them included as structural parts of Harness v2 rather than presenting them as removable options:
 - `plan-feature`
 - `continue-work`
 - `implement-feature`
@@ -180,7 +180,7 @@ Optional project-specific Skills remain selectable:
 - `security-review`
 - `fresh-context-review`
 
-This avoids generating an `AGENTS.md`/behavior-eval contract that references a Skill the same package omitted.
+This avoids generating an `AGENTS.md`/behavior-eval contract that references a Skill the same package omitted. In the current generator, `defaultSelected` denotes this locked Core set; optional Skills are not selected by default and remain toggleable.
 
 ## Durable session-independent state
 
