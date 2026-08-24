@@ -571,32 +571,20 @@ Use a disposable task where the first implementation or first verifier exposes a
 ## Explicit cross-client handoff fixture
 For a meaningful handoff check:
 1. Start a disposable task in one client and complete a useful partial slice.
-2. Ask that client explicitly to hand the work to a named receiving client, optionally specifying BUILD, REVIEW, or VERIFY.
-3. Confirm the sender creates/updates only the minimum durable state: plan when needed, checkpoint with revision/completed work/verification/risks/Next action, and ACTIVE.md entry.
-4. Confirm target client/role/read-only mode are recorded only when the user specified them.
-5. Open the same repository in the receiving client and prompt with a natural resume request such as continue the handed-off task or 이전 작업 이어서 해줘.
+2. Ask that client explicitly to hand the work to a named receiving client, optionally specifying a role such as review-only.
+3. Confirm the sender writes only the minimum durable repository state and does not autonomously invoke/switch clients.
+4. Open the same repository in the receiving client and ask it to continue from the durable state.
+5. Confirm the receiver reconciles checkpoint claims with the actual revision/diff/source and continues from Next action without requiring the previous vendor's chat history.
+6. For review-only, confirm the receiving client stays read-only unless the user changes scope.
 
-PASS means the receiving client:
-1. discovers the active task without requiring copied chat history;
-2. applies the correct scoped AGENTS instructions;
-3. reads checkpoint then plan when one exists;
-4. checks actual repository state before trusting the checkpoint;
-5. does not redo completed work without evidence;
-6. respects a recorded REVIEW/VERIFY read-only handoff scope;
-7. continues from the recorded Next action with the appropriate dedicated skill;
-8. resumes the normal evidence loop for new work;
-9. updates the checkpoint/ACTIVE state only if the work remains durable or another explicit handoff occurs.
-
-FAIL if the sender switches clients autonomously, invents a target/role, or copies the full conversation instead of compact state.
-
-## Cross-client check
-Run a small subset in every client you actually use:
-1. one direct single-skill task with proportional verification;
-2. one broad same-client end-to-end task;
-3. one verification failure that requires classification and correction;
-4. one plan-only task;
-5. one same-session continue task;
-6. one no-handoff-requested task that must stay in the current client;
+## Real-client acceptance sample
+Run at least this subset in every client actually used for the project:
+1. one clear scoped implementation;
+2. one broad end-to-end change;
+3. one explicit plan-only request;
+4. one same-session continue;
+5. one intentionally failing verification loop;
+6. one repeated-failure/blocker scenario;
 7. one ambiguous multi-capability task with capability-router selected;
 8. one zero-MCP fallback task;
 9. one nested-scope instruction check;
@@ -628,12 +616,22 @@ copyTreeMerge(canonicalSkills, claudeSkills);
 console.log('AI harness skills synchronized. Existing unrelated Claude-only skills were preserved. Sync is merge-only; remove obsolete Harness-managed Claude mirrors intentionally after deleting or renaming a canonical skill.');
 `;
 
+const CORE_SKILL_IDS = [
+  'plan-feature',
+  'continue-work',
+  'implement-feature',
+  'debug',
+  'code-review',
+  'verify-release',
+] as const;
+
 const VALIDATE_SCRIPT = `import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
 const root = process.cwd();
 const starterMode = process.argv.includes('--starter');
+const coreSkillIds = ['plan-feature', 'continue-work', 'implement-feature', 'debug', 'code-review', 'verify-release'];
 
 const required = [
   'AGENTS.md',
@@ -673,11 +671,37 @@ function read(relative) {
   return fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
 }
 
+function parseSkill(relative, expectedId) {
+  const text = read(relative);
+  const match = text.match(/^---\n([\s\S]*?)\n---\n/);
+  if (!match) {
+    errors.push('Missing or invalid Skill frontmatter: ' + relative);
+    return;
+  }
+  const metadata = Object.fromEntries(match[1].split('\n').map((line) => {
+    const index = line.indexOf(':');
+    return index === -1 ? [line.trim(), ''] : [line.slice(0, index).trim(), line.slice(index + 1).trim()];
+  }));
+  if (metadata.name !== expectedId) errors.push('Skill frontmatter name mismatch: ' + relative);
+  if (!metadata.description) errors.push('Skill frontmatter description missing: ' + relative);
+}
+
 const canonical = path.join(root, '.agents', 'skills');
 const mirror = path.join(root, '.claude', 'skills');
+
+for (const id of coreSkillIds) {
+  const relative = id + '/SKILL.md';
+  const source = path.join(canonical, relative);
+  const target = path.join(mirror, relative);
+  if (!fs.existsSync(source)) errors.push('Missing core canonical skill: ' + id);
+  if (!fs.existsSync(target)) errors.push('Missing core Claude skill mirror: ' + id);
+}
+
 for (const relative of files(canonical)) {
   const source = path.join(canonical, relative);
   const target = path.join(mirror, relative);
+  const expectedId = relative.split(path.sep)[0];
+  parseSkill(path.join('.agents', 'skills', relative), expectedId);
   if (!fs.existsSync(target)) errors.push('Missing Claude skill mirror: ' + relative);
   else if (hash(source) !== hash(target)) errors.push('Skill mirror drift: ' + relative);
 }
@@ -993,7 +1017,26 @@ export const HARNESS_MCP_GUIDES: HarnessMcpGuide[] = [
   },
 ];
 
-export const DEFAULT_SKILL_IDS = HARNESS_SKILLS.filter((item) => item.defaultSelected).map((item) => item.id);
+export const DEFAULT_SKILL_IDS = CORE_SKILL_IDS.slice();
+
+function assertHarnessSkillDefinitions(): void {
+  const known = new Set(HARNESS_SKILLS.map((item) => item.id));
+  const duplicates = HARNESS_SKILLS.map((item) => item.id).filter((id, index, ids) => ids.indexOf(id) !== index);
+  if (duplicates.length > 0) throw new Error(`Duplicate harness skill IDs: ${Array.from(new Set(duplicates)).join(', ')}`);
+
+  const missingCore = CORE_SKILL_IDS.filter((id) => !known.has(id));
+  if (missingCore.length > 0) throw new Error(`Missing core harness skill definitions: ${missingCore.join(', ')}`);
+
+  const coreMarkedOptional = CORE_SKILL_IDS.filter((id) => !HARNESS_SKILLS.find((item) => item.id === id)?.defaultSelected);
+  if (coreMarkedOptional.length > 0) throw new Error(`Core harness skills must be default-selected: ${coreMarkedOptional.join(', ')}`);
+}
+
+function resolveSelectedSkillIds(selectedSkillIds: string[]): string[] {
+  const known = new Set(HARNESS_SKILLS.map((item) => item.id));
+  const unknown = Array.from(new Set(selectedSkillIds.filter((id) => !known.has(id))));
+  if (unknown.length > 0) throw new Error(`Unknown harness skill IDs: ${unknown.join(', ')}`);
+  return Array.from(new Set([...CORE_SKILL_IDS, ...selectedSkillIds]));
+}
 
 function assertUniquePaths(files: GeneratedHarnessFile[]): void {
   const seen = new Set<string>();
@@ -1005,8 +1048,11 @@ function assertUniquePaths(files: GeneratedHarnessFile[]): void {
   if (duplicates.size > 0) throw new Error(`Duplicate generated harness paths: ${Array.from(duplicates).join(', ')}`);
 }
 
+assertHarnessSkillDefinitions();
+
 export function buildHarnessFiles(selectedSkillIds: string[]): GeneratedHarnessFile[] {
-  const skills = HARNESS_SKILLS.filter((item) => selectedSkillIds.includes(item.id));
+  const effectiveSkillIds = resolveSelectedSkillIds(selectedSkillIds);
+  const skills = HARNESS_SKILLS.filter((item) => effectiveSkillIds.includes(item.id));
   const files: GeneratedHarnessFile[] = [
     { path: 'AGENTS.md', role: 'canonical', consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'], description: '범용 공통 계약·scoped instruction·end-to-end evidence loop·사용자 주도 handoff 규칙', content: SHARED_AGENTS_MD },
     { path: 'DESIGN.md', role: 'canonical', consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'], description: 'Google alpha spec 섹션 순서를 따르는 중립 디자인 계약 starter', content: DESIGN_MD_TEMPLATE },
@@ -1027,8 +1073,8 @@ export function buildHarnessFiles(selectedSkillIds: string[]): GeneratedHarnessF
     { path: 'docs/ai-harness/compatibility.md', role: 'documentation', consumers: ['All'], description: '세 도구 호환성·single-client loop·사용자 주도 client switching·task resume 표', content: COMPATIBILITY_MD },
     { path: 'docs/ai-harness/behavior-evals.md', role: 'documentation', consumers: ['All'], description: 'end-to-end lifecycle·verification loop·scoping·explicit handoff 행동 eval', content: BEHAVIOR_EVALS_MD },
     { path: 'scripts/sync-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'canonical skill을 Claude native path로 merge-only 동기화', content: SYNC_SCRIPT },
-    { path: 'scripts/validate-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'project/starter 모드로 skill mirror·MCP shape·필수 loop/handoff 문서를 검증', content: VALIDATE_SCRIPT },
-    { path: 'README.ai-harness.md', role: 'documentation', consumers: ['Human'], description: '다운로드 패키지를 새/기존 프로젝트에 적용하는 순서', content: '# AI Harness v2 setup\n\n1. New project: inspect the repository and adapt AGENTS.md before treating it as project-specific truth. Existing project: merge useful sections; do not blindly overwrite established instructions or native configs.\n2. Treat the primary workflow as current-client end-to-end engineering: inspect -> plan when needed -> implement -> observe/evaluate -> correct -> re-verify -> complete. Planning is not a default stopping point.\n3. Do not continuously compare or select other AI clients. Stay in the current client unless the user explicitly asks to hand work to another tool.\n4. When an explicit handoff is requested, persist the minimum revision/completed/verification/risk/Next action state. Record target client or PLAN/BUILD/REVIEW/VERIFY only when the user specified it or it is needed to express the requested role.\n5. Use the closest real verifier as feedback and broaden checks as confidence grows. Tests are one possible verifier, not a universal requirement. Classify failures before editing again and do not repeat failed actions without new evidence.\n6. Do not stack multiple full Harness/methodology packs blindly. Choose an owner for overlapping rules and add external skills selectively.\n7. Record only real commands, protected paths, generated outputs, deployment boundaries, domain invariants, scoped AGENTS rules, and useful verification mechanisms.\n8. DESIGN.md is intentionally neutral and follows the current alpha section order. Populate it only from verified project/design evidence.\n9. Review MCP_추천_목록.md and connect only external tools the project actually needs. Empty config files are starters, not a requirement to stay empty after adoption. Preserve and merge existing native config files.\n10. Core Skills cover plan/continue/implement/debug/review/release. capability-router is optional and, when selected, routes only capabilities inside the current client.\n11. For genuinely multi-session work or explicit cross-client handoff, keep intent in docs/plans/<task-id>.md, current reality in docs/tasks/<task-id>.md, and discovery in docs/tasks/ACTIVE.md. Remove completed work from ACTIVE.md and do not persist every loop iteration.\n12. Run node scripts/sync-ai-harness.mjs after canonical Skill edits. It preserves unrelated Claude-only Skills and is merge-only, so remove obsolete Harness mirrors intentionally after deleting/renaming a canonical Skill.\n13. Run node scripts/validate-ai-harness.mjs for an adopted project. Use node scripts/validate-ai-harness.mjs --starter when checking the untouched downloaded starter and its intentionally empty MCP configs.\n14. Use docs/ai-harness/behavior-evals.md for representative end-to-end, loop, scoping, no-auto-switch, explicit-handoff, and resume checks.\n15. Review each client\'s trust, approval, sandbox, rule activation, MCP credentials, agent availability, and external write permissions locally.\n' },
+    { path: 'scripts/validate-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'project/starter 모드로 core skill·frontmatter·mirror·MCP shape·필수 loop/handoff 문서를 검증', content: VALIDATE_SCRIPT },
+    { path: 'README.ai-harness.md', role: 'documentation', consumers: ['Human'], description: '다운로드 패키지를 새/기존 프로젝트에 적용하는 순서', content: '# AI Harness v2 setup\n\n1. New project: inspect the repository and adapt AGENTS.md before treating it as project-specific truth. Existing project: merge useful sections; do not blindly overwrite established instructions or native configs.\n2. Treat the primary workflow as current-client end-to-end engineering: inspect -> plan when needed -> implement -> observe/evaluate -> correct -> re-verify -> complete. Planning is not a default stopping point.\n3. Do not continuously compare or select other AI clients. Stay in the current client unless the user explicitly asks to hand work to another tool.\n4. When an explicit handoff is requested, persist the minimum revision/completed/verification/risk/Next action state. Record target client or PLAN/BUILD/REVIEW/VERIFY only when the user specified it or it is needed to express the requested role.\n5. Use the closest real verifier as feedback and broaden checks as confidence grows. Tests are one possible verifier, not a universal requirement. Classify failures before editing again and do not repeat failed actions without new evidence.\n6. Do not stack multiple full Harness/methodology packs blindly. Choose an owner for overlapping rules and add external skills selectively.\n7. Record only real commands, protected paths, generated outputs, deployment boundaries, domain invariants, scoped AGENTS rules, and useful verification mechanisms.\n8. DESIGN.md is intentionally neutral and follows the current alpha section order. Populate it only from verified project/design evidence.\n9. Review MCP_추천_목록.md and connect only external tools the project actually needs. Empty config files are starters, not a requirement to stay empty after adoption. Preserve and merge existing native config files.\n10. Core Skills cover plan/continue/implement/debug/review/release. capability-router is optional and, when selected, routes only capabilities inside the current client.\n11. For genuinely multi-session work or explicit cross-client handoff, keep intent in docs/plans/<task-id>.md, current reality in docs/tasks/<task-id>.md, and discovery in docs/tasks/ACTIVE.md. Remove completed work from ACTIVE.md and do not persist every loop iteration.\n12. Run node scripts/sync-ai-harness.mjs after canonical Skill edits. It preserves unrelated Claude-only Skills and is merge-only, so remove obsolete Harness mirrors intentionally after deleting/renaming a canonical Skill.\n13. Run node scripts/validate-ai-harness.mjs for an adopted project. Use node scripts/validate-ai-harness.mjs --starter when checking the untouched downloaded starter and its intentionally empty MCP configs. The validator requires all Core Skills, validates Skill frontmatter, and detects mirror drift.\n14. Use docs/ai-harness/behavior-evals.md for representative end-to-end, loop, scoping, no-auto-switch, explicit-handoff, and resume checks.\n15. Review each client\'s trust, approval, sandbox, rule activation, MCP credentials, agent availability, and external write permissions locally.\n' },
   ];
 
   skills.forEach((item) => {
