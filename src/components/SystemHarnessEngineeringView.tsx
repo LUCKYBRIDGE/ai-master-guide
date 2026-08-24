@@ -74,6 +74,10 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
     };
   }, [generatedFiles]);
 
+  const coreSkillCount = DEFAULT_SKILL_IDS.length;
+  const optionalSelectedCount = selectedSkillIds.filter((id) => !DEFAULT_SKILL_IDS.includes(id)).length;
+  const optionalSkillCount = HARNESS_SKILLS.length - coreSkillCount;
+
   const toggleSkill = (id: string) => {
     const skill = HARNESS_SKILLS.find((item) => item.id === id);
     if (skill?.defaultSelected) return;
@@ -184,7 +188,7 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
 
       <section className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6 shadow-xl">
-          <div className="flex items-center justify-between gap-3 mb-4"><div><div className="flex items-center gap-2"><Workflow className="h-5 w-5 text-purple-300" /><h3 className="font-bold text-white">공통 Skills</h3></div><p className="mt-1 text-xs text-slate-400">Harness 계약이 직접 참조하는 Core Skill은 항상 포함하고, 프로젝트 특화 Skill만 선택적으로 추가합니다. .agents/skills가 canonical source이고 Claude 경로에는 같은 내용을 생성합니다.</p></div><span className="rounded-lg bg-purple-500/10 px-2 py-1 text-xs font-bold text-purple-300">{selectedSkillIds.length}/{HARNESS_SKILLS.length}</span></div>
+          <div className="flex items-center justify-between gap-3 mb-4"><div><div className="flex items-center gap-2"><Workflow className="h-5 w-5 text-purple-300" /><h3 className="font-bold text-white">공통 Skills</h3></div><p className="mt-1 text-xs text-slate-400">Harness 계약이 직접 참조하는 Core Skill은 항상 포함하고, 프로젝트 특화 Skill만 선택적으로 추가합니다. .agents/skills가 canonical source이고 Claude 경로에는 같은 내용을 생성합니다.</p></div><span className="rounded-lg bg-purple-500/10 px-2 py-1 text-xs font-bold text-purple-300">Core {coreSkillCount} · 선택 {optionalSelectedCount}/{optionalSkillCount}</span></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {HARNESS_SKILLS.map((skill) => {
               const selected = selectedSkillIds.includes(skill.id);
