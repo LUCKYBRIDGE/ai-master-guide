@@ -503,7 +503,7 @@ const MCP_RECOMMENDATIONS_MD = `# MCP 추천 목록
 - 추천 상황: 버전 변화가 잦은 API, 설정, 마이그레이션, 라이브러리 문법을 확인할 때
 - 공식 프로젝트: https://github.com/upstash/context7
 - 프로젝트 사이트: https://context7.com
-- 비고: 최신 외부 문서 확인이 필요한 작업에 적합합니다.
+- 비고: 최신 외부 문서가 중요한 API·설정·마이그레이션 작업에 적합합니다.
 
 ## 사용 원칙
 1. MCP는 많을수록 좋은 것이 아닙니다. 현재 프로젝트에 실제로 필요한 것만 연결하세요.
@@ -673,12 +673,20 @@ function read(relative) {
 
 function parseSkill(relative, expectedId) {
   const text = read(relative);
-  const match = text.match(/^---\n([\s\S]*?)\n---\n/);
-  if (!match) {
+  const newline = String.fromCharCode(10);
+  const prefix = '---' + newline;
+  const delimiter = newline + '---' + newline;
+  if (!text.startsWith(prefix)) {
     errors.push('Missing or invalid Skill frontmatter: ' + relative);
     return;
   }
-  const metadata = Object.fromEntries(match[1].split('\n').map((line) => {
+  const end = text.indexOf(delimiter, prefix.length);
+  if (end === -1) {
+    errors.push('Missing or invalid Skill frontmatter: ' + relative);
+    return;
+  }
+  const frontmatter = text.slice(prefix.length, end);
+  const metadata = Object.fromEntries(frontmatter.split(newline).map((line) => {
     const index = line.indexOf(':');
     return index === -1 ? [line.trim(), ''] : [line.slice(0, index).trim(), line.slice(index + 1).trim()];
   }));
