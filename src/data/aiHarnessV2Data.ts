@@ -429,6 +429,10 @@ For a new repository, adapt the starter from real repository evidence before tre
 
 For an existing repository, review and merge before overwriting AGENTS.md, DESIGN.md, CLAUDE.md, .codex/config.toml, .mcp.json, or .agents/mcp_config.json. Existing project knowledge and working configuration may be more specific than this starter.
 
+Before copying the starter into an existing repository, run the read-only adoption audit from the extracted Harness directory:
+`node scripts/audit-ai-harness-adoption.mjs /path/to/existing-project`
+It reports only path status (`missing`, `identical`, `different`, `type-conflict`) and never writes to the target.
+
 Do not layer multiple full Harness or methodology packs into the same client/project without reconciling overlapping rules, skills, hooks, and configs.
 
 The Antigravity project-core note is optional because AGENTS.md is the portable contract. Whether a file under .agents/rules is Manual, Always On, Model Decision, or Glob-activated is a client/workspace choice.
@@ -614,6 +618,103 @@ function copyTreeMerge(source, target) {
 
 copyTreeMerge(canonicalSkills, claudeSkills);
 console.log('AI harness skills synchronized. Existing unrelated Claude-only skills were preserved. Sync is merge-only; remove obsolete Harness-managed Claude mirrors intentionally after deleting or renaming a canonical skill.');
+`;
+
+const ADOPTION_AUDIT_SCRIPT = `import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const bundleRoot = path.resolve(scriptDir, '..');
+const targetArg = process.argv[2];
+const jsonMode = process.argv.includes('--json');
+
+if (!targetArg) {
+  console.error('Usage: node scripts/audit-ai-harness-adoption.mjs /path/to/existing-project [--json]');
+  process.exit(1);
+}
+
+const targetRoot = path.resolve(targetArg);
+if (!fs.existsSync(targetRoot) || !fs.statSync(targetRoot).isDirectory()) {
+  console.error('Target project directory does not exist or is not a directory: ' + targetRoot);
+  process.exit(1);
+}
+if (targetRoot === bundleRoot) {
+  console.error('Target project must be different from the extracted Harness directory.');
+  process.exit(1);
+}
+
+const fixedFiles = [
+  'AGENTS.md',
+  'CLAUDE.md',
+  'DESIGN.md',
+  'MCP_추천_목록.md',
+  'README.ai-harness.md',
+  '.codex/config.toml',
+  '.mcp.json',
+  '.agents/mcp_config.json',
+  '.agents/rules/project-core.md',
+  'docs/architecture/overview.md',
+  'docs/design/README.md',
+  'docs/plans/README.md',
+  'docs/decisions/README.md',
+  'docs/tasks/ACTIVE.md',
+  'docs/tasks/README.md',
+  'docs/reference/README.md',
+  'docs/ai-harness/README.md',
+  'docs/ai-harness/compatibility.md',
+  'docs/ai-harness/behavior-evals.md',
+  'scripts/sync-ai-harness.mjs',
+  'scripts/validate-ai-harness.mjs',
+  'scripts/audit-ai-harness-adoption.mjs',
+];
+
+function walkFiles(relativeDir) {
+  const root = path.join(bundleRoot, relativeDir);
+  if (!fs.existsSync(root)) return [];
+  const out = [];
+  const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).forEach((entry) => {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walk(full);
+    else out.push(path.relative(bundleRoot, full));
+  });
+  walk(root);
+  return out;
+}
+
+function digest(file) {
+  return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+}
+
+const candidates = Array.from(new Set([
+  ...fixedFiles,
+  ...walkFiles(path.join('.agents', 'skills')),
+  ...walkFiles(path.join('.claude', 'skills')),
+])).sort();
+
+const results = candidates.map((relative) => {
+  const source = path.join(bundleRoot, relative);
+  const target = path.join(targetRoot, relative);
+  if (!fs.existsSync(source) || !fs.statSync(source).isFile()) return { path: relative, status: 'source-missing' };
+  if (!fs.existsSync(target)) return { path: relative, status: 'missing' };
+  if (!fs.statSync(target).isFile()) return { path: relative, status: 'type-conflict' };
+  return { path: relative, status: digest(source) === digest(target) ? 'identical' : 'different' };
+});
+
+const counts = results.reduce((acc, item) => {
+  acc[item.status] = (acc[item.status] || 0) + 1;
+  return acc;
+}, {});
+
+if (jsonMode) {
+  console.log(JSON.stringify({ bundleRoot, targetRoot, readOnly: true, counts, results }, null, 2));
+} else {
+  for (const item of results) console.log('[' + item.status + '] ' + item.path);
+  console.log('');
+  console.log('Summary: ' + Object.entries(counts).map(([status, count]) => status + '=' + count).join(', '));
+  console.log('Read-only audit complete. No target files were modified.');
+}
 `;
 
 const CORE_SKILL_IDS = [
@@ -1082,7 +1183,8 @@ export function buildHarnessFiles(selectedSkillIds: string[]): GeneratedHarnessF
     { path: 'docs/ai-harness/behavior-evals.md', role: 'documentation', consumers: ['All'], description: 'end-to-end lifecycle·verification loop·scoping·explicit handoff 행동 eval', content: BEHAVIOR_EVALS_MD },
     { path: 'scripts/sync-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'canonical skill을 Claude native path로 merge-only 동기화', content: SYNC_SCRIPT },
     { path: 'scripts/validate-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'project/starter 모드로 core skill·frontmatter·mirror·MCP shape·필수 loop/handoff 문서를 검증', content: VALIDATE_SCRIPT },
-    { path: 'README.ai-harness.md', role: 'documentation', consumers: ['Human'], description: '다운로드 패키지를 새/기존 프로젝트에 적용하는 순서', content: '# AI Harness v2 setup\n\n1. New project: inspect the repository and adapt AGENTS.md before treating it as project-specific truth. Existing project: merge useful sections; do not blindly overwrite established instructions or native configs.\n2. Treat the primary workflow as current-client end-to-end engineering: inspect -> plan when needed -> implement -> observe/evaluate -> correct -> re-verify -> complete. Planning is not a default stopping point.\n3. Do not continuously compare or select other AI clients. Stay in the current client unless the user explicitly asks to hand work to another tool.\n4. When an explicit handoff is requested, persist the minimum revision/completed/verification/risk/Next action state. Record target client or PLAN/BUILD/REVIEW/VERIFY only when the user specified it or it is needed to express the requested role.\n5. Use the closest real verifier as feedback and broaden checks as confidence grows. Tests are one possible verifier, not a universal requirement. Classify failures before editing again and do not repeat failed actions without new evidence.\n6. Do not stack multiple full Harness/methodology packs blindly. Choose an owner for overlapping rules and add external skills selectively.\n7. Record only real commands, protected paths, generated outputs, deployment boundaries, domain invariants, scoped AGENTS rules, and useful verification mechanisms.\n8. DESIGN.md is intentionally neutral and follows the current alpha section order. Populate it only from verified project/design evidence.\n9. Review MCP_추천_목록.md and connect only external tools the project actually needs. Empty config files are starters, not a requirement to stay empty after adoption. Preserve and merge existing native config files.\n10. Core Skills cover plan/continue/implement/debug/review/release. capability-router is optional and, when selected, routes only capabilities inside the current client.\n11. For genuinely multi-session work or explicit cross-client handoff, keep intent in docs/plans/<task-id>.md, current reality in docs/tasks/<task-id>.md, and discovery in docs/tasks/ACTIVE.md. Remove completed work from ACTIVE.md and do not persist every loop iteration.\n12. Run node scripts/sync-ai-harness.mjs after canonical Skill edits. It preserves unrelated Claude-only Skills and is merge-only, so remove obsolete Harness mirrors intentionally after deleting/renaming a canonical Skill.\n13. Run node scripts/validate-ai-harness.mjs for an adopted project. Use node scripts/validate-ai-harness.mjs --starter when checking the untouched downloaded starter and its intentionally empty MCP configs. The validator requires all Core Skills, validates Skill frontmatter, and detects mirror drift.\n14. Use docs/ai-harness/behavior-evals.md for representative end-to-end, loop, scoping, no-auto-switch, explicit-handoff, and resume checks.\n15. Review each client\'s trust, approval, sandbox, rule activation, MCP credentials, agent availability, and external write permissions locally.\n' },
+    { path: 'scripts/audit-ai-harness-adoption.mjs', role: 'helper', consumers: ['Node.js', 'Human'], description: '기존 프로젝트와 Harness starter 충돌을 내용 노출 없이 read-only로 분류', content: ADOPTION_AUDIT_SCRIPT },
+    { path: 'README.ai-harness.md', role: 'documentation', consumers: ['Human'], description: '다운로드 패키지를 새/기존 프로젝트에 적용하는 순서', content: '# AI Harness v2 setup\n\n1. New project: inspect the repository and adapt AGENTS.md before treating it as project-specific truth. Existing project: run node scripts/audit-ai-harness-adoption.mjs /path/to/project from the extracted Harness first, then merge useful sections; do not blindly overwrite established instructions or native configs.\n2. Treat the primary workflow as current-client end-to-end engineering: inspect -> plan when needed -> implement -> observe/evaluate -> correct -> re-verify -> complete. Planning is not a default stopping point.\n3. Do not continuously compare or select other AI clients. Stay in the current client unless the user explicitly asks to hand work to another tool.\n4. When an explicit handoff is requested, persist the minimum revision/completed/verification/risk/Next action state. Record target client or PLAN/BUILD/REVIEW/VERIFY only when the user specified it or it is needed to express the requested role.\n5. Use the closest real verifier as feedback and broaden checks as confidence grows. Tests are one possible verifier, not a universal requirement. Classify failures before editing again and do not repeat failed actions without new evidence.\n6. Do not stack multiple full Harness/methodology packs blindly. Choose an owner for overlapping rules and add external skills selectively.\n7. Record only real commands, protected paths, generated outputs, deployment boundaries, domain invariants, scoped AGENTS rules, and useful verification mechanisms.\n8. DESIGN.md is intentionally neutral and follows the current alpha section order. Populate it only from verified project/design evidence.\n9. Review MCP_추천_목록.md and connect only external tools the project actually needs. Empty config files are starters, not a requirement to stay empty after adoption. Preserve and merge existing native config files.\n10. Core Skills cover plan/continue/implement/debug/review/release. capability-router is optional and, when selected, routes only capabilities inside the current client. Generator invariants always restore the Core 6 and reject unknown Skill IDs.\n11. For genuinely multi-session work or explicit cross-client handoff, keep intent in docs/plans/<task-id>.md, current reality in docs/tasks/<task-id>.md, and discovery in docs/tasks/ACTIVE.md. Remove completed work from ACTIVE.md and do not persist every loop iteration.\n12. Run node scripts/sync-ai-harness.mjs after canonical Skill edits. It preserves unrelated Claude-only Skills and is merge-only, so remove obsolete Harness mirrors intentionally after deleting/renaming a canonical Skill.\n13. Run node scripts/validate-ai-harness.mjs for an adopted project. Use node scripts/validate-ai-harness.mjs --starter when checking the untouched downloaded starter and its intentionally empty MCP configs. The validator requires all Core Skills, validates Skill frontmatter, and detects mirror drift.\n14. Use docs/ai-harness/behavior-evals.md for representative end-to-end, loop, scoping, no-auto-switch, explicit-handoff, and resume checks.\n15. Review each client\'s trust, approval, sandbox, rule activation, MCP credentials, agent availability, and external write permissions locally.\n' },
   ];
 
   skills.forEach((item) => {
