@@ -180,7 +180,7 @@ Optional project-specific Skills remain selectable:
 - `security-review`
 - `fresh-context-review`
 
-This avoids generating an `AGENTS.md`/behavior-eval contract that references a Skill the same package omitted. In the current generator, `defaultSelected` denotes this locked Core set; optional Skills are not selected by default and remain toggleable.
+This avoids generating an `AGENTS.md`/behavior-eval contract that references a Skill the same package omitted. In the current website generator, `defaultSelected` denotes this locked Core set; optional Skills are not selected by default and remain toggleable. Direct programmatic callers of `buildHarnessFiles()` are internal implementation detail and should pass the Core IDs; the public UI is the supported package-generation path.
 
 ## Durable session-independent state
 
