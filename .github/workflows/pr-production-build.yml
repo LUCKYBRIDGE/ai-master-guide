@@ -35,6 +35,42 @@ jobs:
       - name: Build production app
         run: npm run build
 
+      - name: Validate Harness generator invariants
+        run: |
+          rm -rf /tmp/harness-generator-test
+          mkdir -p /tmp/harness-generator-test
+          ./node_modules/.bin/tsc src/data/aiHarnessV2Data.ts \
+            --target ES2020 \
+            --module commonjs \
+            --moduleResolution node \
+            --skipLibCheck \
+            --outDir /tmp/harness-generator-test
+          GENERATOR_JS="$(find /tmp/harness-generator-test -name aiHarnessV2Data.js -print -quit)"
+          test -n "$GENERATOR_JS"
+          node - "$GENERATOR_JS" <<'EOF'
+          const modulePath = process.argv[2];
+          const harness = require(modulePath);
+          const core = ['plan-feature', 'continue-work', 'implement-feature', 'debug', 'code-review', 'verify-release'];
+          const files = harness.buildHarnessFiles([]);
+          const paths = new Set(files.map((file) => file.path));
+          for (const id of core) {
+            for (const path of [`.agents/skills/${id}/SKILL.md`, `.claude/skills/${id}/SKILL.md`]) {
+              if (!paths.has(path)) throw new Error('Core invariant failed for direct generator call: ' + path);
+            }
+          }
+          let rejected = false;
+          try {
+            harness.buildHarnessFiles(['definitely-unknown-skill']);
+          } catch (error) {
+            rejected = /Unknown harness skill IDs/.test(String(error));
+          }
+          if (!rejected) throw new Error('Unknown Harness skill ID was not rejected.');
+          if (harness.DEFAULT_SKILL_IDS.join(',') !== core.join(',')) {
+            throw new Error('DEFAULT_SKILL_IDS does not exactly match the locked Core 6.');
+          }
+          console.log('Harness generator invariant checks passed.');
+          EOF
+
       - name: Start Vite preview
         run: |
           npm run preview -- --host 127.0.0.1 > /tmp/vite-preview.log 2>&1 &
@@ -167,8 +203,10 @@ jobs:
           test -f /tmp/harness-default/docs/tasks/ACTIVE.md
           test -f /tmp/harness-default/docs/tasks/README.md
           test -f /tmp/harness-default/docs/ai-harness/behavior-evals.md
-          test -f /tmp/harness-default/.agents/skills/continue-work/SKILL.md
-          test -f /tmp/harness-default/.claude/skills/continue-work/SKILL.md
+          for id in plan-feature continue-work implement-feature debug code-review verify-release; do
+            test -f "/tmp/harness-default/.agents/skills/$id/SKILL.md"
+            test -f "/tmp/harness-default/.claude/skills/$id/SKILL.md"
+          done
           test ! -e /tmp/harness-default/.agents/skills/capability-router/SKILL.md
           test ! -e /tmp/harness-default/.claude/skills/capability-router/SKILL.md
 
@@ -222,6 +260,43 @@ jobs:
           cd /tmp/harness-default
           node scripts/validate-ai-harness.mjs
           node scripts/validate-ai-harness.mjs --starter
+
+          rm -rf /tmp/harness-negative
+          cp -a /tmp/harness-default /tmp/harness-negative
+          rm /tmp/harness-negative/.agents/skills/plan-feature/SKILL.md
+          if (cd /tmp/harness-negative && node scripts/validate-ai-harness.mjs > /tmp/negative.log 2>&1); then
+            echo 'Validator failed to reject a missing core canonical Skill.'
+            exit 1
+          fi
+          grep -q 'Missing core canonical skill: plan-feature' /tmp/negative.log
+
+          rm -rf /tmp/harness-negative
+          cp -a /tmp/harness-default /tmp/harness-negative
+          rm /tmp/harness-negative/.claude/skills/plan-feature/SKILL.md
+          if (cd /tmp/harness-negative && node scripts/validate-ai-harness.mjs > /tmp/negative.log 2>&1); then
+            echo 'Validator failed to reject a missing core Claude mirror.'
+            exit 1
+          fi
+          grep -q 'Missing core Claude skill mirror: plan-feature' /tmp/negative.log
+
+          rm -rf /tmp/harness-negative
+          cp -a /tmp/harness-default /tmp/harness-negative
+          sed -i 's/^name: plan-feature$/name: wrong-plan-feature/' /tmp/harness-negative/.agents/skills/plan-feature/SKILL.md
+          if (cd /tmp/harness-negative && node scripts/validate-ai-harness.mjs > /tmp/negative.log 2>&1); then
+            echo 'Validator failed to reject a Skill frontmatter name mismatch.'
+            exit 1
+          fi
+          grep -q 'Skill frontmatter name mismatch' /tmp/negative.log
+
+          rm -rf /tmp/harness-negative
+          cp -a /tmp/harness-default /tmp/harness-negative
+          sed -i 's/^description: .*$/description:/' /tmp/harness-negative/.agents/skills/plan-feature/SKILL.md
+          if (cd /tmp/harness-negative && node scripts/validate-ai-harness.mjs > /tmp/negative.log 2>&1); then
+            echo 'Validator failed to reject a missing Skill description.'
+            exit 1
+          fi
+          grep -q 'Skill frontmatter description missing' /tmp/negative.log
+
           mkdir -p .claude/skills/claude-only
           printf '%s\n' '---' 'name: claude-only' 'description: Claude-only preservation probe.' '---' '# Claude-only skill' > .claude/skills/claude-only/SKILL.md
           node scripts/sync-ai-harness.mjs
