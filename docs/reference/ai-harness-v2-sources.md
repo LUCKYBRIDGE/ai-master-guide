@@ -431,3 +431,13 @@ Never generated automatically:
 - Antigravity Rule activation state;
 - destructive permissions;
 - fictional subagents or external-client connectivity.
+
+## Latest validation evidence boundary
+
+The latest previously executed validation-only run was GitHub Actions run `32721817897` (#18), and it succeeded on the Harness source revision that existed **before** the final Loop/structure static-audit corrections in this pass.
+
+The latest pass deliberately did **not** run another build/browser/ZIP test because the user requested the structural/semantic corrections without requiring another test execution. Therefore:
+- the old successful run remains evidence for the earlier revision only;
+- it is not presented as proof of the latest head;
+- the newest corrections were checked by static source/structure analysis against current official client/spec documentation;
+- real client semantic behavior still requires the generated behavior-eval scenarios when stronger empirical evidence is desired.
