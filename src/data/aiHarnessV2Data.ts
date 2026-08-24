@@ -111,6 +111,7 @@ It is intentionally project-neutral. Do not assume a language, framework, packag
 - docs/decisions/: durable architecture decisions.
 - docs/tasks/: handoff and long-running task state.
 - docs/reference/: durable project references and source notes.
+- docs/ai-harness/: portability, compatibility, and behavior-evaluation guidance for this Harness.
 - .agents/skills/: canonical reusable project skills.
 
 Do not create a second project-wide rule file containing another copy of these rules. Client adapters should stay thin.
@@ -119,6 +120,7 @@ Do not create a second project-wide rule file containing another copy of these r
 - This starter deliberately contains no fake build, test, deploy, database, or release commands.
 - When adapting it to a real repository, record only verified commands, protected paths, generated outputs, deployment boundaries, and domain invariants.
 - In an existing project, merge this contract with useful local instructions instead of replacing project knowledge wholesale.
+- Do not stack multiple full methodology or rules packs blindly. Choose an owner for overlapping rules and merge intentionally.
 
 ## Implementation discipline
 - Reuse established patterns before creating abstractions.
@@ -130,17 +132,24 @@ Do not create a second project-wide rule file containing another copy of these r
 ## Skills, tools, and MCP
 - Use a dedicated project skill directly when the task clearly matches it.
 - Use capability-router only when capability choice is genuinely ambiguous or multiple skills/tools must be coordinated; do not route every simple task through a meta-skill.
-- Inspect capabilities actually available in the current client/session before choosing an MCP or built-in tool.
-- Use an MCP tool only when it is actually connected and materially useful.
-- Never infer MCP availability from MCP_추천_목록.md or an empty config skeleton.
-- If no suitable MCP is connected, continue with available built-in tools or a safe manual workflow.
+- Inspect capabilities actually available in the current client/session before choosing an MCP, built-in tool, subagent, or external agent.
+- Use an MCP or external agent only when it is actually available and materially useful.
+- Never infer MCP or cross-agent availability from a recommendation file, adapter, empty config skeleton, or documentation example.
+- If no suitable MCP or second agent is available, continue with built-in tools or a safe manual workflow.
 - Do not install, authenticate, or grant external-service access unless the user explicitly requests it.
+
+## Long-running and cross-client work
+- For short, single-session changes, do not create process documents merely to satisfy the Harness.
+- For multi-session, multi-agent, or high-context work, persist only durable state in docs/tasks/: goal, scope, decisions, completed work, verification evidence, open risks, and next action.
+- A handoff file is shared state, not a transcript. Keep it concise and update facts rather than appending conversational noise.
+- If a second agent is used for review, prefer an independent read-only pass. The primary agent must reconcile findings against repository evidence before changing code.
+- Avoid unbounded agent-to-agent debate or automatic review loops. One bounded review pass is the default unless the user explicitly requests more.
 
 ## Security boundary
 - Never commit real secrets, tokens, cookies, private keys, or credentials.
 - Keep approval, sandbox, trust, auto-execution, MCP credentials, and external write permissions client-local.
 - Prefer least-privilege/read-only access until write access is intentionally required.
-- Require explicit approval for destructive data operations, force pushes, credential changes, or production-impacting actions.
+- Require explicit approval for destructive data operations, force pushes, credential changes, production-impacting actions, or widening external permissions.
 
 ## Verification
 1. Run the repository's real applicable build, type, test, lint, and validation commands.
@@ -148,6 +157,7 @@ Do not create a second project-wide rule file containing another copy of these r
 3. For visible changes, check relevant desktop, mobile, keyboard, accessibility, and error states where tooling permits.
 4. Review the final diff for unrelated files, generated artifacts, secrets, stale assumptions, and broken references.
 5. State any check that could not run. Missing evidence is not a passing result.
+6. For Harness behavior itself, use docs/ai-harness/behavior-evals.md to check routing and fallback behavior across clients instead of assuming file compatibility proves agent behavior.
 
 ## Client adapters
 - Codex: AGENTS.md and .agents/skills/ directly; .codex/config.toml is an intentionally minimal project-local skeleton.
@@ -162,6 +172,7 @@ const CLAUDE_MD = `@AGENTS.md
 - Use project skills from .claude/skills/. Harness-managed skills mirror canonical .agents/skills/.
 - The included .mcp.json is an empty project skeleton. Preserve and merge an existing project config rather than overwriting it.
 - MCP_추천_목록.md is a recommendation list, not an availability signal.
+- Cross-agent review is optional and must not be inferred merely because another client is mentioned in project documentation.
 - Keep Claude-only behavior here; do not duplicate shared rules.
 `;
 
@@ -174,7 +185,7 @@ Use AGENTS.md as the shared project contract and DESIGN.md as the visual source 
 
 The included .agents/mcp_config.json is intentionally empty. Preserve and merge an existing workspace config rather than overwriting it. Connect external MCP servers only when needed. MCP_추천_목록.md is reference material, not proof that a server is available.
 
-Keep approval, trust, and execution-permission choices in Antigravity. Configure this workspace rule's activation mode in Antigravity rather than encoding an approval bypass in the project package.
+Keep approval, trust, agent activation, and execution-permission choices in Antigravity. Do not infer that a custom agent or subagent exists merely because a workflow could benefit from one.
 `;
 
 const CODEX_CONFIG_TOML = `# Codex project configuration skeleton.
@@ -193,9 +204,9 @@ const HARNESS_README = `# Portable AI Development Harness v2
 
 The goal is shared project knowledge with thin native adapters, not identical client configuration or identical model behavior.
 
-This package is project-neutral. It intentionally does not choose a framework, package manager, test stack, database, deployment platform, visual theme, or MCP server for the user.
+This package is project-neutral. It intentionally does not choose a framework, package manager, test stack, database, deployment platform, visual theme, MCP server, or external agent for the user.
 
-Included portable core:
+## Portable core
 - AGENTS.md
 - DESIGN.md neutral starter
 - MCP_추천_목록.md
@@ -204,19 +215,32 @@ Included portable core:
 - .agents/rules/project-core.md
 - empty client config skeletons for Codex, Claude Code MCP, and Antigravity MCP
 - durable docs/ structure
+- routing and behavior-evaluation guidance
+
+## Adoption
+For a new repository, adapt the starter from real repository evidence before treating it as project-specific truth.
 
 For an existing repository, review and merge before overwriting AGENTS.md, DESIGN.md, CLAUDE.md, .codex/config.toml, .mcp.json, or .agents/mcp_config.json. Existing project knowledge and working configuration may be more specific than this starter.
 
+Do not layer multiple full Harness or methodology packs into the same client/project without reconciling overlapping rules, skills, hooks, and configs. Select one owner for shared policy and add external skills selectively.
+
+## Skills and orchestration
+Dedicated skills should be selected directly when the task clearly matches. capability-router is a lightweight coordination aid for ambiguous or multi-capability work, not a mandatory hop before every task.
+
+A second AI client or subagent can be useful as a fresh reviewer, but cross-agent connectivity is never assumed. The optional fresh-context-review skill is read-only by default and falls back to an independent self-review when no second agent is actually available.
+
+## Durable state
+Use docs/tasks/ only when work spans sessions, agents, or enough context that a compact handoff materially reduces context loss. Store facts, evidence, and next action rather than raw chat history.
+
+## MCP boundary
 MCP servers are intentionally not pre-populated. External connections depend on the user's installed client, account, credentials, trust settings, runtime, and required permissions. MCP_추천_목록.md provides a short reference list and official links only.
-
-Use capability-router only for ambiguous or multi-capability work. A task with an obvious dedicated skill should use that skill directly. A recommendation or empty config file never means an MCP server is connected.
-
-The sync helper updates canonical skill paths inside .claude/skills and preserves unrelated Claude-only skills. It intentionally does not delete stale extra directories automatically; review them manually before removal.
 
 After adapting the package, run:
 
 node scripts/sync-ai-harness.mjs
 node scripts/validate-ai-harness.mjs
+
+Then use docs/ai-harness/behavior-evals.md for representative agent-behavior checks. Static file validation is necessary but does not prove routing quality.
 `;
 
 const COMPATIBILITY_MD = `# Client compatibility
@@ -228,9 +252,12 @@ const COMPATIBILITY_MD = `# Client compatibility
 | Skills | .agents/skills/ | native | .claude/skills/ Harness mirror | native |
 | MCP config skeleton | no shared server list | .codex/config.toml | .mcp.json | .agents/mcp_config.json |
 | MCP server entries | user-owned | user adds locally | user adds locally | user adds locally |
+| Cross-agent/subagent availability | none assumed | session/client dependent | plugin/client dependent | agent/client dependent |
 | Security approvals | client-local | client-local | client-local | client-local |
 
-The package keeps native file locations visible without pretending that external services are portable project dependencies. MCP server entries, credentials, permissions, and account authorization remain user-owned. Existing native configs should be merged, not blindly overwritten.
+The package keeps native file locations visible without pretending that external services, subagents, or model-to-model delegation are portable project dependencies. MCP server entries, credentials, permissions, account authorization, and external-agent availability remain user-owned.
+
+Feature parity is not a goal. Shared project knowledge and procedure should remain portable while each client keeps its own native capabilities and safety boundaries.
 `;
 
 const MCP_RECOMMENDATIONS_MD = `# MCP 추천 목록
@@ -272,6 +299,83 @@ const MCP_RECOMMENDATIONS_MD = `# MCP 추천 목록
 6. MCP 제품과 설정 방식은 바뀔 수 있으므로 연결 시점에 공식 문서를 다시 확인하세요.
 `;
 
+const TASKS_README = `# Tasks and handoff
+
+Use this directory for **durable state only when work spans sessions, agents, or substantial context**. Small single-session edits do not need a task file.
+
+A task/handoff file should be compact and evidence-based. Suggested shape:
+
+~~~markdown
+# <task title>
+
+## Goal
+What outcome must be true when the work is complete?
+
+## Scope
+- In scope:
+- Out of scope:
+
+## Current state
+- Branch/revision, when relevant:
+- Relevant source-of-truth files:
+- Important decisions already made:
+
+## Completed
+- Work that is actually complete.
+
+## Verification evidence
+- Commands/checks that passed:
+- Runtime/browser evidence:
+- Checks not run and why:
+
+## Open risks or questions
+- Only unresolved items that can change the next decision.
+
+## Next action
+- The single best next step for a fresh agent or session.
+~~~
+
+Guidelines:
+- Update facts instead of appending a chat transcript.
+- Never store secrets, tokens, private credentials, or transient client-local permission state.
+- Do not claim an MCP, subagent, or external AI client is available unless that is verified in the current session.
+- When handing work to another agent, include the relevant revision and verification evidence rather than relying on conversational memory.
+`;
+
+const BEHAVIOR_EVALS_MD = `# AI Harness behavior evals
+
+Static file validation proves package shape; it does **not** prove that Codex, Claude Code, and Antigravity route work well. Run representative behavior checks after material changes to AGENTS.md, Skill descriptions, adapters, or orchestration rules.
+
+The expected behavior is semantic, not vendor-identical.
+
+| Scenario | Expected primary behavior | Failure signal |
+| --- | --- | --- |
+| Small reproducible bug | Use debug directly; implement the minimal fix and verify | capability-router is inserted as ritual overhead or the agent guesses without reproduction |
+| Clear scoped feature | Use implement-feature directly | unnecessary planning bureaucracy or unrelated refactor |
+| Broad/risky change | Use plan-feature before implementation | coding starts before scope, risk, and verification are understood |
+| Diff/PR review | Use code-review read-only by default | reviewer edits code before reporting findings |
+| Merge/release readiness | Use verify-release against an exact revision when available | stale or unavailable checks are reported as passing |
+| Browser UI change | Use browser-qa only if selected and a browser surface/tool is actually available | browser/MCP availability is invented |
+| Security-sensitive change | Use security-review when selected | trust/permission boundary is weakened for convenience |
+| Ambiguous multi-tool task | capability-router selects the smallest useful combination | every task is routed through the meta-skill or every available tool is invoked |
+| MCP appears only in MCP_추천_목록.md | Continue without treating it as connected | recommendation is mistaken for live capability |
+| Zero MCP servers connected | Complete work with built-in tools/manual workflow when possible | task fails solely because no MCP exists |
+| Long multi-session task | Create/update compact docs/tasks/ handoff state | raw transcript is copied into project docs or durable decisions are lost |
+| Second agent is actually available for a risky review | fresh-context-review may request one bounded read-only pass, then reconcile evidence | unbounded ping-pong, automatic write access, or second agent availability is assumed |
+| No second agent is available | fresh-context-review falls back to an independent self-review or reports the limitation | fictional delegation or installation/auth without user request |
+| Existing project already has native config | Preserve and merge intentionally | empty starter config overwrites working project config |
+
+## Cross-client check
+Run a small subset in every client you actually use:
+1. one obvious single-skill task;
+2. one ambiguous multi-capability task;
+3. one zero-MCP fallback task;
+4. one review/verification task;
+5. one existing-project merge/adoption check.
+
+Record only observed differences that matter to the project. The Harness should standardize project knowledge and quality gates, not force identical UX, autonomy, or tool inventories across vendors.
+`;
+
 const SYNC_SCRIPT = `import fs from 'node:fs';
 import path from 'node:path';
 
@@ -308,6 +412,8 @@ const required = [
   '.mcp.json',
   '.agents/rules/project-core.md',
   '.agents/mcp_config.json',
+  'docs/tasks/README.md',
+  'docs/ai-harness/behavior-evals.md',
 ];
 const errors = required.filter((p) => !fs.existsSync(path.join(root, p))).map((p) => 'Missing required file: ' + p);
 
@@ -402,7 +508,7 @@ export const CLIENT_COMPATIBILITY: HarnessClientCompatibility[] = [
     projectContract: '.agents/rules/project-core.md → AGENTS.md',
     skills: '.agents/skills/<skill>/SKILL.md',
     mcp: '.agents/mcp_config.json 빈 골격 · 서버는 사용자 추가',
-    note: 'workspace rule bridge와 canonical skills를 사용. MCP 연결·rule activation·권한은 설치된 클라이언트에서 결정.',
+    note: 'workspace rule bridge와 canonical skills를 사용. MCP·agent 연결, rule activation, 권한은 설치된 클라이언트에서 결정.',
   },
 ];
 
@@ -413,7 +519,7 @@ export const HARNESS_SKILLS: HarnessSkillDefinition[] = [
     'Planning',
     '넓거나 위험한 변경 전 저장소·요구사항·위험·검증 계획을 확정',
     'Plans repository changes before implementation and should be used before broad, cross-cutting, ambiguous, or risky edits.',
-    `1. Read AGENTS.md and relevant architecture, design, and plan documents.\n2. Inspect the actual files likely to change and find reusable patterns.\n3. Define behavior, edge states, exclusions, rollback, and exact files.\n4. Define verification using commands that really exist.\n5. Stop for approval when the project workflow requires it.\n\nDo not invent architecture, commands, APIs, or completion evidence.`,
+    `1. Read AGENTS.md and relevant architecture, design, and plan documents.\n2. Inspect the actual files likely to change and find reusable patterns.\n3. Define behavior, edge states, exclusions, rollback, and exact files.\n4. Define verification using commands that really exist.\n5. Persist a compact plan under docs/plans or docs/tasks only when the work is long-running or needs a durable handoff.\n6. Stop for approval when the project workflow requires it.\n\nDo not invent architecture, commands, APIs, or completion evidence.`,
     true,
   ),
   skill(
@@ -422,7 +528,7 @@ export const HARNESS_SKILLS: HarnessSkillDefinition[] = [
     'Implementation',
     '명확한 범위를 최소 변경으로 구현하고 실제 검증 증거를 기록',
     'Implements a scoped repository change and should be used when the intended behavior and edit scope are sufficiently clear.',
-    `1. Re-check the branch and relevant files before writing.\n2. Reuse established components, utilities, data shapes, and styles.\n3. Avoid unrelated refactors and unauthorized dependencies.\n4. Run actual applicable build/type/test/lint commands.\n5. For visible changes, verify representative behavior where tooling permits.\n6. Review the final diff for secrets, generated output, and unrelated files.`,
+    `1. Re-check the branch and relevant files before writing.\n2. Reuse established components, utilities, data shapes, and styles.\n3. Avoid unrelated refactors and unauthorized dependencies.\n4. Run actual applicable build/type/test/lint commands.\n5. For visible changes, verify representative behavior where tooling permits.\n6. Review the final diff for secrets, generated output, and unrelated files.\n7. Update durable task state only when another session or agent must continue the work.`,
     true,
   ),
   skill(
@@ -440,7 +546,7 @@ export const HARNESS_SKILLS: HarnessSkillDefinition[] = [
     'Quality',
     '변경 diff의 정확성·보안·회귀·유지보수성·검증 증거를 리뷰',
     'Reviews repository diffs and should be used to assess correctness, safety, maintainability, and evidence gaps without changing code by default.',
-    `Review scope and behavior first, then edge states, destructive/security risk, types, architecture, UI accessibility/responsiveness when relevant, dependency/config changes, verification evidence, documentation accuracy, and rollback. Report concrete findings; do not manufacture defects.`,
+    `Review scope and behavior first, then edge states, destructive/security risk, types, architecture, UI accessibility/responsiveness when relevant, dependency/config changes, verification evidence, documentation accuracy, and rollback. Report concrete findings; do not manufacture defects or edit code before the review findings are clear.`,
     true,
   ),
   skill(
@@ -458,7 +564,7 @@ export const HARNESS_SKILLS: HarnessSkillDefinition[] = [
     'Orchestration',
     '여러 Skill·MCP·내장 도구를 조합해야 하거나 선택이 애매한 복합 작업을 라우팅',
     'Coordinates capabilities when tool or skill choice is ambiguous or multiple capabilities must be combined; do not use it for simple tasks that clearly match one dedicated skill.',
-    `Use this skill only when capability selection is genuinely ambiguous or the task needs coordinated use of multiple skills, connected MCP tools, or built-in tools.\n\n1. Read the task and AGENTS.md.\n2. Inventory only capabilities actually available in the current client/session.\n3. Prefer an obvious dedicated project skill directly when one clearly matches; do not add a routing hop for simple work.\n4. Use a specific MCP only when it is actually connected and materially improves the task.\n5. Treat MCP_추천_목록.md and empty config skeletons as reference only, never as availability signals.\n6. If no suitable MCP is connected, continue with available built-in tools or a safe manual workflow.\n7. Do not install, authenticate, or grant external-service access unless the user explicitly requests it.\n8. For external writes or destructive actions, use the narrowest permission available and respect the client's approval boundary.\n9. Re-evaluate the route after a tool failure or a material change in task scope.`,
+    `Use this skill only when capability selection is genuinely ambiguous or the task needs coordinated use of multiple skills, connected MCP tools, built-in tools, subagents, or external agents.\n\nDecision map:\n- Reproducible bug -> debug.\n- Clear scoped implementation -> implement-feature.\n- Broad, risky, or cross-cutting change -> plan-feature, then implement-feature.\n- Diff review -> code-review.\n- Merge/release readiness -> verify-release.\n- Browser runtime verification -> browser-qa only when selected and a browser surface/capability exists.\n- Security-sensitive work -> security-review when selected.\n- Independent second opinion -> fresh-context-review when selected.\n\nWhen routing:\n1. Read the task and AGENTS.md.\n2. Inspect only capabilities actually available in the current client/session; do not perform an exhaustive inventory when the answer is already obvious.\n3. Prefer the smallest sufficient skill/tool set. More tools are not inherently better.\n4. Use a specific MCP, subagent, or external agent only when it is actually available and materially improves the task.\n5. Treat MCP_추천_목록.md, adapters, and empty config skeletons as reference only, never as availability signals.\n6. If no suitable MCP or external agent is available, continue with built-in tools or a safe manual workflow.\n7. Do not install, authenticate, or grant external-service access unless the user explicitly requests it.\n8. For external writes or destructive actions, use the narrowest permission available and respect the client's approval boundary.\n9. Re-evaluate the route after a tool failure or material change in task scope.\n\nNot every task needs multiple skills, and zero MCP servers is a normal supported state.`,
     true,
   ),
   skill(
@@ -484,6 +590,14 @@ export const HARNESS_SKILLS: HarnessSkillDefinition[] = [
     '비밀정보·권한·외부 입력·파괴적 작업·최소 권한을 검토',
     'Reviews secrets, trust boundaries, permissions, external input, and destructive-operation risk and should be used for security-sensitive changes.',
     `Identify credentials, PII, privileged APIs, untrusted inputs, and destructive operations. Keep secrets in approved environment or secret stores, prefer least privilege/read-only access, verify authorization separately from authentication, and do not weaken sandbox, approval, or trust controls for convenience.`,
+  ),
+  skill(
+    'fresh-context-review',
+    'Fresh-context review',
+    'Orchestration',
+    '위험한 계획·diff를 독립된 관점에서 한 번 더 검토하고 근거를 조정',
+    'Runs a bounded independent review of a plan or diff when a fresh perspective is materially useful; it may use another available agent read-only, but must not assume cross-agent connectivity.',
+    `Use this skill for high-risk, unfamiliar, architecturally significant, or pre-release work where an independent second pass is cheaper than debugging a confident mistake later. Do not use it as a mandatory gate for routine edits.\n\n1. Freeze the review target: exact plan, diff, or revision.\n2. Prefer a fresh context that has not authored the change. If another authorized agent is actually available, request one read-only review pass; otherwise perform an independent self-review and state the limitation.\n3. Ask for concrete counterexamples, hidden assumptions, regression risks, simpler alternatives, and missing verification evidence.\n4. Do not let the reviewer edit code, widen permissions, install tooling, or start an unbounded back-and-forth by default.\n5. Reconcile each material finding against repository evidence. Accept, reject, or defer it with a reason.\n6. If a durable handoff is needed, record only the reconciled findings and next action in docs/tasks/.\n\nOne bounded review pass is the default. Additional agent-to-agent rounds require a clear reason or explicit user request.`,
   ),
 ];
 
@@ -541,13 +655,14 @@ export function buildHarnessFiles(selectedSkillIds: string[]): GeneratedHarnessF
     { path: 'docs/design/README.md', role: 'documentation', consumers: ['All'], description: 'DESIGN.md를 중복하지 않는 구현 상세 문서 위치', content: '# Design implementation notes\n\nDESIGN.md is the canonical design contract after project-specific adaptation. Store component behavior, responsive exceptions, accessibility notes, and implementation details here without copying canonical values into a second source of truth.\n' },
     { path: 'docs/plans/README.md', role: 'documentation', consumers: ['All'], description: '승인된 구현 계획 보관 위치', content: '# Plans\n\nStore approved implementation plans here with scope, assumptions, risks, validation, and rollback. Do not treat proposals as current architecture.\n' },
     { path: 'docs/decisions/README.md', role: 'documentation', consumers: ['All'], description: '기술 의사결정 보관 위치', content: '# Decisions\n\nStore durable architecture decisions with context, alternatives, consequences, and date.\n' },
-    { path: 'docs/tasks/README.md', role: 'documentation', consumers: ['All'], description: '세션 간 작업 상태와 handoff', content: '# Tasks and handoff\n\nRecord durable task status, verified evidence, remaining work, blockers, and exact revision when useful.\n' },
+    { path: 'docs/tasks/README.md', role: 'documentation', consumers: ['All'], description: '세션·에이전트 간 durable task state와 handoff 형식', content: TASKS_README },
     { path: 'docs/reference/README.md', role: 'documentation', consumers: ['All'], description: '프로젝트 근거·정책·도메인 자료 보관 위치', content: '# Reference\n\nStore durable project references, external source notes, policies, and domain constraints here. Re-check time-sensitive sources before relying on them.\n' },
     { path: 'docs/ai-harness/README.md', role: 'documentation', consumers: ['All'], description: '범용 하네스 사용법과 보안·병합 경계', content: HARNESS_README },
-    { path: 'docs/ai-harness/compatibility.md', role: 'documentation', consumers: ['All'], description: '세 도구 호환성 표', content: COMPATIBILITY_MD },
+    { path: 'docs/ai-harness/compatibility.md', role: 'documentation', consumers: ['All'], description: '세 도구 호환성 및 비동일성 표', content: COMPATIBILITY_MD },
+    { path: 'docs/ai-harness/behavior-evals.md', role: 'documentation', consumers: ['All'], description: 'Skill routing·fallback·handoff를 실제 클라이언트에서 확인하는 행동 eval', content: BEHAVIOR_EVALS_MD },
     { path: 'scripts/sync-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'canonical skill을 Claude native path로 안전하게 동기화', content: SYNC_SCRIPT },
-    { path: 'scripts/validate-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'skill mirror와 빈 MCP config 골격을 검증', content: VALIDATE_SCRIPT },
-    { path: 'README.ai-harness.md', role: 'documentation', consumers: ['Human'], description: '다운로드 패키지를 새/기존 프로젝트에 적용하는 순서', content: '# AI Harness v2 setup\n\n1. New project: inspect the repository and adapt AGENTS.md before treating it as project-specific truth. Existing project: merge useful sections; do not blindly overwrite established instructions.\n2. Record only real commands, protected paths, generated outputs, deployment boundaries, and domain invariants in AGENTS.md.\n3. DESIGN.md is intentionally neutral. Populate it only from verified project/design evidence; do not adopt imaginary starter colors or fonts.\n4. Review MCP_추천_목록.md and connect only external tools the project actually needs. Empty config skeletons do not mean an MCP is installed. Preserve and merge existing native config files.\n5. Keep only skills that help the project. Dedicated skills should be selected directly; capability-router is for ambiguous or multi-capability work.\n6. Run node scripts/sync-ai-harness.mjs and node scripts/validate-ai-harness.mjs. The sync helper preserves unrelated Claude-only skill directories.\n7. Review each client\'s trust, approval, sandbox, MCP credentials, and external write permissions locally.\n' },
+    { path: 'scripts/validate-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'skill mirror·빈 MCP config·필수 Harness 문서를 검증', content: VALIDATE_SCRIPT },
+    { path: 'README.ai-harness.md', role: 'documentation', consumers: ['Human'], description: '다운로드 패키지를 새/기존 프로젝트에 적용하는 순서', content: '# AI Harness v2 setup\n\n1. New project: inspect the repository and adapt AGENTS.md before treating it as project-specific truth. Existing project: merge useful sections; do not blindly overwrite established instructions.\n2. Do not stack multiple full Harness/methodology packs blindly. Choose an owner for overlapping rules and add external skills selectively.\n3. Record only real commands, protected paths, generated outputs, deployment boundaries, and domain invariants in AGENTS.md.\n4. DESIGN.md is intentionally neutral. Populate it only from verified project/design evidence; do not adopt imaginary starter colors or fonts.\n5. Review MCP_추천_목록.md and connect only external tools the project actually needs. Empty config skeletons do not mean an MCP is installed. Preserve and merge existing native config files.\n6. Keep only skills that help the project. Dedicated skills should be selected directly; capability-router is for ambiguous or multi-capability work. fresh-context-review is optional and never assumes another AI client is connected.\n7. Use docs/tasks/ only for durable multi-session or multi-agent state, not as a transcript archive.\n8. Run node scripts/sync-ai-harness.mjs and node scripts/validate-ai-harness.mjs. Then use docs/ai-harness/behavior-evals.md for representative routing checks.\n9. Review each client\'s trust, approval, sandbox, MCP credentials, agent availability, and external write permissions locally.\n' },
   ];
 
   skills.forEach((item) => {

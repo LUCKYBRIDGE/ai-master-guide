@@ -1,9 +1,9 @@
-# AI Development Harness v2 — compatibility sources
+# AI Development Harness v2 — compatibility and architecture sources
 
 ## Audit scope
 
 - Verified: 2026-08-24
-- Goal: provide a **project-neutral** portable Harness that lets Codex, Claude Code, and Google Antigravity work from the same project contract, design source, and reusable skills while preserving each client's native discovery paths and security model.
+- Goal: provide a **project-neutral** portable Harness that lets Codex, Claude Code, and Google Antigravity work from the same durable project contract, design source, and reusable skills while preserving each client's native discovery paths, capability differences, and security model.
 - Active website sources:
   - `src/components/SystemHarnessEngineeringView.tsx`
   - `src/data/aiHarnessV2Data.ts`
@@ -11,20 +11,88 @@
 
 ## Current design rule
 
-The Harness does **not** claim that one physical config file is natively consumed by all three products, and it does **not** assume a framework, package manager, database, deployment platform, design theme, or MCP server for the downloaded project.
+The Harness does **not** claim that one physical config file is natively consumed by all three products, and it does **not** assume a framework, package manager, database, deployment platform, design theme, MCP server, subagent, or external AI client for the downloaded project.
 
 It uses:
 
-1. canonical project sources;
-2. thin client-specific adapters;
+1. a thin canonical project contract;
+2. client-native adapters where discovery paths differ;
 3. exact Skill mirrors only where the native Skill path differs;
-4. minimal client config skeletons without pre-populated MCP servers;
-5. a human-readable root `MCP_추천_목록.md` containing recommendations and official links only;
-6. focused project Skills, including a `capability-router` reserved for ambiguous or multi-capability work rather than every simple task.
+4. focused workflow Skills plus a lightweight capability router;
+5. minimal client config skeletons without pre-populated MCP servers;
+6. durable task/handoff state only for long-running or cross-client work;
+7. behavior evals that test routing and fallback semantics separately from static file validation.
 
-Model selection, trust, sandboxing, auto-approval, external-service authentication, destructive-command permissions, MCP credentials, and MCP write permissions stay client-local.
+Model selection, trust, sandboxing, auto-approval, external-service authentication, destructive-command permissions, MCP credentials, external-agent availability, and MCP/write permissions stay client-local.
 
 For existing repositories, generated canonical/adapter/config files are **merge candidates**, not instructions to overwrite useful project-specific knowledge or working client configuration.
+
+## Why this architecture
+
+### Converging pattern in established agent-harness projects
+
+The current design was compared against several widely adopted public systems on 2026-08-24. Star counts are a snapshot, not a quality proof, but these projects are useful evidence of patterns that survived broad real-world use.
+
+#### obra/superpowers
+
+- Repository: https://github.com/obra/superpowers
+- Snapshot: roughly 276k GitHub stars on 2026-08-24.
+- Supports Claude Code, Antigravity, Codex, and other harnesses through harness-specific installation paths.
+- Uses composable focused Skills plus a small bootstrap/meta workflow.
+- Core workflow separates design, planning, implementation, testing, code review, and branch finishing.
+- Maintains behavior/eval tooling for Skills rather than treating file presence as proof that the workflow behaves correctly.
+
+Harness lesson: keep Skills composable and evidence-driven, support native client paths, and test behavior separately from package shape. Do not copy its mandatory TDD methodology wholesale into a project-neutral starter.
+
+#### affaan-m/ECC
+
+- Repository: https://github.com/affaan-m/ECC
+- Snapshot: roughly 242k GitHub stars on 2026-08-24.
+- Explicitly supports multiple harnesses while warning users not to assume feature parity.
+- Emphasizes `plan -> test -> implement -> review -> verify -> remember -> improve` and persistent state outside the context window.
+- Warns against stacking multiple installation paths in the same harness because duplicate Skills, hooks, or configuration can conflict.
+
+Harness lesson: preserve durable state for long work, acknowledge client capability differences, and warn against blindly stacking overlapping methodology packs.
+
+#### addyosmani/agent-skills
+
+- Repository: https://github.com/addyosmani/agent-skills
+- Snapshot: roughly 89k GitHub stars on 2026-08-24.
+- Organizes focused Skills by engineering lifecycle and includes a `using-agent-skills` meta-skill to map incoming work to the right procedure.
+- States that not every task needs every Skill and uses Skill descriptions as activation signals.
+- Provides native integration guidance for Claude Code, Antigravity, Codex, and other agents.
+
+Harness lesson: a meta-skill is useful when it remains a thin selector. `capability-router` therefore stays default-selected but is explicitly **not** a mandatory hop for simple tasks.
+
+#### intellectronica/ruler
+
+- Repository: https://github.com/intellectronica/ruler
+- Snapshot: roughly 2.8k GitHub stars on 2026-08-24.
+- Focuses directly on distributing one source of truth to multiple coding-agent native files.
+- Supports merge/backup/dry-run concepts and distinguishes native rule, Skill, and MCP paths by client.
+
+Harness lesson: canonical-to-adapter distribution is valid, but existing-project adoption must be merge-safe. The ZIP therefore warns against overwriting existing native config or project rules.
+
+#### openai/codex-plugin-cc
+
+- Repository: https://github.com/openai/codex-plugin-cc
+- Snapshot: roughly 32k GitHub stars on 2026-08-24.
+- Official OpenAI plugin for using Codex from Claude Code.
+- Separates read-only review, adversarial review, explicit delegation/rescue, transfer, and background-job control.
+- Warns that an automatic review gate can create a long-running Claude/Codex loop and consume usage quickly.
+
+Harness lesson: cross-agent cooperation should be bounded and role-specific. The optional `fresh-context-review` Skill defaults to one independent read-only pass and never assumes another agent is actually connected.
+
+### Community workflow observations
+
+Public multi-agent user workflows repeatedly use some version of:
+
+- one agent plans or implements;
+- another agent reviews from a fresh context;
+- the primary agent reconciles findings;
+- shared files carry goals, state, and evidence across sessions rather than relying on conversational memory.
+
+These examples support a durable handoff format, but they do not justify hard-coding a role such as “Claude always plans” or “Codex always reviews.” Model/client roles remain task- and environment-dependent.
 
 ## Codex
 
@@ -39,7 +107,7 @@ Harness mapping: canonical contract `AGENTS.md`. The starter contains no invente
 
 ### Skills
 
-- Current repository Skill path: `.agents/skills/<skill>/SKILL.md`.
+- Current project Skill path: `.agents/skills/<skill>/SKILL.md`.
 - Skills use `SKILL.md` with discovery metadata such as `name` and `description`.
 - Sources:
   - https://developers.openai.com/codex/skills
@@ -101,10 +169,12 @@ Harness mapping: `.agents/rules/project-core.md` references root `AGENTS.md` and
 ### Skills
 
 - Current workspace Skills live in `.agents/skills/<skill>/SKILL.md`.
+- Antigravity uses progressive disclosure: the agent sees Skill names/descriptions first and loads the full `SKILL.md` only when relevant.
+- Google explicitly recommends focused Skills and clear descriptions.
 - Source:
   - https://antigravity.google/docs/skills/
 
-Harness mapping: Antigravity directly consumes canonical `.agents/skills/`.
+Harness mapping: Antigravity directly consumes canonical `.agents/skills/`. The Harness intentionally keeps the default set small instead of shipping a large generic Skill library.
 
 ### Workspace MCP
 
@@ -115,24 +185,77 @@ Harness mapping: Antigravity directly consumes canonical `.agents/skills/`.
 
 Harness mapping: include a valid empty `.agents/mcp_config.json` with `"mcpServers": {}`. Users add external servers in their own workspace when needed and preserve/merge an existing config.
 
-## Capability router Skill
+## Skill orchestration model
 
-`capability-router` is included in the default portable Skill set because a downloaded project may later be opened in clients with different tool inventories. Its **activation boundary is intentionally narrow**.
+### Dedicated Skills first
 
-Use it when capability choice is genuinely ambiguous or the task requires coordination across multiple Skills, connected MCP tools, or built-in tools. A simple task that clearly matches `debug`, `implement-feature`, `code-review`, or another dedicated Skill should use that Skill directly without an extra routing hop.
+Simple tasks route directly:
 
-When activated, the Skill must:
+- reproducible bug -> `debug`
+- clear scoped change -> `implement-feature`
+- diff review -> `code-review`
+- merge/release readiness -> `verify-release`
 
-1. inspect only Skills, MCP tools, and built-in tools actually available in the current session;
-2. prefer an obvious dedicated project Skill directly when one clearly matches;
-3. use an MCP only when it is actually connected and materially useful;
-4. treat `MCP_추천_목록.md` and empty config skeletons as reference/configuration hints, not availability signals;
-5. continue with built-in tools or a safe manual workflow when no suitable MCP is connected;
-6. never install, authenticate, or grant external-service access unless the user explicitly requests it;
-7. respect each client's approval and least-privilege boundary for external writes or destructive actions;
-8. re-evaluate routing only after a tool failure or material task change.
+Broad or risky work can use `plan-feature -> implement-feature`.
 
-This design remains valid when zero MCP servers are connected.
+### capability-router
+
+`capability-router` remains in the default portable Skill set because a downloaded project may be opened in clients with different tool inventories. It is intentionally lightweight.
+
+Use it only when capability choice is genuinely ambiguous or the task requires coordination across multiple Skills, connected MCP tools, built-in tools, subagents, or external agents.
+
+It must:
+
+1. inspect only capabilities actually available in the current session;
+2. prefer the smallest sufficient Skill/tool set;
+3. avoid exhaustive inventory when a dedicated Skill clearly matches;
+4. use an MCP, subagent, or external agent only when actually available and materially useful;
+5. treat recommendation/config files as reference, not availability signals;
+6. continue with built-in tools or a safe manual workflow when no MCP or second agent is available;
+7. never install, authenticate, or widen external access unless the user explicitly requests it;
+8. respect approval and least-privilege boundaries;
+9. re-evaluate only after tool failure or material scope change.
+
+Zero MCP servers is a normal supported state.
+
+### fresh-context-review
+
+`fresh-context-review` is optional, not default-selected.
+
+Use it when an independent second pass is materially valuable for high-risk, unfamiliar, architecturally significant, or pre-release work. It freezes the review target, prefers a fresh context, and may ask another **actually available** agent for one read-only pass. If no second agent is available, it falls back to an independent self-review and states the limitation.
+
+The primary agent reconciles findings against repository evidence. Automatic writes, permission widening, invented agent connectivity, and unbounded agent-to-agent loops are prohibited by the Skill.
+
+## Durable task and handoff state
+
+Generated `docs/tasks/README.md` now contains a compact handoff schema for long-running, multi-session, or multi-agent work:
+
+- goal;
+- scope/out-of-scope;
+- current revision and source-of-truth files;
+- completed work;
+- verification evidence;
+- unresolved risks/questions;
+- one next action.
+
+It explicitly discourages transcript dumping and forbids storing secrets or unverified capability state. Small single-session edits do not require a task document.
+
+## Behavior evals
+
+Generated `docs/ai-harness/behavior-evals.md` separates **behavioral correctness** from static package validation.
+
+Representative scenarios include:
+
+- direct single-Skill routing;
+- broad/risky work;
+- zero-MCP fallback;
+- catalog-only MCP not being mistaken for a connection;
+- existing-config merge safety;
+- long-task handoff;
+- bounded second-agent review;
+- no-second-agent fallback.
+
+The expected behavior is semantic rather than vendor-identical. The Harness standardizes shared knowledge, procedure, and quality gates while allowing each client to retain its native UX, autonomy model, and tool inventory.
 
 ## DESIGN.md
 
@@ -146,10 +269,10 @@ This design remains valid when zero MCP servers are connected.
 
 Harness mapping:
 - canonical design source: root `DESIGN.md`;
-- the generated starter is intentionally **neutral** and does not preselect colors, fonts, spacing, component libraries, styling frameworks, or a visual theme;
+- generated starter is intentionally **neutral** and does not preselect colors, fonts, spacing, component libraries, styling frameworks, or visual theme;
 - project-specific design values should be populated only from verified repository/design evidence;
 - `docs/design/` is supplemental implementation documentation rather than a second canonical token source;
-- AI Master Guide does not add `@google/design.md` as a dependency. Optional lint usage remains documentation-only.
+- AI Master Guide does not add `@google/design.md` as a dependency.
 
 ## MCP recommendation document
 
@@ -158,7 +281,6 @@ The generated root file is `MCP_추천_목록.md`. It is not an install manifest
 ### Microsoft Playwright MCP
 
 - Purpose: browser automation and browser-based UI verification for projects that actually have a browser surface.
-- Current package/project: `@playwright/mcp`, Microsoft Playwright MCP.
 - Sources:
   - https://github.com/microsoft/playwright-mcp
   - https://github.com/microsoft/playwright/blob/main/docs/src/getting-started-mcp.md
@@ -169,8 +291,6 @@ The generated root file is `MCP_추천_목록.md`. It is not an install manifest
 - Source:
   - https://github.com/github/github-mcp-server
 
-The recommendation document tells users to configure authentication and repository permissions themselves and to prefer read-only/minimum privilege when possible.
-
 ### Context7 MCP
 
 - Purpose: retrieve current library, framework, SDK, and API documentation when version freshness matters.
@@ -178,7 +298,7 @@ The recommendation document tells users to configure authentication and reposito
   - https://github.com/upstash/context7
   - https://context7.com
 
-The Harness does not claim that Context7 is installed merely because it appears in the recommendation document.
+The recommendation document tells users to configure authentication and permissions themselves and never treats a recommendation as installed capability.
 
 ## Generation boundaries
 
@@ -193,25 +313,26 @@ Always generated:
 - `.agents/rules/project-core.md`
 - selected canonical Skills under `.agents/skills/`
 - exact Harness-managed Claude mirrors under `.claude/skills/`
-- durable `docs/` structure and Harness documentation
+- durable `docs/` structure
+- `docs/tasks/README.md` handoff guidance
+- `docs/ai-harness/behavior-evals.md`
 - Skill sync/validation helpers
 
-Never generated by the Harness:
+Never generated or assumed by the Harness:
 - project-specific framework/package-manager/database assumptions
 - fake build/test/deploy commands
-- an arbitrary default color/font/theme
+- arbitrary default color/font/theme
 - actual MCP server entries
 - real tokens or credentials
 - account authorization
 - model defaults
 - sandbox/approval/trust bypasses
 - destructive-command permissions
-
-The generator checks for duplicate output paths before ZIP creation. The validation helper verifies that the JSON MCP skeletons remain empty and that Codex config contains no `[mcp_servers.*]` block.
+- a live second AI client, custom agent, or subagent
 
 ## Existing-project adoption boundary
 
-The ZIP is also usable as a reference package for existing repositories, but these files may already contain valuable project-specific state:
+The ZIP is usable as a reference package for existing repositories, but these paths may already contain valuable project state:
 - `AGENTS.md`
 - `DESIGN.md`
 - `CLAUDE.md`
@@ -219,14 +340,15 @@ The ZIP is also usable as a reference package for existing repositories, but the
 - `.mcp.json`
 - `.agents/mcp_config.json`
 
-For those paths, the setup guide tells users to inspect and merge deliberately rather than blindly overwrite existing content.
+Inspect and merge deliberately rather than blindly overwriting existing content. Do not layer multiple full Harness/methodology installations into one client without reconciling overlapping rules, Skills, hooks, and config ownership.
 
 ## Known limits
 
-- Product paths and schemas can change; re-check these sources before future structural updates.
-- A config or adapter file being present does not prove the user's installed client trusts or activates it.
+- Product paths and schemas can change; re-check official sources before future structural updates.
+- GitHub stars indicate adoption/attention, not correctness; community projects are used here for recurring workflow patterns rather than as normative specifications.
+- A config or adapter file being present does not prove the installed client trusts or activates it.
 - An MCP recommendation does not prove the server is installed, connected, authenticated, or authorized.
+- Cross-agent review does not prove another agent is installed or reachable.
 - The Harness standardizes durable project context and reusable procedure; it cannot guarantee identical model behavior across vendors.
-- The neutral starter cannot discover a repository's actual commands or design values until it is adapted to that repository.
 - Preview/build success does not prove each external client has been launched against the downloaded ZIP.
 - `src/data/templateFilesData.ts` remains unconnected legacy data during the v2 transition; the active Harness v2 view must not import it.
