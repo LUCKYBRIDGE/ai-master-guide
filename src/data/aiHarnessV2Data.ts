@@ -110,7 +110,7 @@ It is intentionally project-neutral. Do not assume a language, framework, packag
 - docs/design/: implementation notes that extend DESIGN.md without duplicating its canonical values.
 - docs/plans/: durable approved implementation intent for long-running work.
 - docs/decisions/: durable architecture decisions.
-- docs/tasks/ACTIVE.md: portable entry point for active multi-session or cross-client work.
+- docs/tasks/ACTIVE.md: portable entry point for active multi-session or explicitly handed-off work.
 - docs/tasks/: current durable task/checkpoint state and handoff evidence.
 - docs/reference/: durable project references and source notes.
 - docs/ai-harness/: portability, compatibility, loop, and behavior-evaluation guidance for this Harness.
@@ -132,6 +132,8 @@ Before modifying files in a nested directory, resolve project instructions from 
 - Treat a user request to implement, fix, migrate, refactor, or complete work as an end-to-end request unless the user explicitly asks for analysis or planning only.
 - Planning is a phase, not a default stopping point. After planning, continue into implementation and applicable verification in the same session when scope is clear and no approval gate, blocker, or safety boundary requires stopping.
 - If the user explicitly asks for a plan only, stop after the plan and do not modify code.
+- Stay in the current AI client by default. Do not compare, select, or switch to another AI client on the user's behalf.
+- Cross-client transfer is activated only by explicit user intent, such as asking to hand work to another AI tool, continue there, or use another client for review/verification.
 - Do not require capability-router merely to transition from planning to implementation when the route is already clear.
 - Normal implementation verification belongs inside the implementation/debug loop. Use verify-release as an additional exact-revision gate only when merge, release, or deployment readiness is actually in scope.
 
@@ -183,25 +185,31 @@ Loop boundaries:
 ## Skills, tools, and MCP
 - Use a dedicated project skill directly when the task clearly matches it.
 - Use continue-work only when durable state recovery is actually needed. If the current session already has sufficient task context, continue the current workflow directly.
-- Use capability-router only when capability choice is genuinely ambiguous or multiple skills/tools must be coordinated; do not route every simple task through a meta-skill.
-- Inspect capabilities actually available in the current client/session before choosing an MCP, built-in tool, subagent, or external agent.
-- Use an MCP or external agent only when it is actually available and materially useful.
-- Never infer MCP or cross-agent availability from a recommendation file, adapter, empty config skeleton, or documentation example.
-- If no suitable MCP or second agent is available, continue with built-in tools or a safe manual workflow.
+- If capability-router is included, use it only when capability choice inside the current client is genuinely ambiguous or multiple skills/tools in the current client must be coordinated. It must not choose another AI client.
+- Inspect capabilities actually available in the current client/session before choosing an MCP, built-in tool, or client-local capability.
+- Never infer MCP, subagent, or external-client availability from a recommendation file, adapter, empty config skeleton, or documentation example.
+- Another AI client is not an automatic fallback or routing target. Switch clients only when the user explicitly requests the handoff.
 - Do not install, authenticate, or grant external-service access unless the user explicitly requests it.
 
 ## Long-running and cross-client work
-- Single-client, single-session execution is a first-class path. Do not create handoff artifacts merely because a task used planning or multiple verification iterations.
-- For multi-session, multi-agent, cross-client, or high-context work, use docs/tasks/ACTIVE.md as the portable resume entry point.
+- Single-client, single-session execution is the default path. Do not create handoff artifacts merely because a task used planning or multiple verification iterations.
+- Use docs/tasks/ACTIVE.md for work that genuinely spans sessions/high context, or when the user explicitly asks to hand work to another AI client.
 - Keep durable implementation intent in docs/plans/<task-id>.md and current execution reality in docs/tasks/<task-id>.md. A plan is not evidence that work is complete.
 - A task checkpoint should contain goal, scope, current revision when relevant, decisions, completed work, verification evidence, open risks, and one best next action.
 - On a resume request, first decide whether current-session context is sufficient. If yes, continue directly. If not, inspect docs/tasks/ACTIVE.md before creating a new plan.
 - Before trusting a checkpoint, reconcile it with the actual repository: current revision, working tree/diff, relevant files, and available verification evidence. Repository reality wins over stale task notes.
 - Persist durable facts at meaningful checkpoints, not every inner-loop iteration.
-- Update the task checkpoint and ACTIVE.md before handing long-running work to another session or client.
-- A handoff file is shared state, not a transcript. Keep it concise and update facts rather than appending conversational noise.
-- If a second agent is used for review, prefer an independent read-only pass. The primary agent must reconcile findings against repository evidence before changing code.
-- Avoid unbounded agent-to-agent debate or automatic review loops. One bounded review pass is the default unless the user explicitly requests more.
+
+## User-driven cross-client handoff
+- Do not autonomously compare AI vendors/models, choose a cheaper or stronger client, or move work between clients.
+- When the user explicitly requests a handoff, update the smallest durable checkpoint that lets the receiving client continue safely.
+- Record the exact revision/branch when relevant, completed work, verification evidence, unresolved risks, and one next action.
+- If the user names a target client, record it. If the user specifies the next role, record PLAN, BUILD, REVIEW, or VERIFY as handoff metadata. Do not invent a target client or role.
+- PLAN/BUILD/REVIEW/VERIFY are descriptive handoff labels, not mandatory separate invocations and not an automatic orchestration pipeline.
+- If the user requests review/verification only, record the exact review target and read-only intent; the receiving client should not edit unless the user later changes that scope.
+- A handoff file is shared state, not a transcript. Keep it concise and factual.
+- The receiving client may use continue-work when durable recovery is needed, then resumes its normal evidence loop from the recorded Next action.
+- Do not create autonomous agent-to-agent debate, review ping-pong, or hidden client switching.
 
 ## Security boundary
 - Never commit real secrets, tokens, cookies, private keys, or credentials.
@@ -216,7 +224,7 @@ Loop boundaries:
 4. For visible changes, check relevant desktop, mobile, keyboard, accessibility, and error states where tooling permits.
 5. Review the final diff for unrelated files, temporary artifacts, generated output, secrets, stale assumptions, broken references, and needless complexity.
 6. State any required check that could not run. Missing evidence is not a passing result.
-7. For Harness behavior itself, use docs/ai-harness/behavior-evals.md to check end-to-end continuity, loop behavior, routing, fallback, scoped instructions, and cross-client resume behavior instead of assuming file compatibility proves agent behavior.
+7. For Harness behavior itself, use docs/ai-harness/behavior-evals.md to check end-to-end continuity, loop behavior, routing, fallback, scoped instructions, and explicit cross-client handoff behavior instead of assuming file compatibility proves agent behavior.
 
 ## Client adapters
 - Codex: AGENTS.md hierarchy and .agents/skills/ directly; .codex/config.toml is an intentionally minimal project-local skeleton.
@@ -230,11 +238,12 @@ const CLAUDE_MD = `@AGENTS.md
 # Claude Code adapter
 - Use project skills from .claude/skills/. Harness-managed skills mirror canonical .agents/skills/.
 - Follow the shared end-to-end execution and evidence-loop rules in AGENTS.md: if the user asked for implementation, planning is not a stopping point unless an approval gate, blocker, or explicit plan-only request says otherwise.
+- Stay in the current Claude Code workflow by default. Do not select or switch to another AI client unless the user explicitly asks for a handoff.
 - Before changing files in nested directories, follow the Scoped instruction resolution section in AGENTS.md and read applicable nested AGENTS.override.md / AGENTS.md files because Claude Code does not natively treat those files as CLAUDE.md memory.
 - If the current Claude session already contains sufficient context, a message like continue should continue directly. Use docs/tasks/ACTIVE.md and continue-work only when durable state recovery is actually needed.
+- If the user explicitly asks to move work to another AI client, follow the User-driven cross-client handoff section in AGENTS.md and persist only the minimum durable state required.
 - The included .mcp.json is an empty project starter. Preserve and merge an existing project config rather than overwriting it.
 - MCP_추천_목록.md is a recommendation list, not an availability signal.
-- Cross-agent review is optional and must not be inferred merely because another client is mentioned in project documentation.
 - Keep Claude-only behavior here; do not duplicate shared project rules.
 `;
 
@@ -246,7 +255,9 @@ This is an optional Antigravity workspace Rule note. Antigravity can read active
 - Do not duplicate or re-import the full AGENTS.md contract here.
 - When this rule is active, reinforce AGENTS.md's bounded evidence loop: execute a small coherent change, observe the closest useful verifier, classify failures, correct from evidence, and re-run before broadening checks.
 - Read DESIGN.md on demand for UI/design work instead of loading it for every task.
+- Stay in the current Antigravity workflow by default. Do not select or switch to another AI client unless the user explicitly requests a handoff.
 - If the current Antigravity session has sufficient context, continue directly. Use docs/tasks/ACTIVE.md and continue-work only when durable recovery is needed; do not rely on conversation artifacts as the portable source of truth.
+- If the user requests a cross-client handoff, persist the minimal revision/evidence/Next action state defined by AGENTS.md; do not invent the receiving client or role.
 - The included .agents/mcp_config.json is intentionally empty as a starter. Preserve and merge an existing workspace config rather than overwriting it.
 - MCP_추천_목록.md is reference material, not proof that a server is available.
 - Keep approval, trust, rule activation, agent activation, and execution-permission choices in Antigravity.
@@ -266,7 +277,7 @@ const EMPTY_MCP_JSON = `{
 
 const ACTIVE_TASKS_MD = `# Active work
 
-This file is the portable entry point for long-running work that must survive sessions, agents, or AI clients.
+This file is the portable entry point for long-running work that must survive sessions or substantial context, and for work the user explicitly asks to hand to another AI client.
 
 No active long-running task by default.
 
@@ -277,22 +288,23 @@ When active work exists, replace the line above with a compact table like this:
 | example-task | src/example/ | active | ../plans/example-task.md | ./example-task.md | YYYY-MM-DD |
 
 Rules:
-- Track only multi-session, multi-agent, cross-client, blocked, or otherwise high-context work. Do not register routine single-session edits or individual verification-loop iterations.
+- Track only multi-session, blocked, otherwise high-context work, or an explicit user-requested cross-client handoff. Do not register routine single-session edits or individual verification-loop iterations.
 - Task ID should be stable and filesystem-friendly.
 - Plan points to durable implementation intent under docs/plans/.
 - Checkpoint points to current execution reality under docs/tasks/.
 - Use repository-relative paths. Never put secrets or client-local permission state here.
 - Keep one row per active, paused, or blocked task that may need resumption.
 - Remove completed tasks from ACTIVE.md. A completed checkpoint may remain under docs/tasks/ as durable history when useful.
-- A receiving agent must read the checkpoint and plan, then reconcile them with the actual repository before continuing.
+- A receiving client must read the checkpoint and plan, then reconcile them with the actual repository before continuing.
+- Do not create or update this file merely to advertise that multiple AI clients exist.
 `;
 
 const TASKS_README = `# Tasks and handoff
 
-Use this directory for durable state only when work spans sessions, agents, AI clients, or substantial context. Small or self-contained single-session edits do not need a task file even if they use planning or several verify/correct iterations.
+Use this directory for durable state only when work spans sessions or substantial context, or when the user explicitly asks to hand work to another AI client. Small or self-contained single-session edits do not need a task file even if they use planning or several verify/correct iterations.
 
 ## Portable resume model
-- docs/tasks/ACTIVE.md = index of work that another fresh session/client may need to resume.
+- docs/tasks/ACTIVE.md = index of work that a fresh session/client may need to resume.
 - docs/plans/<task-id>.md = approved implementation intent: what should be done and why.
 - docs/tasks/<task-id>.md = current execution reality: what is actually done, verified, blocked, and next.
 
@@ -330,6 +342,12 @@ What outcome must be true when the work is complete?
 
 ## Next action
 - The single best next step for a fresh agent or session, or none when completed.
+
+## Handoff (only when the user explicitly requests cross-client transfer)
+- Target client: only if the user named one
+- Next role: PLAN | BUILD | REVIEW | VERIFY | unspecified
+- Mode: read-only only when explicitly requested
+- Review target/revision: when REVIEW or VERIFY needs an exact target
 ~~~
 
 ## Resume protocol
@@ -340,22 +358,30 @@ What outcome must be true when the work is complete?
 5. Inspect the actual repository state: revision/branch when available, working tree/diff, target files, and relevant evidence/checks.
 6. Reconcile differences. Repository evidence overrides stale checkpoint text; update the checkpoint when drift is found.
 7. Continue from the recorded Next action using the dedicated skill/tool that now fits the task and resume the normal evidence loop.
-8. Before another handoff, update Completed, verification evidence, risks, Next action, and ACTIVE.md.
+8. Before another explicit handoff or meaningful long-session boundary, update Completed, verification evidence, risks, Next action, and ACTIVE.md.
 9. When complete, mark the checkpoint completed if retained and remove its row from ACTIVE.md.
+
+## Explicit handoff protocol
+1. Stay in the current client until the user asks to move the work.
+2. When the user asks, do not compare vendors/models or decide a different destination on the user's behalf.
+3. Update or create the minimum checkpoint required for continuity. Prefer exact revision/diff, completed facts, verification evidence, risks, and one Next action.
+4. Record Target client only if the user named it. Record PLAN/BUILD/REVIEW/VERIFY only if useful or requested; these labels do not create an automatic pipeline.
+5. For review-only or verify-only handoff, record the exact target revision and read-only intent when the user specified it.
+6. Give the user a concise instruction for the receiving client, pointing it to the repository task state rather than copying the entire conversation.
 
 Guidelines:
 - Update facts instead of appending a chat transcript.
 - Never depend on vendor chat history, native plan mode, auto memory, or Antigravity artifacts as the only cross-client state.
 - Never store secrets, tokens, private credentials, or transient client-local permission state.
 - Do not claim an MCP, subagent, or external AI client is available unless that is verified in the current session.
-- When handing work to another agent, include the relevant revision and verification evidence rather than relying on conversational memory.
+- Do not create a handoff just because another AI client might be cheaper, stronger, or available; client switching is a user decision.
 `;
 
 const HARNESS_README = `# Portable AI Development Harness v2
 
 The goal is reliable engineering behavior with shared project knowledge and thin native adapters, not identical client configuration or identical model behavior.
 
-This package is project-neutral. It intentionally does not choose a framework, package manager, test stack, database, deployment platform, visual theme, MCP server, or external agent for the user.
+This package is project-neutral. It intentionally does not choose a framework, package manager, test stack, database, deployment platform, visual theme, MCP server, or external AI client for the user.
 
 ## Core lifecycle
 The primary path works inside one coding client:
@@ -364,7 +390,17 @@ Explore/inspect -> plan when needed -> implement -> observe/evaluate -> correct 
 
 Planning is not a stopping point when the user requested implementation. Verification is not a one-time final ritual; it is feedback inside the implementation/debug loop. Tests are only one possible verifier. The loop is bounded by acceptance criteria, real evidence, and explicit stop conditions.
 
-Cross-session and cross-client continuation are portability layers on top of this core lifecycle, not prerequisites for it.
+The current client keeps working by default. Cross-session recovery and cross-client handoff are portability layers, not automatic orchestration.
+
+## Current-client first, user-driven handoff
+- Do not continuously compare which AI client is cheaper, stronger, or more appropriate.
+- Do not autonomously switch from Codex to Claude Code, Claude Code to Antigravity, or any other client pairing.
+- If the user explicitly asks to move the work, persist only the minimum repository-local state needed for safe continuation.
+- A handoff can change the client, the role, or both. PLAN/BUILD/REVIEW/VERIFY are optional labels describing the requested next responsibility, not mandatory stages.
+- If the user asks another client to review or verify only, preserve the exact target revision and read-only intent.
+- The receiving client reconciles the checkpoint with repository reality and continues from Next action.
+
+This keeps normal work efficient while preserving the option to move work for cost, preference, capability, or independent verification when the user chooses to do so.
 
 ## Loop engineering model
 - Inner loop: smallest coherent action -> closest useful verifier -> inspect result -> classify/evaluate -> evidence-supported correction -> re-run.
@@ -384,9 +420,9 @@ Cross-session and cross-client continuation are portability layers on top of thi
 - CLAUDE.md and Harness-managed mirrors under .claude/skills/
 - optional .agents/rules/project-core.md Antigravity note
 - empty client config starters for Codex, Claude Code MCP, and Antigravity MCP
-- docs/tasks/ACTIVE.md + durable plan/checkpoint structure for session-independent continuation
+- docs/tasks/ACTIVE.md + durable plan/checkpoint structure for session-independent continuation and explicit handoff
 - durable docs/ structure
-- routing and behavior-evaluation guidance
+- optional capability routing and behavior-evaluation guidance
 
 ## Adoption
 For a new repository, adapt the starter from real repository evidence before treating it as project-specific truth.
@@ -398,12 +434,14 @@ Do not layer multiple full Harness or methodology packs into the same client/pro
 The Antigravity project-core note is optional because AGENTS.md is the portable contract. Whether a file under .agents/rules is Manual, Always On, Model Decision, or Glob-activated is a client/workspace choice.
 
 ## Skills and orchestration
-Dedicated skills should be selected directly when the task clearly matches. plan-feature transitions into implementation when the user requested end-to-end execution and no gate requires stopping. continue-work is only for durable recovery. capability-router is a lightweight coordination aid for ambiguous or multi-capability work, not a mandatory hop before every task.
+Dedicated skills should be selected directly when the task clearly matches. plan-feature transitions into implementation when the user requested end-to-end execution and no gate requires stopping. continue-work is only for durable recovery.
 
-A second AI client or subagent can be useful as a fresh reviewer, but cross-agent connectivity is never assumed. The optional fresh-context-review skill is read-only by default and falls back to an independent self-review when no second agent is actually available.
+capability-router is optional. When included, it coordinates ambiguous or multi-capability work inside the current client only; it never chooses another AI client or creates an automatic cross-client pipeline.
+
+fresh-context-review is also optional and stays inside the current client by default. If the user explicitly requests another AI client for an independent review, prepare a concise read-only handoff instead of silently invoking or selecting that client.
 
 ## Durable session-independent state
-Use docs/tasks/ACTIVE.md as the discovery entry point only when work spans sessions, agents, clients, or enough context that a compact handoff materially reduces context loss.
+Use docs/tasks/ACTIVE.md as the discovery entry point only when work spans sessions/high context or the user explicitly requests cross-client transfer.
 
 Keep intent in docs/plans/<task-id>.md and current reality in docs/tasks/<task-id>.md. The receiving client must reconcile the checkpoint with the actual repository before continuing. Store facts, evidence, and one next action rather than raw chat history or per-iteration loop noise.
 
@@ -416,7 +454,7 @@ The reusable validator has two modes:
 
 Run node scripts/sync-ai-harness.mjs after changing canonical Skills. The sync helper is intentionally merge-only so unrelated Claude-only Skills survive; if you delete or rename a canonical Harness Skill, remove the obsolete Harness-managed Claude mirror intentionally rather than assuming sync will guess ownership.
 
-Then use docs/ai-harness/behavior-evals.md for representative agent-behavior checks. Static file validation is necessary but does not prove end-to-end or loop behavior in a real coding client.
+Then use docs/ai-harness/behavior-evals.md for representative agent-behavior checks. Static file validation is necessary but does not prove end-to-end, handoff, or loop behavior in a real coding client.
 `;
 
 const COMPATIBILITY_MD = `# Client compatibility
@@ -429,6 +467,8 @@ const COMPATIBILITY_MD = `# Client compatibility
 | Design | DESIGN.md | project context/on demand | project context/on demand | on demand for UI/design work |
 | Skills | .agents/skills/ | native | .claude/skills/ Harness mirror | native |
 | Session-independent task resume | docs/tasks/ACTIVE.md + checkpoint + plan | continue-work when needed | continue-work mirror when needed | continue-work when needed |
+| Cross-client switching | user-explicit handoff only | stay in Codex until user requests transfer | stay in Claude until user requests transfer | stay in Antigravity until user requests transfer |
+| Handoff role labels | optional PLAN/BUILD/REVIEW/VERIFY metadata | supported through shared checkpoint | supported through shared checkpoint | supported through shared checkpoint |
 | MCP config starter | no shared live server list | .codex/config.toml | .mcp.json | .agents/mcp_config.json |
 | MCP server entries after adoption | user-owned | user may configure | user may configure | user may configure |
 | Cross-agent/subagent availability | none assumed | session/client dependent | plugin/client dependent | agent/client dependent |
@@ -436,7 +476,7 @@ const COMPATIBILITY_MD = `# Client compatibility
 
 The package keeps portable project state in repository files instead of pretending that vendor chat history, native plan artifacts, external services, subagents, or model-to-model delegation are shared project dependencies.
 
-Feature parity is not a goal. Shared project knowledge, scoped instructions, evidence loops, durable task state, and quality gates should remain portable while each client keeps its own native capabilities and safety boundaries.
+Feature parity is not a goal. Shared project knowledge, scoped instructions, evidence loops, durable task state, explicit user-driven handoff, and quality gates should remain portable while each client keeps its own native capabilities and safety boundaries.
 `;
 
 const MCP_RECOMMENDATIONS_MD = `# MCP 추천 목록
@@ -453,7 +493,7 @@ const MCP_RECOMMENDATIONS_MD = `# MCP 추천 목록
 - 비고: 웹 프로젝트가 아니거나 브라우저 자동화가 필요하지 않다면 연결할 이유가 없습니다.
 
 ## 2. GitHub MCP Server
-- 용도: 저장소, Issue, Pull Request 등 GitHub 작업을 AI 클라이언트에서 다룰 때
+- 용도: 저장소, Issue, Pull Request 등 GitHub 작업을 AI 클라이언트에서 다룰 때 사용.
 - 추천 상황: GitHub 정보를 직접 읽거나 명시적으로 승인된 GitHub 작업을 수행할 때
 - 공식 프로젝트: https://github.com/github/github-mcp-server
 - 비고: 계정 인증과 repository 권한은 사용자가 직접 설정해야 합니다. 가능하면 read-only 또는 최소 권한으로 시작하세요.
@@ -467,7 +507,7 @@ const MCP_RECOMMENDATIONS_MD = `# MCP 추천 목록
 
 ## 사용 원칙
 1. MCP는 많을수록 좋은 것이 아닙니다. 현재 프로젝트에 실제로 필요한 것만 연결하세요.
-2. 전용 Skill이 명확한 단순 작업은 해당 Skill을 직접 사용하고, capability-router는 여러 capability를 조합하거나 선택이 애매할 때만 사용합니다.
+2. 전용 Skill이 명확한 단순 작업은 해당 Skill을 직접 사용합니다. capability-router를 선택한 경우에도 여러 capability를 조합하거나 선택이 애매할 때만 사용하며 다른 AI 클라이언트를 선택하는 용도로 쓰지 않습니다.
 3. 이 추천 목록에 있다고 해서 연결된 MCP로 간주하지 않습니다.
 4. 계정 인증, 토큰, workspace trust, 승인 정책, 쓰기 권한은 Harness ZIP에 넣지 않습니다.
 5. 기존 MCP config가 있는 프로젝트에 빈 starter를 덮어쓰지 말고 필요한 부분만 병합하세요.
@@ -486,6 +526,9 @@ The expected behavior is semantic, not vendor-identical.
 | Broad end-to-end feature request | plan-feature establishes acceptance criteria, then same client continues implementation and evidence loop unless a real gate requires stopping | agent stops after plan even though implementation was requested |
 | Plan-only request | produce plan and stop without code changes | implementation starts despite explicit plan-only scope |
 | Same-session continue | continue the current workflow directly when context is sufficient | unnecessary ACTIVE/checkpoint recovery ceremony |
+| No cross-client handoff requested | stay in the current AI client and continue normal work; do not compare or select other clients | agent autonomously recommends/chooses/switches clients or creates handoff state without user intent |
+| Explicit cross-client handoff | write the minimum durable checkpoint, preserve exact revision/evidence/Next action, and record target client only if the user named it | entire chat is copied, target client/role is invented, or work keeps executing in another client without user action |
+| Explicit review-only handoff | record REVIEW/VERIFY intent, exact review target, and read-only scope when requested | receiving scope is silently widened to implementation/write access |
 | Small reproducible bug | debug directly; reproduce -> evidence-supported fix -> regression/behavior check | capability-router ritual or speculative edit without reproduction/evidence |
 | Verification failure | inspect failure output, classify it, revise diagnosis, apply the smallest supported correction, rerun the failed check | repeats the same edit/command without new information or ignores failure |
 | Verifier/environment failure | distinguish code failure from broken tooling, stale environment, flaky external dependency, or insufficient observability | edits product code to silence an invalid verifier without evidence |
@@ -501,17 +544,17 @@ The expected behavior is semantic, not vendor-identical.
 | Merge/release readiness | use verify-release against an exact revision when available | stale or unavailable checks are reported as passing |
 | Browser UI change | use browser-qa only if selected and a browser surface/tool is actually available | browser/MCP availability is invented |
 | Security-sensitive change | use security-review when selected | trust/permission boundary is weakened for convenience |
-| Ambiguous multi-tool task | capability-router selects the smallest useful combination | every task is routed through the meta-skill or every available tool is invoked |
+| Ambiguous multi-tool task with router selected | capability-router selects the smallest useful capability set inside the current client | every task is routed through the meta-skill, every available tool is invoked, or another AI client is selected |
 | MCP appears only in MCP_추천_목록.md | continue without treating it as connected | recommendation is mistaken for live capability |
 | Configured MCP after adoption | project-mode validator accepts valid non-empty mcpServers config | reusable validator incorrectly insists all adopted projects stay empty |
 | Zero MCP servers connected | complete work with built-in tools/manual workflow when possible | task fails solely because no MCP exists |
 | Long multi-session task | create/update compact ACTIVE/checkpoint state at meaningful boundaries | raw loop transcript is copied into project docs or durable decisions are lost |
-| Antigravity -> Codex resume | Codex identifies ACTIVE task, reads checkpoint/plan, reconciles revision/diff, and continues Next action | asks for Antigravity chat history, repeats completed work, or starts from scratch |
-| Codex -> Claude Code resume | Claude uses continue-work mirror and repository state rather than Codex conversation history | relies on auto memory only or ignores ACTIVE/checkpoint state |
-| Claude Code -> Antigravity resume | Antigravity uses AGENTS/.agents skills and durable task state, not Claude-native memory | relies on unavailable Claude state or misses recorded Next action |
+| Antigravity -> Codex resume after explicit handoff | Codex identifies ACTIVE task, reads checkpoint/plan, reconciles revision/diff, and continues Next action | asks for Antigravity chat history, repeats completed work, or starts from scratch |
+| Codex -> Claude Code resume after explicit handoff | Claude uses continue-work mirror and repository state rather than Codex conversation history | relies on auto memory only or ignores ACTIVE/checkpoint state |
+| Claude Code -> Antigravity resume after explicit handoff | Antigravity uses AGENTS/.agents skills and durable task state, not Claude-native memory | relies on unavailable Claude state or misses recorded Next action |
 | Optional Antigravity workspace rule | shared behavior still comes from AGENTS when project-core is inactive | portability depends on an unverified Always On rule activation |
-| Second agent is actually available for a risky review | fresh-context-review may request one bounded read-only pass, then reconcile evidence | unbounded ping-pong, automatic write access, or second agent availability is assumed |
-| No second agent is available | fresh-context-review falls back to an independent self-review or reports the limitation | fictional delegation or installation/auth without user request |
+| Fresh-context review in current client | fresh-context-review performs one bounded independent pass without selecting another AI client | review automatically delegates/switches clients or starts ping-pong |
+| User explicitly requests another AI for review | prepare a concise review handoff with exact target/read-only intent; user performs the client switch | another client is invoked/selected without user control or write scope is widened |
 | Existing project already has native config | preserve and merge intentionally | empty starter config overwrites working project config |
 
 ## Single-client end-to-end fixture
@@ -520,29 +563,31 @@ Use one coding client at a time with three representative prompts:
 2. Plan and implement this broad change, then verify the result. Expected: plan -> implementation -> evidence loop in the same session unless a real gate blocks execution.
 3. Plan this change only; do not implement it. Expected: plan only.
 
-PASS requires observed evidence appropriate to the task, evidence-driven correction after encountered failures, and no unnecessary ACTIVE/task artifact creation.
+PASS requires observed evidence appropriate to the task, evidence-driven correction after encountered failures, no unnecessary ACTIVE/task artifact creation, and no autonomous client switching.
 
 ## Verification-loop fixture
 Use a disposable task where the first implementation or first verifier exposes a failure. PASS means the client reads the failure, classifies whether it is product code, assumption/specification, verifier/tooling/environment, flaky/external dependency, or observability, then changes the appropriate thing and re-runs the closest useful check. FAIL means it retries the same action without new information, suppresses the failure, or loops without a bounded stop condition.
 
-## Cross-client resume fixture
-For a meaningful handoff check, create a disposable task fixture with:
-- one docs/plans/<task-id>.md;
-- one docs/tasks/<task-id>.md containing a revision, completed work, verification evidence, and Next action;
-- one ACTIVE.md row pointing to both files;
-- a repository change that makes the checkpoint useful but still requires one small next step.
-
-Open the same repository in the receiving client and prompt only with a natural resume request such as continue the previous task or 이전 작업 이어서 해줘.
+## Explicit cross-client handoff fixture
+For a meaningful handoff check:
+1. Start a disposable task in one client and complete a useful partial slice.
+2. Ask that client explicitly to hand the work to a named receiving client, optionally specifying BUILD, REVIEW, or VERIFY.
+3. Confirm the sender creates/updates only the minimum durable state: plan when needed, checkpoint with revision/completed work/verification/risks/Next action, and ACTIVE.md entry.
+4. Confirm target client/role/read-only mode are recorded only when the user specified them.
+5. Open the same repository in the receiving client and prompt with a natural resume request such as continue the handed-off task or 이전 작업 이어서 해줘.
 
 PASS means the receiving client:
 1. discovers the active task without requiring copied chat history;
 2. applies the correct scoped AGENTS instructions;
-3. reads checkpoint then plan;
+3. reads checkpoint then plan when one exists;
 4. checks actual repository state before trusting the checkpoint;
 5. does not redo completed work without evidence;
-6. continues from the recorded Next action with the appropriate dedicated skill;
-7. resumes the normal evidence loop for new work;
-8. updates the checkpoint/ACTIVE state if the work remains long-running.
+6. respects a recorded REVIEW/VERIFY read-only handoff scope;
+7. continues from the recorded Next action with the appropriate dedicated skill;
+8. resumes the normal evidence loop for new work;
+9. updates the checkpoint/ACTIVE state only if the work remains durable or another explicit handoff occurs.
+
+FAIL if the sender switches clients autonomously, invents a target/role, or copies the full conversation instead of compact state.
 
 ## Cross-client check
 Run a small subset in every client you actually use:
@@ -551,13 +596,14 @@ Run a small subset in every client you actually use:
 3. one verification failure that requires classification and correction;
 4. one plan-only task;
 5. one same-session continue task;
-6. one ambiguous multi-capability task;
-7. one zero-MCP fallback task;
-8. one nested-scope instruction check;
-9. one durable resume handoff to a different client;
-10. one existing-project merge/adoption check.
+6. one no-handoff-requested task that must stay in the current client;
+7. one ambiguous multi-capability task with capability-router selected;
+8. one zero-MCP fallback task;
+9. one nested-scope instruction check;
+10. one explicit durable handoff to a different client, including a review-only variant when useful;
+11. one existing-project merge/adoption check.
 
-Record only observed differences that matter to the project. The Harness should standardize project knowledge, evidence-driven loops, scoped instructions, durable continuation, and quality gates, not force identical UX, autonomy, or tool inventories across vendors.
+Record only observed differences that matter to the project. The Harness should standardize project knowledge, evidence-driven loops, scoped instructions, durable continuation, user-driven handoff, and quality gates, not force identical UX, autonomy, or tool inventories across vendors.
 `;
 
 const SYNC_SCRIPT = `import fs from 'node:fs';
@@ -656,12 +702,12 @@ if (starterMode && codexConfig.includes('[mcp_servers.')) {
 }
 
 const agents = read('AGENTS.md');
-for (const marker of ['Scoped instruction resolution', 'End-to-end execution continuity', 'Evidence-driven engineering loop', 'docs/tasks/ACTIVE.md', 'AGENTS.override.md']) {
+for (const marker of ['Scoped instruction resolution', 'End-to-end execution continuity', 'Evidence-driven engineering loop', 'User-driven cross-client handoff', 'docs/tasks/ACTIVE.md', 'AGENTS.override.md']) {
   if (!agents.includes(marker)) errors.push('Missing AGENTS contract marker: ' + marker);
 }
 
 const evals = read('docs/ai-harness/behavior-evals.md');
-for (const marker of ['Single-client end-to-end fixture', 'Verification-loop fixture', 'Antigravity -> Codex resume', 'Codex -> Claude Code resume', 'Claude Code -> Antigravity resume']) {
+for (const marker of ['Single-client end-to-end fixture', 'Verification-loop fixture', 'Explicit cross-client handoff fixture', 'No cross-client handoff requested', 'Explicit review-only handoff']) {
   if (!evals.includes(marker)) errors.push('Missing behavior eval marker: ' + marker);
 }
 
@@ -721,7 +767,7 @@ export const CLIENT_COMPATIBILITY: HarnessClientCompatibility[] = [
     projectContract: 'AGENTS.md hierarchy',
     skills: '.agents/skills/<skill>/SKILL.md',
     mcp: '.codex/config.toml starter · 서버는 사용자 추가',
-    note: 'root→CWD AGENTS hierarchy와 canonical skills를 직접 사용. 단일 세션에서도 plan→implement→evidence loop→verify가 완결되며 durable handoff는 필요할 때만 사용.',
+    note: 'root→CWD AGENTS hierarchy와 canonical skills를 직접 사용. 현재 Codex에서 end-to-end로 계속 작업하며, 다른 AI 도구로의 handoff는 사용자가 명시적으로 요청할 때만 준비.',
   },
   {
     id: 'claude',
@@ -729,7 +775,7 @@ export const CLIENT_COMPATIBILITY: HarnessClientCompatibility[] = [
     projectContract: 'CLAUDE.md → @AGENTS.md + nested resolution',
     skills: '.claude/skills/<skill>/SKILL.md',
     mcp: '.mcp.json 빈 starter · 서버는 사용자 추가',
-    note: 'root 공통 규칙을 import하고 nested AGENTS semantics는 공통 계약대로 emulation. 동일 evidence loop를 Claude native skill mirror로 사용.',
+    note: 'root 공통 규칙을 import하고 nested AGENTS semantics는 공통 계약대로 emulation. 현재 Claude workflow를 기본으로 유지하고 명시적 handoff만 repository state로 전달.',
   },
   {
     id: 'antigravity',
@@ -737,7 +783,7 @@ export const CLIENT_COMPATIBILITY: HarnessClientCompatibility[] = [
     projectContract: 'AGENTS.md native · workspace rule note optional',
     skills: '.agents/skills/<skill>/SKILL.md',
     mcp: '.agents/mcp_config.json 빈 starter · 서버는 사용자 추가',
-    note: 'active-directory AGENTS와 canonical skills를 사용. .agents/rules/project-core.md는 activation에 의존하는 선택적 보조 note이며 공통 계약의 필수 bridge가 아님.',
+    note: 'active-directory AGENTS와 canonical skills를 사용. workspace rule activation과 다른 AI client 선택은 로컬/사용자 결정이며 Harness가 자동 전환하지 않음.',
   },
 ];
 
@@ -746,36 +792,37 @@ export const HARNESS_SKILLS: HarnessSkillDefinition[] = [
     'plan-feature',
     'Plan feature',
     'Planning',
-    '넓거나 위험한 변경 전 observable acceptance criteria·범위·위험·검증 경로를 확정하고 실행 요청이면 구현으로 연결',
+    '넓거나 위험한 변경 전 observable acceptance criteria·범위·위험·검증 경로를 확정하고 실행 요청이면 현재 클라이언트에서 구현으로 연결',
     'Plans repository changes before implementation and should be used before broad, cross-cutting, ambiguous, or risky edits.',
     `1. Read applicable AGENTS instructions and relevant architecture, design, and decision documents.
 2. Inspect the actual files likely to change and find reusable patterns.
 3. Define behavior, edge states, exclusions, rollback, exact files, and observable acceptance criteria.
 4. Define the closest useful verifier and the broader applicable verification ladder using commands/capabilities that really exist.
 5. For durable long-running work, store implementation intent in docs/plans/<task-id>.md. Do not use the plan as a completion log.
-6. When execution must survive sessions/clients, create or update docs/tasks/<task-id>.md and register it in docs/tasks/ACTIVE.md. Do not create handoff state merely because planning occurred.
+6. Create/update docs/tasks state only when the work genuinely needs durable continuation or the user explicitly requests a cross-client handoff. Do not create handoff state merely because planning occurred.
 7. If the user explicitly requested planning only, stop after the plan.
-8. If the user requested implementation and no approval gate, blocker, or safety boundary requires stopping, transition directly into implementation in the same session and use the shared evidence loop.
+8. If the user requested implementation and no approval gate, blocker, or safety boundary requires stopping, transition directly into implementation in the same client and use the shared evidence loop.
 
-Do not invent architecture, commands, APIs, completion evidence, or artificial approval gates.`,
+Do not invent architecture, commands, APIs, completion evidence, artificial approval gates, or another AI client to continue the work.`,
     true,
   ),
   skill(
     'continue-work',
     'Continue work',
     'Orchestration',
-    '현재 context가 부족할 때 다른 세션·에이전트·클라이언트가 남긴 durable state에서 기존 작업을 복원해 재개',
-    'Resumes an existing multi-session or cross-client repository task from durable project state. Use for continue, resume, pick up, handoff, 이어서, 계속, 재개, or 인계 requests when durable recovery is actually needed.',
+    '현재 context가 부족할 때 장기 작업 또는 사용자가 명시적으로 넘긴 cross-client checkpoint에서 기존 작업을 복원해 재개',
+    'Resumes an existing durable repository task or explicit cross-client handoff when the current session lacks sufficient reliable context.',
     `Use this skill only when the current session does not already contain sufficient reliable context for the task. If the active workflow is clear in the current session, continue directly without ACTIVE/checkpoint recovery.
 
 1. Resolve applicable AGENTS instructions from repository root to the target scope.
-2. Read docs/tasks/ACTIVE.md and identify the task matching the request/current working scope. If multiple active tasks remain genuinely ambiguous, do not invent the choice.
+2. Read docs/tasks/ACTIVE.md and identify the task matching the user's request/current working scope. If multiple active tasks remain genuinely ambiguous, do not invent the choice.
 3. Read docs/tasks/<task-id>.md, then the linked docs/plans/<task-id>.md and relevant durable decisions/references.
-4. Reconcile the checkpoint with the actual repository: current branch/revision when available, working tree/diff, relevant source files, and available verification evidence. Repository reality overrides stale notes.
-5. Preserve completed work unless repository evidence shows it must be revisited. Do not create a fresh plan merely because the client/session changed.
-6. Continue from the recorded Next action using the smallest dedicated skill/tool that fits the remaining work.
-7. Resume the normal evidence loop for new work and distinguish new evidence from inherited evidence.
-8. If the task remains long-running, update the checkpoint and ACTIVE.md at a meaningful handoff boundary. If complete, mark a retained checkpoint completed and remove its ACTIVE.md row.
+4. If a Handoff section exists, respect a user-recorded target role and read-only scope, but do not treat a client name as proof of connectivity or permission.
+5. Reconcile the checkpoint with the actual repository: current branch/revision when available, working tree/diff, relevant source files, and available verification evidence. Repository reality overrides stale notes.
+6. Preserve completed work unless repository evidence shows it must be revisited. Do not create a fresh plan merely because the client/session changed.
+7. Continue from the recorded Next action using the smallest dedicated skill/tool that fits the remaining work.
+8. Resume the normal evidence loop for new work and distinguish new evidence from inherited evidence.
+9. If the task remains long-running, update the checkpoint/ACTIVE.md at a meaningful boundary. If complete, mark a retained checkpoint completed and remove its ACTIVE.md row.
 
 Never require vendor chat history, native plan artifacts, auto memory, or another client's private state when the repository contains sufficient durable handoff state.`,
     true,
@@ -796,7 +843,7 @@ Never require vendor chat history, native plan artifacts, auto memory, or anothe
 8. After close checks pass, broaden to the repository's applicable build/type/test/lint/runtime/UI checks.
 9. Review the final diff for secrets, temporary artifacts, generated output, stale docs, unrelated files, and needless complexity.
 10. Do not claim completion while required evidence is failed, stale, or unavailable. Report blockers explicitly.
-11. Update durable task state only when another session/agent/client genuinely needs to continue the work.`,
+11. Create/update durable handoff state only for genuine long-running continuity or an explicit user-requested client transfer.`,
     true,
   ),
   skill(
@@ -844,36 +891,36 @@ Never require vendor chat history, native plan artifacts, auto memory, or anothe
     'capability-router',
     'Capability router',
     'Orchestration',
-    '여러 Skill·MCP·내장 도구 선택이 실제로 애매한 복합 작업만 최소 capability set으로 라우팅',
-    'Coordinates capabilities when tool or skill choice is ambiguous or multiple capabilities must be combined; do not use it for simple tasks that clearly match one dedicated skill.',
-    `Use this skill only when capability selection is genuinely ambiguous or the task needs coordinated use of multiple skills, connected MCP tools, built-in tools, subagents, or external agents. It does not own the normal engineering loop.
+    '현재 AI 클라이언트 안에서 여러 Skill·MCP·내장 도구 선택이 실제로 애매한 복합 작업만 최소 capability set으로 라우팅',
+    'Coordinates capabilities inside the current client when tool or skill choice is ambiguous or multiple capabilities must be combined; it never selects another AI client.',
+    `Use this optional skill only when capability selection is genuinely ambiguous or the task needs coordinated use of multiple selected skills, connected MCP tools, or built-in capabilities inside the current AI client. It does not own the normal engineering loop and it must never select or switch to another AI client.
 
 Decision map:
 - Same-session continuation with sufficient context -> continue current workflow directly.
-- Resume/handoff requiring durable recovery -> continue-work.
+- Durable recovery after a long-session boundary or explicit user handoff -> continue-work.
 - Reproducible bug -> debug.
 - Clear scoped implementation -> implement-feature.
-- Broad/risky end-to-end change -> plan-feature, then implementation continues unless a real gate stops it.
+- Broad/risky end-to-end change -> plan-feature, then implementation continues in the same client unless a real gate stops it.
 - Plan-only request -> plan-feature and stop.
 - Diff review -> code-review.
 - Merge/release readiness -> verify-release.
 - Browser runtime verification -> browser-qa only when selected and a browser surface/capability exists.
 - Security-sensitive work -> security-review when selected.
-- Independent second opinion -> fresh-context-review when selected.
+- Independent review inside the current client -> fresh-context-review when selected.
 
 When routing:
 1. Read the task and applicable AGENTS instructions.
 2. Inspect only capabilities actually available in the current client/session; do not perform an exhaustive inventory when the answer is already obvious.
 3. Prefer the smallest sufficient skill/tool set. More tools are not inherently better.
-4. Use a specific MCP, subagent, or external agent only when it is actually available and materially improves the task.
-5. Treat MCP_추천_목록.md, adapters, and empty config starters as reference only, never as availability signals.
-6. If no suitable MCP or external agent is available, continue with built-in tools or a safe manual workflow.
-7. Do not install, authenticate, or grant external-service access unless the user explicitly requests it.
-8. For external writes or destructive actions, use the narrowest permission available and respect the client's approval boundary.
-9. Re-evaluate the route only after a material scope/capability change or tool failure; ordinary verifier failures belong to the dedicated skill's evidence loop.
+4. Treat MCP_추천_목록.md, adapters, and empty config starters as reference only, never as availability signals.
+5. If no suitable MCP exists, continue with built-in tools or a safe manual workflow when possible.
+6. Do not install, authenticate, or grant external-service access unless the user explicitly requests it.
+7. For external writes or destructive actions, use the narrowest permission available and respect the client's approval boundary.
+8. Re-evaluate the route only after a material scope/capability change or tool failure; ordinary verifier failures belong to the dedicated skill's evidence loop.
+9. If the user asks to move work to another AI client, stop routing and follow the shared explicit handoff protocol instead of selecting the destination yourself.
 
-Not every task needs multiple skills, and zero MCP servers is a normal supported state.`,
-    true,
+Not every task needs this skill, and zero MCP servers is a normal supported state.`,
+    false,
   ),
   skill(
     'browser-qa',
@@ -903,17 +950,17 @@ Not every task needs multiple skills, and zero MCP servers is a normal supported
     'fresh-context-review',
     'Fresh-context review',
     'Orchestration',
-    '위험한 계획·diff를 독립된 관점에서 한 번 더 검토하고 근거를 조정',
-    'Runs a bounded independent review of a plan or diff when a fresh perspective is materially useful; it may use another available agent read-only, but must not assume cross-agent connectivity.',
+    '위험한 계획·diff를 현재 클라이언트 안의 독립된 관점에서 한 번 더 검토하고 근거를 조정',
+    'Runs a bounded independent review of a plan or diff in the current client. If the user wants another AI client to review, prepare an explicit handoff instead of selecting or invoking that client.',
     `Use this skill for high-risk, unfamiliar, architecturally significant, or pre-release work where an independent second pass is materially useful. Do not use it as a mandatory gate for routine edits or as an inner-loop retry mechanism.
 
 1. Freeze the review target: exact plan, diff, or revision.
 2. Resolve applicable AGENTS instructions for the review scope.
-3. Prefer a fresh context that has not authored the change. If another authorized agent is actually available, request one read-only review pass; otherwise perform an independent self-review and state the limitation.
+3. Perform one independent read-only pass inside the current client/session context as cleanly as the client allows.
 4. Ask for concrete counterexamples, hidden assumptions, regression risks, simpler alternatives, and missing verification evidence.
-5. Do not let the reviewer edit code, widen permissions, install tooling, or start an unbounded back-and-forth by default.
+5. Do not widen permissions, install tooling, or start an unbounded back-and-forth.
 6. Reconcile each material finding against repository evidence. Accept, reject, or defer it with a reason.
-7. If a durable handoff is needed, record only reconciled findings and the next action.
+7. If the user explicitly asks another AI client to perform the review, stop here and prepare a concise handoff with the exact review target, REVIEW/VERIFY role, read-only intent when requested, and current evidence. Do not choose or invoke that client autonomously.
 
 One bounded review pass is the default. Additional rounds require a clear reason or explicit user request.`,
   ),
@@ -961,10 +1008,10 @@ function assertUniquePaths(files: GeneratedHarnessFile[]): void {
 export function buildHarnessFiles(selectedSkillIds: string[]): GeneratedHarnessFile[] {
   const skills = HARNESS_SKILLS.filter((item) => selectedSkillIds.includes(item.id));
   const files: GeneratedHarnessFile[] = [
-    { path: 'AGENTS.md', role: 'canonical', consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'], description: '범용 공통 계약·scoped instruction·end-to-end bounded evidence loop·handoff 규칙', content: SHARED_AGENTS_MD },
+    { path: 'AGENTS.md', role: 'canonical', consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'], description: '범용 공통 계약·scoped instruction·end-to-end evidence loop·사용자 주도 handoff 규칙', content: SHARED_AGENTS_MD },
     { path: 'DESIGN.md', role: 'canonical', consumers: ['Codex', 'Claude Code', 'Antigravity', 'Human'], description: 'Google alpha spec 섹션 순서를 따르는 중립 디자인 계약 starter', content: DESIGN_MD_TEMPLATE },
     { path: 'MCP_추천_목록.md', role: 'documentation', consumers: ['Human', 'AI clients'], description: '자동 연결 없이 MCP 용도와 공식 링크만 제공하는 한글 추천 문서', content: MCP_RECOMMENDATIONS_MD },
-    { path: 'CLAUDE.md', role: 'adapter', consumers: ['Claude Code'], description: 'root AGENTS import + nested resolution + loop/handoff semantics를 연결하는 Claude Code 어댑터', content: CLAUDE_MD },
+    { path: 'CLAUDE.md', role: 'adapter', consumers: ['Claude Code'], description: 'root AGENTS import + nested resolution + current-client/handoff semantics를 연결하는 Claude Code 어댑터', content: CLAUDE_MD },
     { path: '.codex/config.toml', role: 'adapter', consumers: ['Codex'], description: 'MCP를 선설정하지 않은 Codex project config starter', content: CODEX_CONFIG_TOML },
     { path: '.mcp.json', role: 'adapter', consumers: ['Claude Code'], description: '서버가 비어 있는 Claude Code project MCP starter', content: EMPTY_MCP_JSON },
     { path: '.agents/rules/project-core.md', role: 'adapter', consumers: ['Antigravity'], description: 'activation이 client-local인 선택적 Antigravity workspace-rule note', content: ANTIGRAVITY_PROJECT_CORE },
@@ -973,15 +1020,15 @@ export function buildHarnessFiles(selectedSkillIds: string[]): GeneratedHarnessF
     { path: 'docs/design/README.md', role: 'documentation', consumers: ['All'], description: 'DESIGN.md를 중복하지 않는 구현 상세 문서 위치', content: '# Design implementation notes\n\nDESIGN.md is the canonical design contract after project-specific adaptation. Store component behavior, responsive exceptions, accessibility notes, and implementation details here without copying canonical values into a second source of truth.\n' },
     { path: 'docs/plans/README.md', role: 'documentation', consumers: ['All'], description: '장기 작업의 승인된 구현 intent 보관 위치', content: '# Plans\n\nStore durable approved implementation intent here with task ID, scope, observable acceptance criteria, assumptions, risks, implementation sequence, verification ladder, and rollback. Plans describe what should happen; they are not completion evidence or a mandatory stopping point when execution was requested. Current execution reality belongs in docs/tasks/<task-id>.md only when durability is useful.\n' },
     { path: 'docs/decisions/README.md', role: 'documentation', consumers: ['All'], description: '기술 의사결정 보관 위치', content: '# Decisions\n\nStore durable architecture decisions with context, alternatives, consequences, and date.\n' },
-    { path: 'docs/tasks/ACTIVE.md', role: 'documentation', consumers: ['All'], description: '세션·에이전트·클라이언트 간 장기 작업 discovery entry point', content: ACTIVE_TASKS_MD },
-    { path: 'docs/tasks/README.md', role: 'documentation', consumers: ['All'], description: 'portable task checkpoint와 resume/handoff protocol', content: TASKS_README },
+    { path: 'docs/tasks/ACTIVE.md', role: 'documentation', consumers: ['All'], description: '장기 작업·명시적 cross-client handoff용 discovery entry point', content: ACTIVE_TASKS_MD },
+    { path: 'docs/tasks/README.md', role: 'documentation', consumers: ['All'], description: 'portable checkpoint·resume·사용자 주도 handoff protocol', content: TASKS_README },
     { path: 'docs/reference/README.md', role: 'documentation', consumers: ['All'], description: '프로젝트 근거·정책·도메인 자료 보관 위치', content: '# Reference\n\nStore durable project references, external source notes, policies, and domain constraints here. Re-check time-sensitive sources before relying on them.\n' },
-    { path: 'docs/ai-harness/README.md', role: 'documentation', consumers: ['All'], description: '범용 하네스·loop engineering·보안·handoff·validator 경계', content: HARNESS_README },
-    { path: 'docs/ai-harness/compatibility.md', role: 'documentation', consumers: ['All'], description: '세 도구 호환성·single-client loop·scoped instructions·task resume 표', content: COMPATIBILITY_MD },
-    { path: 'docs/ai-harness/behavior-evals.md', role: 'documentation', consumers: ['All'], description: 'end-to-end lifecycle·verification loop·routing·scoping·resume 행동 eval', content: BEHAVIOR_EVALS_MD },
+    { path: 'docs/ai-harness/README.md', role: 'documentation', consumers: ['All'], description: '범용 하네스·loop engineering·보안·사용자 주도 handoff·validator 경계', content: HARNESS_README },
+    { path: 'docs/ai-harness/compatibility.md', role: 'documentation', consumers: ['All'], description: '세 도구 호환성·single-client loop·사용자 주도 client switching·task resume 표', content: COMPATIBILITY_MD },
+    { path: 'docs/ai-harness/behavior-evals.md', role: 'documentation', consumers: ['All'], description: 'end-to-end lifecycle·verification loop·scoping·explicit handoff 행동 eval', content: BEHAVIOR_EVALS_MD },
     { path: 'scripts/sync-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'canonical skill을 Claude native path로 merge-only 동기화', content: SYNC_SCRIPT },
     { path: 'scripts/validate-ai-harness.mjs', role: 'helper', consumers: ['Node.js'], description: 'project/starter 모드로 skill mirror·MCP shape·필수 loop/handoff 문서를 검증', content: VALIDATE_SCRIPT },
-    { path: 'README.ai-harness.md', role: 'documentation', consumers: ['Human'], description: '다운로드 패키지를 새/기존 프로젝트에 적용하는 순서', content: '# AI Harness v2 setup\n\n1. New project: inspect the repository and adapt AGENTS.md before treating it as project-specific truth. Existing project: merge useful sections; do not blindly overwrite established instructions or native configs.\n2. Treat the primary workflow as single-client end-to-end engineering: inspect -> plan when needed -> implement -> observe/evaluate -> correct -> re-verify -> complete. Planning is not a default stopping point.\n3. Use the closest real verifier as feedback and broaden checks as confidence grows. Tests are one possible verifier, not a universal requirement. Classify failures before editing again and do not repeat failed actions without new evidence.\n4. Do not stack multiple full Harness/methodology packs blindly. Choose an owner for overlapping rules and add external skills selectively.\n5. Record only real commands, protected paths, generated outputs, deployment boundaries, domain invariants, scoped AGENTS rules, and useful verification mechanisms.\n6. DESIGN.md is intentionally neutral and follows the current alpha section order. Populate it only from verified project/design evidence.\n7. Review MCP_추천_목록.md and connect only external tools the project actually needs. Empty config files are starters, not a requirement to stay empty after adoption. Preserve and merge existing native config files.\n8. Keep only skills that help the project. continue-work is for durable recovery, not same-session continuation ceremony; capability-router is only for ambiguous or multi-capability work.\n9. For genuinely multi-session or cross-client work, keep intent in docs/plans/<task-id>.md, current reality in docs/tasks/<task-id>.md, and discovery in docs/tasks/ACTIVE.md. Remove completed work from ACTIVE.md and do not persist every loop iteration.\n10. Run node scripts/sync-ai-harness.mjs after canonical Skill edits. It preserves unrelated Claude-only Skills and is merge-only, so remove obsolete Harness mirrors intentionally after deleting/renaming a canonical Skill.\n11. Run node scripts/validate-ai-harness.mjs for an adopted project. Use node scripts/validate-ai-harness.mjs --starter when checking the untouched downloaded starter and its intentionally empty MCP configs.\n12. Use docs/ai-harness/behavior-evals.md for representative end-to-end, loop, routing, scoping, and resume checks.\n13. Review each client\'s trust, approval, sandbox, rule activation, MCP credentials, agent availability, and external write permissions locally.\n' },
+    { path: 'README.ai-harness.md', role: 'documentation', consumers: ['Human'], description: '다운로드 패키지를 새/기존 프로젝트에 적용하는 순서', content: '# AI Harness v2 setup\n\n1. New project: inspect the repository and adapt AGENTS.md before treating it as project-specific truth. Existing project: merge useful sections; do not blindly overwrite established instructions or native configs.\n2. Treat the primary workflow as current-client end-to-end engineering: inspect -> plan when needed -> implement -> observe/evaluate -> correct -> re-verify -> complete. Planning is not a default stopping point.\n3. Do not continuously compare or select other AI clients. Stay in the current client unless the user explicitly asks to hand work to another tool.\n4. When an explicit handoff is requested, persist the minimum revision/completed/verification/risk/Next action state. Record target client or PLAN/BUILD/REVIEW/VERIFY only when the user specified it or it is needed to express the requested role.\n5. Use the closest real verifier as feedback and broaden checks as confidence grows. Tests are one possible verifier, not a universal requirement. Classify failures before editing again and do not repeat failed actions without new evidence.\n6. Do not stack multiple full Harness/methodology packs blindly. Choose an owner for overlapping rules and add external skills selectively.\n7. Record only real commands, protected paths, generated outputs, deployment boundaries, domain invariants, scoped AGENTS rules, and useful verification mechanisms.\n8. DESIGN.md is intentionally neutral and follows the current alpha section order. Populate it only from verified project/design evidence.\n9. Review MCP_추천_목록.md and connect only external tools the project actually needs. Empty config files are starters, not a requirement to stay empty after adoption. Preserve and merge existing native config files.\n10. Core Skills cover plan/continue/implement/debug/review/release. capability-router is optional and, when selected, routes only capabilities inside the current client.\n11. For genuinely multi-session work or explicit cross-client handoff, keep intent in docs/plans/<task-id>.md, current reality in docs/tasks/<task-id>.md, and discovery in docs/tasks/ACTIVE.md. Remove completed work from ACTIVE.md and do not persist every loop iteration.\n12. Run node scripts/sync-ai-harness.mjs after canonical Skill edits. It preserves unrelated Claude-only Skills and is merge-only, so remove obsolete Harness mirrors intentionally after deleting/renaming a canonical Skill.\n13. Run node scripts/validate-ai-harness.mjs for an adopted project. Use node scripts/validate-ai-harness.mjs --starter when checking the untouched downloaded starter and its intentionally empty MCP configs.\n14. Use docs/ai-harness/behavior-evals.md for representative end-to-end, loop, scoping, no-auto-switch, explicit-handoff, and resume checks.\n15. Review each client\'s trust, approval, sandbox, rule activation, MCP credentials, agent availability, and external write permissions locally.\n' },
   ];
 
   skills.forEach((item) => {
