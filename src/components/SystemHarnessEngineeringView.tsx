@@ -74,7 +74,13 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
     };
   }, [generatedFiles]);
 
+  const coreSkillCount = DEFAULT_SKILL_IDS.length;
+  const optionalSelectedCount = selectedSkillIds.filter((id) => !DEFAULT_SKILL_IDS.includes(id)).length;
+  const optionalSkillCount = HARNESS_SKILLS.length - coreSkillCount;
+
   const toggleSkill = (id: string) => {
+    const skill = HARNESS_SKILLS.find((item) => item.id === id);
+    if (skill?.defaultSelected) return;
     setSelectedSkillIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
   };
 
@@ -124,16 +130,16 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
               <span className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-300">Portable AI Development Harness v2</span>
             </div>
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">하나의 프로젝트 규칙, 세 도구의 네이티브 환경</h2>
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">하나의 도구로 끝까지, 필요하면 다른 도구가 이어서</h2>
               <p className="mt-3 text-sm sm:text-base leading-7 text-slate-300">
-                Codex·Claude Code·Antigravity가 같은 프로젝트 계약, 공통 Skill, durable task state를 활용하도록 구성합니다. MCP는 프로젝트에 미리 연결하지 않고 <strong className="text-white">빈 네이티브 config 골격 + 추천 목록</strong>만 제공해 사용자가 필요한 연결만 직접 추가합니다.
+                기본 경로는 <strong className="text-white">single-client end-to-end engineering</strong>입니다. Codex·Claude Code·Antigravity 어느 하나만 사용해도 계획이 필요하면 계획하고, 작은 실행→관찰→판정→수정→재검증의 bounded loop로 완료까지 진행합니다. 세션이나 도구가 바뀔 때만 repository-local durable state를 사용합니다.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               {[
-                ['AGENTS.md', '공통 프로젝트 계약', 'Codex/Antigravity native · Claude import + nested emulation'],
-                ['docs/tasks/ACTIVE.md', '교차 클라이언트 재개 지점', 'plan + checkpoint + actual repo state'],
-                ['.agents/skills', '공통 Skill 원본', 'Codex + Antigravity native · Claude mirror'],
+                ['AGENTS.md', '공통 실행 계약', 'scoped rules · end-to-end continuity · bounded evidence loop'],
+                ['.agents/skills', '집중형 Skill 원본', 'Codex + Antigravity native · Claude mirror'],
+                ['docs/tasks/ACTIVE.md', '필요할 때만 durable recovery', 'same-session direct · cross-session/client resume'],
               ].map(([title, label, detail]) => (
                 <div key={title} className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
                   <div className="font-mono font-bold text-emerald-300">{title}</div>
@@ -144,15 +150,30 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
             </div>
           </div>
           <div className="w-full xl:w-[350px] shrink-0 rounded-2xl border border-amber-500/25 bg-amber-500/5 p-4">
-            <div className="flex items-center gap-2 font-bold text-amber-300"><LockKeyhole className="h-4 w-4" />외부 연결은 사용자 소유</div>
-            <p className="mt-2 text-xs leading-5 text-slate-300">MCP 서버, 계정 인증, 토큰, workspace trust, 쓰기 권한은 ZIP에 넣지 않습니다. 빈 config 파일은 경로 안내용이며 실제 연결 상태를 뜻하지 않습니다.</p>
+            <div className="flex items-center gap-2 font-bold text-amber-300"><LockKeyhole className="h-4 w-4" />외부 연결과 기존 config는 사용자 소유</div>
+            <p className="mt-2 text-xs leading-5 text-slate-300">MCP 서버, 계정 인증, 토큰, workspace trust, 쓰기 권한은 ZIP에 넣지 않습니다. 기존 프로젝트에서는 빈 config 골격도 그대로 덮어쓰지 말고 기존 설정과 병합해야 합니다.</p>
           </div>
         </div>
       </section>
 
+      <section className="rounded-3xl border border-emerald-500/20 bg-slate-900/70 p-5 sm:p-6 shadow-xl">
+        <div className="flex items-center gap-2"><Workflow className="h-5 w-5 text-emerald-300" /><h3 className="text-lg font-bold text-white">Loop Engineering 기본 모델</h3></div>
+        <p className="mt-1 text-xs sm:text-sm leading-6 text-slate-400">테스트 자체가 목적이 아니라, 현재 작업에 가장 가까운 실제 피드백을 다음 판단의 입력으로 사용하는 것이 핵심입니다. 테스트가 없으면 build·type·lint·runtime·browser·log·diff 등 존재하는 증거를 사용합니다.</p>
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
+          {[
+            ['1', 'Plan / Frame', '목표·acceptance criteria·다음 작은 slice'],
+            ['2', 'Act', '가장 작은 coherent change 실행'],
+            ['3', 'Observe', '가까운 verifier의 실제 출력 수집'],
+            ['4', 'Evaluate', '기준과 비교·실패 유형 재진단'],
+            ['5', 'Adjust', '근거 있는 최소 수정 후 재검증'],
+          ].map(([step, title, text]) => <div key={step} className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4"><div className="text-[10px] font-black uppercase tracking-wide text-emerald-300">{step}</div><div className="mt-1 font-bold text-white">{title}</div><p className="mt-2 leading-5 text-slate-400">{text}</p></div>)}
+        </div>
+        <div className="mt-3 rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-xs leading-5 text-slate-300"><strong className="text-white">Stop condition:</strong> 같은 행동을 새 정보 없이 반복하지 않습니다. 새 evidence나 state change가 없으면 assumption·environment·verifier·scope를 재진단하고, 계속 막히면 blocker를 명시합니다. 무한 retry는 Loop Engineering이 아닙니다.</div>
+      </section>
+
       <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6 shadow-xl">
         <div className="flex items-center gap-2"><Bot className="h-5 w-5 text-indigo-300" /><h3 className="text-lg font-bold text-white">3개 클라이언트 호환성 계층</h3></div>
-        <p className="mt-1 mb-4 text-xs sm:text-sm text-slate-400">공통 지식·scoped instructions·장기 작업 상태는 저장소에 공유하고, 각 클라이언트의 네이티브 capability와 외부 연결 경계는 분리합니다.</p>
+        <p className="mt-1 mb-4 text-xs sm:text-sm text-slate-400">공통 실행 계약·scoped instructions·evidence loop는 저장소에 공유하고, 각 클라이언트의 네이티브 capability와 외부 연결·권한 경계는 분리합니다.</p>
         <div className="overflow-x-auto rounded-2xl border border-slate-800">
           <table className="min-w-[900px] w-full text-xs">
             <thead className="bg-slate-950 text-slate-400"><tr><th className="px-4 py-3 text-left">도구</th><th className="px-4 py-3 text-left">프로젝트 규칙</th><th className="px-4 py-3 text-left">Skills</th><th className="px-4 py-3 text-left">MCP</th><th className="px-4 py-3 text-left">설계 원칙</th></tr></thead>
@@ -167,14 +188,15 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
 
       <section className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6 shadow-xl">
-          <div className="flex items-center justify-between gap-3 mb-4"><div><div className="flex items-center gap-2"><Workflow className="h-5 w-5 text-purple-300" /><h3 className="font-bold text-white">공통 Skills 선택</h3></div><p className="mt-1 text-xs text-slate-400">.agents/skills를 canonical source로 만들고 Claude 경로에는 같은 내용을 생성합니다.</p></div><span className="rounded-lg bg-purple-500/10 px-2 py-1 text-xs font-bold text-purple-300">{selectedSkillIds.length}/{HARNESS_SKILLS.length}</span></div>
+          <div className="flex items-center justify-between gap-3 mb-4"><div><div className="flex items-center gap-2"><Workflow className="h-5 w-5 text-purple-300" /><h3 className="font-bold text-white">공통 Skills</h3></div><p className="mt-1 text-xs text-slate-400">Harness 계약이 직접 참조하는 Core Skill은 항상 포함하고, 프로젝트 특화 Skill만 선택적으로 추가합니다. .agents/skills가 canonical source이고 Claude 경로에는 같은 내용을 생성합니다.</p></div><span className="rounded-lg bg-purple-500/10 px-2 py-1 text-xs font-bold text-purple-300">Core {coreSkillCount} · 선택 {optionalSelectedCount}/{optionalSkillCount}</span></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {HARNESS_SKILLS.map((skill) => {
               const selected = selectedSkillIds.includes(skill.id);
-              return <button key={skill.id} type="button" aria-pressed={selected} onClick={() => toggleSkill(skill.id)} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-purple-500/40 bg-purple-500/10' : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'}`}><div className="flex items-start gap-3"><span className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-md border ${selected ? 'border-purple-400 bg-purple-500 text-white' : 'border-slate-600 text-transparent'}`}><Check className="h-3.5 w-3.5" /></span><div><div className="font-bold text-white">{skill.name}</div><div className="mt-0.5 text-[10px] uppercase tracking-wide text-purple-300">{skill.category}</div><p className="mt-2 text-xs leading-5 text-slate-400">{skill.shortDescription}</p></div></div></button>;
+              const core = skill.defaultSelected;
+              return <button key={skill.id} type="button" aria-pressed={selected} disabled={core} onClick={() => toggleSkill(skill.id)} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-purple-500/40 bg-purple-500/10' : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'} ${core ? 'cursor-default' : ''}`}><div className="flex items-start gap-3"><span className={`mt-0.5 flex h-5 w-5 items-center justify-center rounded-md border ${selected ? 'border-purple-400 bg-purple-500 text-white' : 'border-slate-600 text-transparent'}`}><Check className="h-3.5 w-3.5" /></span><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><div className="font-bold text-white">{skill.name}</div>{core && <span className="rounded-md border border-purple-500/25 bg-purple-500/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-purple-300">Core</span>}</div><div className="mt-0.5 text-[10px] uppercase tracking-wide text-purple-300">{skill.category}</div><p className="mt-2 text-xs leading-5 text-slate-400">{skill.shortDescription}</p></div></div></button>;
             })}
           </div>
-          <div className="mt-4 rounded-2xl border border-purple-500/20 bg-purple-500/5 p-4 text-xs leading-5 text-slate-300"><Sparkles className="mr-1 inline h-4 w-4 text-purple-300" /><strong className="text-white">Continue work</strong>는 다른 세션·클라이언트의 chat history가 없어도 <span className="font-mono text-purple-200">ACTIVE.md → checkpoint → plan → actual repo</span> 순서로 상태를 복원합니다. Capability router는 capability 선택이 애매한 복합 작업에서만 사용합니다.</div>
+          <div className="mt-4 rounded-2xl border border-purple-500/20 bg-purple-500/5 p-4 text-xs leading-5 text-slate-300"><Sparkles className="mr-1 inline h-4 w-4 text-purple-300" /><strong className="text-white">기본 흐름</strong>은 Core Skill 안의 evidence loop입니다. <strong className="text-white">Continue work</strong>는 현재 context가 부족한 recovery에서만 <span className="font-mono text-purple-200">ACTIVE.md → checkpoint → plan → actual repo</span>를 사용하고, Capability router는 capability 선택이 실제로 애매한 복합 작업에서만 사용합니다.</div>
         </div>
 
         <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6 shadow-xl">
@@ -194,7 +216,7 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
 
       <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-5 sm:p-6 shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div><div className="flex items-center gap-2"><FolderArchive className="h-5 w-5 text-emerald-300" /><h3 className="text-lg font-bold text-white">생성 패키지</h3></div><p className="mt-1 text-xs sm:text-sm text-slate-400">공통 원본·Skill·portable task state를 실제로 생성하고, MCP는 비어 있는 네이티브 config 골격과 한글 추천 문서만 포함합니다.</p></div>
+          <div><div className="flex items-center gap-2"><FolderArchive className="h-5 w-5 text-emerald-300" /><h3 className="text-lg font-bold text-white">생성 패키지</h3></div><p className="mt-1 text-xs sm:text-sm text-slate-400">공통 원본·focused Skill·필요할 때만 쓰는 portable task state를 생성하고, MCP는 비어 있는 네이티브 config starter와 추천 문서만 포함합니다.</p></div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 text-xs text-slate-300">전체 <strong className="text-white">{counts.total}</strong></span>
             <span className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-300">원본 {counts.canonical}</span>
@@ -227,9 +249,9 @@ export const SystemHarnessEngineeringView: React.FC<SystemHarnessEngineeringView
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {[
-          { icon: Sparkles, title: 'Portable Core', text: 'AGENTS.md · DESIGN.md · docs · canonical skills를 프로젝트 지식의 중심으로 둡니다.' },
-          { icon: TerminalSquare, title: 'Cross-client Resume', text: 'ACTIVE.md와 checkpoint/plan을 통해 Antigravity·Codex·Claude Code가 같은 작업을 이어받습니다.' },
-          { icon: ShieldCheck, title: 'Native Capabilities', text: '각 클라이언트에서 실제 연결된 Skill·MCP·내장 도구만 사용하며 권한과 인증은 로컬에 둡니다.' },
+          { icon: Sparkles, title: 'Engineering Loop', text: 'Plan/Frame → Act → Observe → Evaluate → Adjust를 evidence와 stop condition으로 닫습니다.' },
+          { icon: TerminalSquare, title: 'Durable Resume', text: 'ACTIVE.md와 checkpoint/plan은 같은 세션이 아니라 실제 recovery가 필요한 장기 작업에서만 사용합니다.' },
+          { icon: ShieldCheck, title: 'Native Boundaries', text: '각 클라이언트에서 실제 연결된 Skill·MCP·내장 도구만 사용하며 권한과 인증은 로컬에 둡니다.' },
         ].map(({ icon: Icon, title, text }) => <div key={title} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4"><Icon className="h-5 w-5 text-emerald-300" /><div className="mt-2 font-bold text-white">{title}</div><p className="mt-1 text-xs leading-5 text-slate-400">{text}</p></div>)}
       </section>
     </div>
