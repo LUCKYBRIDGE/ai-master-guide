@@ -17,7 +17,7 @@ interface DesignPreExtractionViewProps {
 
 type DesignSource = 'stitch' | 'figma' | 'prototype';
 
-export const DesignPreExtractionView: React.FC<DesignPreExtractionViewProps> = ({ onCopy }) => {
+export const DesignPreExtractionView: React.FC<SystemHarnessEngineeringViewProps> = ({ onCopy }) => {
   const [selectedSource, setSelectedSource] = useState<DesignSource>('stitch');
   const [copied, setCopied] = useState(false);
 
@@ -49,7 +49,7 @@ export const DesignPreExtractionView: React.FC<DesignPreExtractionViewProps> = (
       id: 'prototype' as const,
       title: '실행 가능한 프로토타입',
       eyebrow: '동작·반응형 검증',
-      body: '실행 가능한 프로토타입이나 기존 웹 화면을 이용해 인터랙션과 반응형 규칙을 확인한 뒤 DESIGN.md의 Components, Layout, Accessibility, Do’s and Don’ts를 구체화합니다.',
+      body: '실행 가능한 프로토타입이나 기존 웹 화면을 이용해 인터랙션과 반응형 규칙을 확인한 뒤 DESIGN.md의 Components, Layout, Do’s and Don’ts에 동작·접근성·반응형 기준을 구체화합니다.',
       href: 'https://support.claude.com/en/articles/9487310-what-are-artifacts-and-how-do-i-use-them',
       linkLabel: 'Claude Artifacts 가이드',
     },
@@ -87,7 +87,7 @@ export const DesignPreExtractionView: React.FC<DesignPreExtractionViewProps> = (
 
       <section className="rounded-3xl border border-indigo-500/30 bg-slate-950 shadow-2xl overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-800 p-4 sm:px-6">
-          <div><div className="flex items-center gap-2 text-indigo-300"><Code2 className="h-4 w-4" /><span className="text-xs font-mono font-bold">./DESIGN.md · neutral alpha-compatible starter</span></div><p className="mt-1 text-xs text-slate-400">형식의 골격만 제공하며 프로젝트 고유 토큰과 디자인 결정은 실제 근거를 확인한 뒤 채웁니다.</p></div>
+          <div><div className="flex items-center gap-2 text-indigo-300"><Code2 className="h-4 w-4" /><span className="text-xs font-mono font-bold">./DESIGN.md · neutral alpha-compatible starter</span></div><p className="mt-1 text-xs text-slate-400">Google alpha spec의 표준 섹션 순서를 따르는 골격만 제공하며 프로젝트 고유 토큰과 디자인 결정은 실제 근거를 확인한 뒤 채웁니다.</p></div>
           <button type="button" onClick={handleCopy} className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-indigo-500">{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? '복사됨' : 'DESIGN.md 복사'}</button>
         </div>
         <pre className="max-h-[650px] overflow-auto whitespace-pre-wrap p-4 sm:p-6 font-mono text-[11px] leading-5 text-emerald-300">{DESIGN_MD_TEMPLATE}</pre>
@@ -97,7 +97,7 @@ export const DesignPreExtractionView: React.FC<DesignPreExtractionViewProps> = (
         {[
           ['1', '프로젝트 근거 수집', '기존 UI·Stitch·Figma·프로토타입에서 실제 규칙과 상태를 확인합니다.'],
           ['2', 'DESIGN.md 맞춤화', '확인된 토큰과 디자인 rationale만 프로젝트 계약으로 기록합니다.'],
-          ['3', 'Harness v2 연결', '맞춤 ZIP의 AGENTS.md와 Antigravity bridge가 같은 DESIGN.md를 참조합니다.'],
+          ['3', 'Harness v2 연결', 'root AGENTS.md를 공통 실행 계약으로 두고 UI·design 작업에서 DESIGN.md를 on-demand source로 참조합니다. Antigravity도 같은 AGENTS 계약을 직접 사용합니다.'],
         ].map(([step, title, text]) => <div key={step} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4"><div className="flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-lg bg-purple-500/15 text-xs font-black text-purple-300">{step}</span><span className="font-bold text-white">{title}</span></div><p className="mt-2 text-xs leading-5 text-slate-400">{text}</p></div>)}
       </section>
 
