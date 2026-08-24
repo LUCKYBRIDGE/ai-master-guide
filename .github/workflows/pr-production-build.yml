@@ -66,6 +66,13 @@ jobs:
             await page.getByRole('button', { name: new RegExp('^' + escaped) }).waitFor();
           }
 
+          async function assertGeneratedFileMissing(page, path, message) {
+            const escaped = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            if (await page.getByRole('button', { name: new RegExp('^' + escaped) }).count()) {
+              throw new Error(message || ('Unexpected generated file: ' + path));
+            }
+          }
+
           async function main() {
             const browser = await chromium.launch({ headless: true });
             const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
@@ -78,21 +85,16 @@ jobs:
 
             await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
             await page.getByRole('button', { name: /개발 환경 & 맞춤 ZIP 다운/ }).click();
-            await page.getByRole('heading', { name: '하나의 프로젝트 규칙, 세 도구의 네이티브 환경' }).waitFor();
+            await page.getByRole('heading', { name: '하나의 도구로 끝까지, 필요하면 다른 도구가 이어서' }).waitFor();
 
             for (const path of ['.codex/config.toml', '.mcp.json', '.agents/mcp_config.json', 'docs/tasks/ACTIVE.md']) {
               await waitForGeneratedFile(page, path);
             }
             await waitForGeneratedFile(page, 'MCP_추천_목록.md');
-
-            for (const path of [
-              '.agents/skills/capability-router/SKILL.md',
-              '.claude/skills/capability-router/SKILL.md',
-              '.agents/skills/continue-work/SKILL.md',
-              '.claude/skills/continue-work/SKILL.md',
-            ]) {
-              await waitForGeneratedFile(page, path);
-            }
+            await waitForGeneratedFile(page, '.agents/skills/continue-work/SKILL.md');
+            await waitForGeneratedFile(page, '.claude/skills/continue-work/SKILL.md');
+            await assertGeneratedFileMissing(page, '.agents/skills/capability-router/SKILL.md', 'Capability router must be optional in the default Harness.');
+            await assertGeneratedFileMissing(page, '.claude/skills/capability-router/SKILL.md', 'Claude capability-router mirror must be optional in the default Harness.');
 
             await page.getByText('Playwright MCP', { exact: true }).waitFor();
             await page.getByText('GitHub MCP Server', { exact: true }).waitFor();
@@ -107,16 +109,21 @@ jobs:
               if (!links.some((href) => href.startsWith(expected))) throw new Error('Missing MCP official link: ' + expected);
             }
 
+            await page.getByRole('button', { name: /^Capability router/ }).click();
+            await waitForGeneratedFile(page, '.agents/skills/capability-router/SKILL.md');
+            await waitForGeneratedFile(page, '.claude/skills/capability-router/SKILL.md');
+
+            await page.getByRole('button', { name: '기본값' }).click();
+            await assertGeneratedFileMissing(page, '.agents/skills/capability-router/SKILL.md', 'Optional Capability router remained after reset.');
+
             await page.getByRole('button', { name: /^Browser QA/ }).click();
             await waitForGeneratedFile(page, '.agents/skills/browser-qa/SKILL.md');
             await waitForGeneratedFile(page, '.claude/skills/browser-qa/SKILL.md');
 
             await page.getByRole('button', { name: '기본값' }).click();
-            if (await page.getByRole('button', { name: /^\.agents\/skills\/browser-qa\/SKILL\.md/ }).count()) {
-              throw new Error('Optional Browser QA skill remained after reset.');
-            }
-            await waitForGeneratedFile(page, '.agents/skills/capability-router/SKILL.md');
+            await assertGeneratedFileMissing(page, '.agents/skills/browser-qa/SKILL.md', 'Optional Browser QA skill remained after reset.');
             await waitForGeneratedFile(page, '.agents/skills/continue-work/SKILL.md');
+            await assertGeneratedFileMissing(page, '.agents/skills/capability-router/SKILL.md');
 
             const downloadPromise = page.waitForEvent('download');
             await page.getByRole('button', { name: /Harness v2 ZIP 다운로드/ }).click();
@@ -127,7 +134,7 @@ jobs:
             await page.setViewportSize({ width: 390, height: 844 });
             await page.reload({ waitUntil: 'networkidle' });
             await page.getByRole('button', { name: /개발 환경 & 맞춤 ZIP 다운/ }).click();
-            await page.getByRole('heading', { name: '하나의 프로젝트 규칙, 세 도구의 네이티브 환경' }).waitFor();
+            await page.getByRole('heading', { name: '하나의 도구로 끝까지, 필요하면 다른 도구가 이어서' }).waitFor();
             await waitForGeneratedFile(page, 'docs/tasks/ACTIVE.md');
             await page.screenshot({ path: '/tmp/harness-mobile.png', fullPage: true });
 
@@ -160,18 +167,25 @@ jobs:
           test -f /tmp/harness-default/docs/tasks/ACTIVE.md
           test -f /tmp/harness-default/docs/tasks/README.md
           test -f /tmp/harness-default/docs/ai-harness/behavior-evals.md
-          test -f /tmp/harness-default/.agents/skills/capability-router/SKILL.md
-          test -f /tmp/harness-default/.claude/skills/capability-router/SKILL.md
           test -f /tmp/harness-default/.agents/skills/continue-work/SKILL.md
           test -f /tmp/harness-default/.claude/skills/continue-work/SKILL.md
+          test ! -e /tmp/harness-default/.agents/skills/capability-router/SKILL.md
+          test ! -e /tmp/harness-default/.claude/skills/capability-router/SKILL.md
 
           grep -q 'Scoped instruction resolution' /tmp/harness-default/AGENTS.md
+          grep -q 'End-to-end execution continuity' /tmp/harness-default/AGENTS.md
+          grep -q 'Evidence-driven engineering loop' /tmp/harness-default/AGENTS.md
+          grep -q 'User-driven cross-client handoff' /tmp/harness-default/AGENTS.md
+          grep -q 'Stay in the current AI client by default' /tmp/harness-default/AGENTS.md
           grep -q 'docs/tasks/ACTIVE.md' /tmp/harness-default/AGENTS.md
           grep -q 'AGENTS.override.md' /tmp/harness-default/AGENTS.md
-          grep -q 'Resumes an existing multi-session or cross-client repository task' /tmp/harness-default/.agents/skills/continue-work/SKILL.md
-          grep -q 'Antigravity -> Codex resume' /tmp/harness-default/docs/ai-harness/behavior-evals.md
-          grep -q 'Codex -> Claude Code resume' /tmp/harness-default/docs/ai-harness/behavior-evals.md
-          grep -q 'Claude Code -> Antigravity resume' /tmp/harness-default/docs/ai-harness/behavior-evals.md
+          grep -q 'Resumes an existing durable repository task or explicit cross-client handoff' /tmp/harness-default/.agents/skills/continue-work/SKILL.md
+          grep -q 'No cross-client handoff requested' /tmp/harness-default/docs/ai-harness/behavior-evals.md
+          grep -q 'Explicit cross-client handoff fixture' /tmp/harness-default/docs/ai-harness/behavior-evals.md
+          grep -q 'Explicit review-only handoff' /tmp/harness-default/docs/ai-harness/behavior-evals.md
+          grep -q 'Antigravity -> Codex resume after explicit handoff' /tmp/harness-default/docs/ai-harness/behavior-evals.md
+          grep -q 'Codex -> Claude Code resume after explicit handoff' /tmp/harness-default/docs/ai-harness/behavior-evals.md
+          grep -q 'Claude Code -> Antigravity resume after explicit handoff' /tmp/harness-default/docs/ai-harness/behavior-evals.md
 
           if grep -q '@../../AGENTS.md' /tmp/harness-default/.agents/rules/project-core.md || grep -q '@../../DESIGN.md' /tmp/harness-default/.agents/rules/project-core.md; then
             echo 'Antigravity project-core unexpectedly re-imports shared always-on context.'
@@ -207,6 +221,7 @@ jobs:
 
           cd /tmp/harness-default
           node scripts/validate-ai-harness.mjs
+          node scripts/validate-ai-harness.mjs --starter
           mkdir -p .claude/skills/claude-only
           printf '%s\n' '---' 'name: claude-only' 'description: Claude-only preservation probe.' '---' '# Claude-only skill' > .claude/skills/claude-only/SKILL.md
           node scripts/sync-ai-harness.mjs
