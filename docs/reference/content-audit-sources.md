@@ -175,4 +175,4 @@ AI Development Harness v2의 클라이언트별 경로·DESIGN.md·MCP·Loop Eng
 
 이번 마지막 Loop/구조 보완 단계는 사용자의 요청에 따라 새 실행 테스트를 필수로 돌리지 않았다. 이전 validation-only PR의 성공은 해당 당시 revision에 대한 evidence이며 이후 source-level 정적 보완을 자동으로 증명한다고 소급 해석하지 않는다.
 
-현재 final static-audit source revision은 이 문서를 갱신한 PR head를 기준으로 별도 확인한다. 이번 단계에서 수행한 검토는 공식 현재 문서와 generated path/schema/section semantics 대조, generator source와 UI의 역할·문구 일관성 감사, PR changed-file 범위 확인, 발견된 구조 모순의 source-level correction이다. 실제 vendor model behavior는 generated `docs/ai-harness/behavior-evals.md`를 실제 Codex/Claude Code/Antigravity에서 표본 실행할 때 가장 강하게 검증할 수 있다.
+이번 단계에서 수행한 검토는 공식 현재 문서와 generated path/schema/section semantics 대조, generator source와 UI의 역할·문구 일관성 감사, PR changed-file 범위 확인, 발견된 구조 모순의 source-level correction이다. 실제 vendor model behavior는 generated `docs/ai-harness/behavior-evals.md`를 실제 Codex/Claude Code/Antigravity에서 표본 실행할 때 가장 강하게 검증할 수 있다.
