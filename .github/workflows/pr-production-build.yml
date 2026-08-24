@@ -61,6 +61,11 @@ jobs:
           cat > /tmp/pw/harness-smoke.cjs <<'EOF'
           const { chromium } = require('playwright');
 
+          async function waitForGeneratedFile(page, path) {
+            const escaped = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            await page.getByRole('button', { name: new RegExp('^' + escaped) }).waitFor();
+          }
+
           async function main() {
             const browser = await chromium.launch({ headless: true });
             const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
@@ -76,9 +81,9 @@ jobs:
             await page.getByRole('heading', { name: '하나의 프로젝트 규칙, 세 도구의 네이티브 환경' }).waitFor();
 
             for (const path of ['.codex/config.toml', '.mcp.json', '.agents/mcp_config.json', 'docs/tasks/ACTIVE.md']) {
-              await page.getByText(path, { exact: true }).waitFor();
+              await waitForGeneratedFile(page, path);
             }
-            await page.getByRole('button', { name: /^MCP_추천_목록\.md/ }).waitFor();
+            await waitForGeneratedFile(page, 'MCP_추천_목록.md');
 
             for (const path of [
               '.agents/skills/capability-router/SKILL.md',
@@ -86,7 +91,7 @@ jobs:
               '.agents/skills/continue-work/SKILL.md',
               '.claude/skills/continue-work/SKILL.md',
             ]) {
-              await page.getByText(path, { exact: true }).waitFor();
+              await waitForGeneratedFile(page, path);
             }
 
             await page.getByText('Playwright MCP', { exact: true }).waitFor();
@@ -103,15 +108,15 @@ jobs:
             }
 
             await page.getByRole('button', { name: /^Browser QA/ }).click();
-            await page.getByText('.agents/skills/browser-qa/SKILL.md', { exact: true }).waitFor();
-            await page.getByText('.claude/skills/browser-qa/SKILL.md', { exact: true }).waitFor();
+            await waitForGeneratedFile(page, '.agents/skills/browser-qa/SKILL.md');
+            await waitForGeneratedFile(page, '.claude/skills/browser-qa/SKILL.md');
 
             await page.getByRole('button', { name: '기본값' }).click();
-            if (await page.getByText('.agents/skills/browser-qa/SKILL.md', { exact: true }).count()) {
+            if (await page.getByRole('button', { name: /^\.agents\/skills\/browser-qa\/SKILL\.md/ }).count()) {
               throw new Error('Optional Browser QA skill remained after reset.');
             }
-            await page.getByText('.agents/skills/capability-router/SKILL.md', { exact: true }).waitFor();
-            await page.getByText('.agents/skills/continue-work/SKILL.md', { exact: true }).waitFor();
+            await waitForGeneratedFile(page, '.agents/skills/capability-router/SKILL.md');
+            await waitForGeneratedFile(page, '.agents/skills/continue-work/SKILL.md');
 
             const downloadPromise = page.waitForEvent('download');
             await page.getByRole('button', { name: /Harness v2 ZIP 다운로드/ }).click();
@@ -123,7 +128,7 @@ jobs:
             await page.reload({ waitUntil: 'networkidle' });
             await page.getByRole('button', { name: /개발 환경 & 맞춤 ZIP 다운/ }).click();
             await page.getByRole('heading', { name: '하나의 프로젝트 규칙, 세 도구의 네이티브 환경' }).waitFor();
-            await page.getByText('docs/tasks/ACTIVE.md', { exact: true }).waitFor();
+            await waitForGeneratedFile(page, 'docs/tasks/ACTIVE.md');
             await page.screenshot({ path: '/tmp/harness-mobile.png', fullPage: true });
 
             if (browserErrors.length) throw new Error(browserErrors.join('\n'));
