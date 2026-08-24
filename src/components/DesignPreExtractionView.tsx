@@ -17,7 +17,7 @@ interface DesignPreExtractionViewProps {
 
 type DesignSource = 'stitch' | 'figma' | 'prototype';
 
-export const DesignPreExtractionView: React.FC<SystemHarnessEngineeringViewProps> = ({ onCopy }) => {
+export const DesignPreExtractionView: React.FC<DesignPreExtractionViewProps> = ({ onCopy }) => {
   const [selectedSource, setSelectedSource] = useState<DesignSource>('stitch');
   const [copied, setCopied] = useState(false);
 
