@@ -2,7 +2,7 @@
 
 ## Audit scope
 
-- Verified: 2026-08-24
+- Verified: 2026-08-25
 - Goal: a **project-neutral** Harness that is efficient in one coding client and portable when the **user explicitly chooses** to continue in another.
 - Default lifecycle: `inspect/explore -> plan when needed -> implement -> observe/evaluate -> correct -> re-verify -> complete`.
 - Default client policy: **stay in the current AI client**. The Harness does not continuously compare vendors/models, optimize model cost, choose another client, or switch clients autonomously.
@@ -28,6 +28,7 @@ Portable repository state:
 6. `docs/tasks/ACTIVE.md` + `docs/tasks/<task-id>.md` — durable execution state when recovery or an explicit handoff is needed.
 7. `docs/ai-harness/behavior-evals.md` — semantic behavior acceptance scenarios.
 8. empty/minimal native MCP/config starters.
+9. generated sync, validation, and read-only adoption-audit helpers.
 
 Client/user-local state:
 - model/client choice;
@@ -87,14 +88,7 @@ The agent should not pause during ordinary work to decide whether Codex, Claude 
 
 ## User-driven cross-client handoff
 
-Cross-client behavior is passive until the user asks for it.
-
-Examples:
-- “이제 Codex로 넘길래.”
-- “Claude Code에서 이어서 할 거야.”
-- “Antigravity에서는 검증만 할래.”
-
-At that point the sender stores only the minimum durable state:
+Cross-client behavior is passive until the user asks for it. When a handoff is requested, the sender stores only the minimum durable state:
 - goal/scope;
 - exact branch/revision when relevant;
 - completed work;
@@ -108,12 +102,7 @@ Optional metadata:
 - read-only mode when the user asks for review/verification only;
 - exact review target/revision.
 
-The Harness does **not**:
-- choose the destination client;
-- compare AI prices/performance as a routing step;
-- invoke another vendor automatically;
-- turn role labels into a mandatory pipeline;
-- start agent-to-agent review ping-pong.
+The Harness does **not** choose the destination client, compare AI prices/performance as a routing step, invoke another vendor automatically, turn role labels into a mandatory pipeline, or start agent-to-agent review ping-pong.
 
 The receiving client uses `continue-work` only when durable recovery is needed, reconciles the checkpoint with repository reality, and resumes its normal evidence loop.
 
@@ -128,6 +117,8 @@ The receiving client uses `continue-work` only when durable recovery is needed, 
 - `code-review`
 - `verify-release`
 
+The generator itself enforces this Core set. A direct `buildHarnessFiles([])` call still emits the Core canonical Skills and Claude mirrors, and unknown Skill IDs are rejected rather than silently ignored.
+
 ### Optional
 
 - `capability-router`
@@ -136,19 +127,13 @@ The receiving client uses `continue-work` only when durable recovery is needed, 
 - `security-review`
 - `fresh-context-review`
 
-### Why capability-router is optional
+`capability-router` is optional because a meta-router should not be a tax on clear tasks. When selected, it coordinates ambiguous or multi-capability work **inside the current client only** and never selects another AI client.
 
-A meta-router should not be a tax on clear tasks. When selected, `capability-router` coordinates ambiguous or multi-capability work **inside the current client only**. It never selects another AI client.
-
-### Why fresh-context-review is optional
-
-`fresh-context-review` is one bounded independent read-only pass in the current client. If the user explicitly wants another AI client to review, it prepares a concise exact-revision/read-only handoff instead of selecting or invoking that client autonomously.
+`fresh-context-review` is also optional. It performs one bounded independent read-only pass in the current client. If the user explicitly wants another AI client to review, the Harness prepares a concise exact-revision/read-only handoff instead of selecting or invoking that client autonomously.
 
 ## Durable state model
 
-`continue-work` is recovery, not ceremony.
-
-If current-session context is sufficient, continue directly.
+`continue-work` is recovery, not ceremony. If current-session context is sufficient, continue directly.
 
 When multi-session/high-context recovery or an explicit client transfer is needed:
 - `docs/tasks/ACTIVE.md` = discovery index;
@@ -237,17 +222,45 @@ Recommended references:
 
 Downloaded native configs start empty/minimal. Authentication, credentials, trust, approval, sandbox, and write permission stay user/client-owned.
 
+## Existing-project adoption audit
+
+Generated `scripts/audit-ai-harness-adoption.mjs` is a **read-only preflight** for applying the starter to an existing repository.
+
+It compares the extracted Harness bundle with a target project and reports only path/status metadata:
+- `missing` — the Harness file does not exist in the target;
+- `identical` — both files have the same SHA-256 digest;
+- `different` — the path exists as a file but contents differ;
+- `type-conflict` — the target path exists but is not a regular file.
+
+`--json` exposes the same structured metadata for tooling and includes `readOnly: true`.
+
+The helper does **not** copy, merge, overwrite, rename, or delete target files, and it does not print target file contents. CI verifies the complete target tree hash before and after the audit is identical. The helper also rejects the extracted Harness directory itself as a target and rejects nonexistent/non-directory targets.
+
+This is intentionally an audit, not an installer. Existing project rules, design contracts, native client configuration, credentials, and project-specific knowledge remain project-owned and must be merged intentionally.
+
+### Why stale Claude mirrors are not auto-pruned
+
+The sync helper remains merge-only. Unrelated Claude-only Skills are preserved, and a deleted or renamed canonical Harness Skill requires intentional cleanup of any obsolete Harness-managed Claude mirror.
+
+An experimental ownership marker in Skill frontmatter was considered and rejected. Adding nonstandard management metadata to a cross-client Skill format solely to enable automatic deletion creates compatibility and ownership ambiguity. The safer default is **no guessed deletion**: preservation first, explicit cleanup when a canonical Harness Skill is intentionally removed or renamed.
+
 ## Validator modes
 
 - `node scripts/validate-ai-harness.mjs`
   - adopted-project mode;
-  - validates required package shape, Skill mirrors, MCP JSON shape, contract/eval markers, and credential indicators;
+  - validates required package shape, Core Skill presence, Skill frontmatter, mirrors, MCP JSON shape, contract/eval markers, and credential indicators;
   - valid user-configured MCP entries are allowed.
 - `node scripts/validate-ai-harness.mjs --starter`
   - strict untouched-starter mode;
   - additionally requires empty MCP starters, DESIGN section order, and thin Antigravity-rule invariants.
 
-Important current markers include:
+Negative validation explicitly proves rejection of:
+- missing Core canonical Skill;
+- missing Core Claude mirror;
+- frontmatter `name` mismatch;
+- missing frontmatter `description`.
+
+Important behavior markers include:
 - `User-driven cross-client handoff`;
 - `No cross-client handoff requested`;
 - `Explicit cross-client handoff fixture`;
@@ -255,24 +268,9 @@ Important current markers include:
 
 ## Behavior evals
 
-Generated `docs/ai-harness/behavior-evals.md` covers:
-- direct single-client feature/bug work;
-- broad plan -> same-client implement -> verify continuity;
-- plan-only stop behavior;
-- same-session continuation without recovery ceremony;
-- **no user handoff request -> remain in current client**;
-- explicit cross-client handoff -> compact repository state;
-- review/verify-only transfer -> exact revision/read-only scope;
-- verification failure classification and correction;
-- bounded retry/blocker behavior;
-- nested AGENTS scoping;
-- optional current-client router behavior;
-- zero-MCP fallback;
-- long-task durable state;
-- receiving-client resume in all three client directions after explicit handoff;
-- existing-project config merge safety.
+Generated `docs/ai-harness/behavior-evals.md` covers direct single-client feature/bug work, broad plan-to-implementation continuity, plan-only stop behavior, same-session continuation, no-auto-switch behavior, explicit cross-client handoff, review/verify-only transfer, verification-failure classification, bounded retry/blocker behavior, nested AGENTS scoping, optional current-client routing, zero-MCP fallback, long-task durable state, all three explicit handoff resume directions, and existing-project merge safety.
 
-Static/CI validation cannot mathematically guarantee identical behavior from real Codex, Claude Code, and Antigravity models. Real-client behavior sampling remains a separate acceptance layer.
+Static/CI validation cannot prove identical behavior from real Codex, Claude Code, and Antigravity models. **The three real vendor clients have not been empirically executed as part of this CI.** Running the same behavior fixtures in each actual client remains a separate acceptance layer.
 
 ## Generation boundaries
 
@@ -284,7 +282,7 @@ Always generated:
 - optional Antigravity rule note;
 - task/handoff guidance;
 - compatibility and behavior-eval docs;
-- sync/validation helpers;
+- sync/validation/adoption-audit helpers;
 - six Core Skills and Claude mirrors;
 - user-selected optional Skills and mirrors.
 
@@ -298,33 +296,42 @@ Never generated or decided automatically:
 - destructive permissions;
 - another AI client's connectivity;
 - which AI should PLAN/BUILD/REVIEW/VERIFY;
-- price/performance-based AI switching.
+- price/performance-based AI switching;
+- automatic existing-project merge or overwrite;
+- guessed stale-mirror deletion.
 
 ## Validation evidence
 
-User-driven-handoff source revision validated before this evidence-only documentation update:
-- feature source: `e5214da058c9645ff6426c7afde7e6fb500312ef`
-- validation branch: `bec71ef2f5fcac2d5912480c2706b2e7f781cb10`
-- GitHub Actions `PR Production Build` run `32731675361` (#21): **success**
+Feature source validated before this evidence-only documentation update:
+- feature source: `d1c135d63ae45efb1111cd3f3e607d787c25b4f1`;
+- validation branch: `fa1c118c9fa4773e4c50ec919f6c882e186f78a2`;
+- GitHub Actions `PR Production Build` run `32822289338` (#28): **success**;
+- GitHub Actions `Harness Adoption Audit` run `32822289301` (#2): **success**.
 
-Successful checks:
+Successful checks include:
 - `npm ci`;
 - `npm run build` (`tsc && vite build`);
+- direct generator Core 6 invariant and unknown-Skill-ID rejection;
 - Vite preview;
 - real Chromium desktop and 390x844 mobile smoke;
 - default Core package contains `continue-work` and excludes optional `capability-router`;
 - optional capability-router selection creates canonical + Claude mirror and reset removes them;
 - optional Browser QA selection/reset;
 - actual Harness ZIP download/unzip;
-- new `User-driven cross-client handoff` AGENTS contract;
-- no-auto-switch / explicit-handoff / review-only behavior markers;
 - generated project-mode and starter-mode validator success;
-- empty MCP starter invariants;
-- credential scan;
-- merge-only Skill sync and unrelated Claude-only Skill preservation.
+- negative validator tests for Core canonical/mirror and frontmatter name/description failures;
+- empty MCP starter invariants and credential scan;
+- merge-only Skill sync and unrelated Claude-only Skill preservation;
+- generated adoption-audit helper materialization;
+- `missing` / `identical` / `different` / `type-conflict` classification;
+- JSON output with `readOnly: true`;
+- target tree hash unchanged before/after audit;
+- self-target and nonexistent-target rejection.
+
+One intermediate validation run correctly failed because Markdown backticks were introduced inside a TypeScript template literal that generates the Harness README. The generated text was changed to avoid nested-backtick syntax, after which both full production validation and the dedicated adoption audit passed. This failure is retained as evidence that the validation branch detected a real source defect before finalization.
 
 The pre-existing dependency audit still reports `2 vulnerabilities (1 moderate, 1 high)`; this Harness work changes no dependency/package files.
 
-A final validation run is performed again after this documentation-only evidence update so the PR head and validation record can be aligned exactly.
+A final exact-head validation run is performed again after this evidence-only documentation update so the PR head and validation record can be aligned exactly.
 
 No production deployment is part of this validation.
