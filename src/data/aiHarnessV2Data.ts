@@ -429,9 +429,9 @@ For a new repository, adapt the starter from real repository evidence before tre
 
 For an existing repository, review and merge before overwriting AGENTS.md, DESIGN.md, CLAUDE.md, .codex/config.toml, .mcp.json, or .agents/mcp_config.json. Existing project knowledge and working configuration may be more specific than this starter.
 
-Before copying the starter into an existing repository, run the read-only adoption audit from the extracted Harness directory:
-`node scripts/audit-ai-harness-adoption.mjs /path/to/existing-project`
-It reports only path status (`missing`, `identical`, `different`, `type-conflict`) and never writes to the target.
+Before copying the starter into an existing repository, run the read-only adoption audit from the extracted Harness directory.
+Command: node scripts/audit-ai-harness-adoption.mjs /path/to/existing-project
+It reports only path status values missing, identical, different, and type-conflict, and never writes to the target.
 
 Do not layer multiple full Harness or methodology packs into the same client/project without reconciling overlapping rules, skills, hooks, and configs.
 
