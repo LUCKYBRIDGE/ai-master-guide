@@ -1,0 +1,140 @@
+name: Harness Adoption Audit
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+concurrency:
+  group: harness-adoption-audit-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  adoption-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production app
+        run: npm run build
+
+      - name: Materialize generated Harness
+        run: |
+          rm -rf /tmp/harness-generator-test /tmp/harness-bundle
+          mkdir -p /tmp/harness-generator-test /tmp/harness-bundle
+          ./node_modules/.bin/tsc src/data/aiHarnessV2Data.ts \
+            --target ES2020 \
+            --module commonjs \
+            --moduleResolution node \
+            --skipLibCheck \
+            --outDir /tmp/harness-generator-test
+          GENERATOR_JS="$(find /tmp/harness-generator-test -name aiHarnessV2Data.js -print -quit)"
+          test -n "$GENERATOR_JS"
+          node - "$GENERATOR_JS" <<'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          const modulePath = process.argv[2];
+          const harness = require(modulePath);
+          const root = '/tmp/harness-bundle';
+          for (const file of harness.buildHarnessFiles(harness.DEFAULT_SKILL_IDS)) {
+            const target = path.join(root, file.path);
+            fs.mkdirSync(path.dirname(target), { recursive: true });
+            fs.writeFileSync(target, file.content);
+          }
+          EOF
+          test -f /tmp/harness-bundle/scripts/audit-ai-harness-adoption.mjs
+
+      - name: Validate read-only adoption audit
+        run: |
+          rm -rf /tmp/adoption-target
+          mkdir -p /tmp/adoption-target
+
+          # identical
+          cp /tmp/harness-bundle/CLAUDE.md /tmp/adoption-target/CLAUDE.md
+          # different
+          printf '%s\n' 'existing project design contract' > /tmp/adoption-target/DESIGN.md
+          # type-conflict
+          mkdir -p /tmp/adoption-target/.mcp.json
+          # AGENTS.md intentionally remains missing
+
+          cat > /tmp/hash-tree.cjs <<'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          const crypto = require('crypto');
+          const root = process.argv[2];
+          const rows = [];
+          function walk(dir) {
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+              const full = path.join(dir, entry.name);
+              const rel = path.relative(root, full);
+              if (entry.isDirectory()) {
+                rows.push('d ' + rel);
+                walk(full);
+              } else {
+                const hash = crypto.createHash('sha256').update(fs.readFileSync(full)).digest('hex');
+                rows.push('f ' + rel + ' ' + hash);
+              }
+            }
+          }
+          walk(root);
+          process.stdout.write(crypto.createHash('sha256').update(rows.join('\n')).digest('hex'));
+          EOF
+
+          BEFORE="$(node /tmp/hash-tree.cjs /tmp/adoption-target)"
+          cd /tmp/harness-bundle
+          node scripts/audit-ai-harness-adoption.mjs /tmp/adoption-target --json > /tmp/adoption-audit.json
+          AFTER="$(node /tmp/hash-tree.cjs /tmp/adoption-target)"
+          test "$BEFORE" = "$AFTER"
+
+          node - <<'EOF'
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync('/tmp/adoption-audit.json', 'utf8'));
+          if (report.readOnly !== true) throw new Error('Adoption audit did not declare readOnly=true.');
+          const status = new Map(report.results.map((item) => [item.path, item.status]));
+          const expected = new Map([
+            ['AGENTS.md', 'missing'],
+            ['CLAUDE.md', 'identical'],
+            ['DESIGN.md', 'different'],
+            ['.mcp.json', 'type-conflict'],
+          ]);
+          for (const [file, value] of expected) {
+            if (status.get(file) !== value) throw new Error(`${file}: expected ${value}, got ${status.get(file)}`);
+          }
+          if ((report.counts['source-missing'] || 0) !== 0) throw new Error('Unexpected source-missing entry in generated bundle.');
+          EOF
+
+          node scripts/audit-ai-harness-adoption.mjs /tmp/adoption-target > /tmp/adoption-audit.txt
+          grep -q '^\[missing\] AGENTS.md$' /tmp/adoption-audit.txt
+          grep -q '^\[identical\] CLAUDE.md$' /tmp/adoption-audit.txt
+          grep -q '^\[different\] DESIGN.md$' /tmp/adoption-audit.txt
+          grep -q '^\[type-conflict\] .mcp.json$' /tmp/adoption-audit.txt
+          grep -q 'Read-only audit complete. No target files were modified.' /tmp/adoption-audit.txt
+
+          if node scripts/audit-ai-harness-adoption.mjs /tmp/harness-bundle > /tmp/adoption-self.log 2>&1; then
+            echo 'Adoption audit failed to reject its own extracted Harness directory.'
+            exit 1
+          fi
+          grep -q 'Target project must be different from the extracted Harness directory.' /tmp/adoption-self.log
+
+          if node scripts/audit-ai-harness-adoption.mjs /tmp/definitely-missing-project > /tmp/adoption-missing.log 2>&1; then
+            echo 'Adoption audit failed to reject a nonexistent target directory.'
+            exit 1
+          fi
+          grep -q 'Target project directory does not exist or is not a directory' /tmp/adoption-missing.log
