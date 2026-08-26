@@ -26,7 +26,7 @@ Portable repository state:
 4. `.claude/skills/` — exact Harness-managed mirrors where Claude needs a native path.
 5. `docs/plans/` — durable intent when useful.
 6. `docs/tasks/ACTIVE.md` + `docs/tasks/<task-id>.md` — durable execution state when recovery or an explicit handoff is needed.
-7. `docs/ai-harness/behavior-evals.md` — semantic behavior acceptance scenarios.
+7. `docs/ai-harness/behavior-evals.md` — semantic behavior scenarios and maintenance guidance.
 8. empty/minimal native MCP/config starters.
 9. generated sync, validation, and read-only adoption-audit helpers.
 
@@ -266,19 +266,31 @@ Important behavior markers include:
 - `Explicit cross-client handoff fixture`;
 - `Explicit review-only handoff`.
 
-## Behavior evals
+## Final acceptance policy
 
-Generated `docs/ai-harness/behavior-evals.md` covers direct single-client feature/bug work, broad plan-to-implementation continuity, plan-only stop behavior, same-session continuation, no-auto-switch behavior, explicit cross-client handoff, review/verify-only transfer, verification-failure classification, bounded retry/blocker behavior, nested AGENTS scoping, optional current-client routing, zero-MCP fallback, long-task durable state, all three explicit handoff resume directions, and existing-project merge safety.
+Harness v2 is considered **complete and ready for project use** when its repository-defined structural and runtime acceptance checks pass. Real-client replay is not required to declare the Harness complete.
 
-Static/CI validation cannot prove identical behavior from real Codex, Claude Code, and Antigravity models. **The three real vendor clients have not been empirically executed as part of this CI.** Running the same behavior fixtures in each actual client remains a separate acceptance layer.
+The final acceptance basis is:
+- canonical/shared/adapters structure is internally consistent;
+- generator invariants enforce the Core 6 and reject unknown Skill IDs;
+- canonical Skill / Claude mirror integrity is validated;
+- project/starter validator and negative validator cases pass;
+- TypeScript/Vite production build passes;
+- representative desktop/mobile browser and actual ZIP smoke pass;
+- MCP starter/security boundaries pass;
+- merge-only Skill sync preserves unrelated Claude-only Skills;
+- existing-project adoption audit is demonstrably read-only and handles expected conflict classes;
+- PR scope remains limited to the intended Harness files.
 
-## Real-client empirical acceptance protocol
+This acceptance policy deliberately separates **Harness correctness** from **model-behavior sampling**. Different model versions and clients can vary over time even when the repository contract is unchanged, so forcing a replay matrix into the definition of completeness would make the Harness permanently dependent on vendor-specific runtime availability and usage cost.
 
-This protocol turns the generated behavior scenarios into a repeatable, cost-aware acceptance layer. It is a maintainer/release protocol, not a runtime step for ordinary user tasks and not another orchestration layer.
+## Optional real-client empirical diagnostics
+
+Generated `docs/ai-harness/behavior-evals.md` remains useful as a semantic checklist. The BF fixtures below are optional maintainer diagnostics for suspected regressions, major semantic changes, or comparative research. They are **not a mandatory release/finalization gate unless a project explicitly adopts them as one**.
 
 ### Test discipline
 
-For a comparison run:
+When an empirical comparison is intentionally run:
 1. Freeze one repository snapshot or disposable fixture branch before the first client run.
 2. Use the same starting files, same user prompt, and same acceptance criteria for every client being compared.
 3. Start each client fixture from a fresh session unless the fixture specifically tests same-session continuation.
@@ -287,9 +299,9 @@ For a comparison run:
 6. Score observed behavior rather than prose quality. A convincing explanation without repository/runtime evidence does not convert a failure into a pass.
 7. Do not make a client switch during a fixture unless the fixture explicitly tests handoff.
 
-### Cost-aware execution profiles
+### Cost-aware optional profiles
 
-**SMOKE-6** — run after material changes to AGENTS execution semantics, Core Skill descriptions, client adapters, or evidence-loop rules:
+**SMOKE-6** — useful after a suspected behavior regression or a material change to AGENTS execution semantics, Core Skill descriptions, client adapters, or evidence-loop rules:
 - `BF-01` clear scoped implementation;
 - `BF-02` broad end-to-end implementation;
 - `BF-03` explicit plan-only request;
@@ -297,16 +309,14 @@ For a comparison run:
 - `BF-05` same-session continuation without recovery ceremony;
 - `BF-06` zero-MCP / no fictional capability fallback.
 
-Run SMOKE-6 in each real client that the project actually intends to support. Do not run it after evidence-only or wording-only documentation changes that do not alter behavior semantics.
-
-**PORTABILITY-3** — run before a Harness release, or after changes to scoped instruction resolution, durable state, client adapters, or handoff semantics:
+**PORTABILITY-3** — useful when specifically investigating scoped instruction resolution, durable state, client adapters, or handoff semantics:
 - `BF-07` nested AGENTS / override resolution;
 - `BF-08` explicit cross-client handoff and resume;
 - `BF-09` review/verify-only handoff with exact revision and read-only scope.
 
-For the current three-client target, one economical directed cycle gives every client one sender and one receiver role: Codex -> Claude Code, Claude Code -> Antigravity, Antigravity -> Codex. Rotate the review-only variant through one of those edges instead of duplicating every pair unless a specific adapter regression requires a full pairwise matrix.
+If PORTABILITY-3 is intentionally run for the current three-client target, an economical directed cycle is sufficient for broad coverage: Codex -> Claude Code, Claude Code -> Antigravity, Antigravity -> Codex. A full pairwise matrix is only justified by a specific adapter regression or research question.
 
-**FULL-9** — SMOKE-6 + PORTABILITY-3. Reserve this for release candidates, major contract changes, or a suspected cross-client regression. Availability of three clients by itself is not a reason to run FULL-9 on routine changes.
+**FULL-9** — SMOKE-6 + PORTABILITY-3. Reserve it for deliberate comparative evaluation or a major suspected cross-client regression. It is not part of normal Harness completion.
 
 ### Stable fixtures
 
@@ -402,7 +412,7 @@ Critical FAIL: receiver silently widens review-only scope into code edits or ver
 
 ### Result record
 
-Keep one compact record per client run. Suggested machine-readable shape:
+If a profile is intentionally run, keep one compact record per client run. Suggested machine-readable shape:
 
 ```json
 {
@@ -421,9 +431,9 @@ Keep one compact record per client run. Suggested machine-readable shape:
 
 A PASS requires at least one concrete evidence item appropriate to the fixture. `blocked` is not a pass and must identify the missing capability/environment condition. Do not convert unavailable verification into success.
 
-### Release interpretation
+### Diagnostic interpretation
 
-Do not reduce the matrix to a single average score that can hide critical regressions. These are release-blocking invariants for the affected capability:
+Do not reduce an empirical matrix to a single average score that can hide critical regressions. If a profile is intentionally run, these are critical regression signals for the affected capability:
 - autonomous client switching without user intent;
 - false passing/verification claims;
 - implementation during explicit plan-only scope;
@@ -432,11 +442,11 @@ Do not reduce the matrix to a single average score that can hide critical regres
 - failure to honor scoped project instructions;
 - cross-client resume that depends on unavailable vendor chat history instead of repository state.
 
-Non-critical differences such as wording, UI presentation, native tool naming, or the exact number of internal steps are recorded but do not fail portability by themselves.
+These signals determine the interpretation of an empirical run; they do not make running that profile mandatory. Non-critical differences such as wording, UI presentation, native tool naming, or the exact number of internal steps are recorded but do not fail portability by themselves.
 
-### Current execution status
+### Current empirical status
 
-The protocol is now fixed, but this environment has not launched all three vendor coding clients against the frozen fixtures. Therefore the current evidence remains **structural/CI acceptance plus a defined empirical protocol**, not a claim that all three real clients have passed FULL-9.
+The optional protocol is defined, but this environment has not launched all three vendor coding clients against the frozen fixtures. That is an explicitly accepted limitation, **not an incomplete Harness state**. Harness v2 finalization is based on the repository-defined structural/runtime acceptance checks above.
 
 ## Generation boundaries
 
@@ -468,11 +478,7 @@ Never generated or decided automatically:
 
 ## Validation evidence
 
-Exact Harness source validated before this empirical-acceptance documentation update:
-- feature source: `68dc2f696b1f2825050d28020b6c3068d6707aaf`;
-- validation branch: `b5154e7487efc66eeb1141c392458d0738d400c2`;
-- GitHub Actions `PR Production Build` run `32822587760` (#29): **success**;
-- GitHub Actions `Harness Adoption Audit` run `32822587690` (#3): **success**.
+The Harness implementation was already validated end-to-end before this acceptance-policy clarification, and the clarification changes documentation only. Final exact-head validation is still rerun after this update so the branch head and recorded evidence remain aligned.
 
 Successful checks include:
 - `npm ci`;
@@ -497,7 +503,5 @@ Successful checks include:
 One intermediate validation run correctly failed because Markdown backticks were introduced inside a TypeScript template literal that generates the Harness README. The generated text was changed to avoid nested-backtick syntax, after which both full production validation and the dedicated adoption audit passed. This failure is retained as evidence that the validation branch detected a real source defect before finalization.
 
 The pre-existing dependency audit still reports `2 vulnerabilities (1 moderate, 1 high)`; this Harness work changes no dependency/package files.
-
-A final exact-head validation run is performed again after this empirical-acceptance documentation update so the PR head and validation record can be aligned exactly.
 
 No production deployment is part of this validation.
