@@ -40,6 +40,15 @@ npm run build
 
 현재 `package.json`에는 별도의 `test`·`lint` 스크립트가 없습니다. 자동 테스트나 린트를 실행했다고 보고하지 마세요.
 
+## 배포 역할
+
+- **Production:** GitHub Pages가 공개 운영 환경입니다. `main`에 병합된 변경은 `.github/workflows/deploy.yml`에서 Node.js 24로 `npm ci`와 `npm run build`를 실행한 뒤 새로 생성한 `./dist`를 Pages artifact로 배포합니다.
+- **Pull request validation:** `.github/workflows/pr-production-build.yml`은 `main` 대상 PR에서 `npm ci`와 `npm run build`만 실행하며 배포하지 않습니다.
+- **Preview / secondary validation:** Cloudflare Pages 또는 Workers는 필요할 때 미리보기나 보조 검증에 사용합니다. `wrangler.jsonc`의 static asset 계약도 `./dist`를 가리킵니다.
+- **Generated output:** `dist/`는 빌드 산출물이며 source control의 원본이 아닙니다. 저장소에는 추적하지 않고 각 배포·검증 환경에서 다시 생성합니다.
+
+공개 운영 URL: `https://luckybridge.github.io/ai-master-guide/`
+
 ## 라이선스
 
 MIT License

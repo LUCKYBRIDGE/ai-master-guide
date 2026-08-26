@@ -1,20 +1,21 @@
 import React from 'react';
-import { 
-  BarChart3, 
-  Palette, 
-  Terminal, 
-  Workflow, 
-  ShieldCheck, 
+import {
+  BarChart3,
+  Palette,
+  Terminal,
+  Workflow,
+  ShieldCheck,
   Zap,
-  Plug
+  Plug,
 } from 'lucide-react';
+import { SITE_META } from '../data/siteMeta';
 
-export type TabType = 
-  | 'models-ranking' 
-  | 'design-pre-extraction' 
-  | 'system-engineering' 
+export type TabType =
+  | 'models-ranking'
+  | 'design-pre-extraction'
+  | 'system-engineering'
   | 'mcp-hub'
-  | 'dev-roadmap' 
+  | 'dev-roadmap'
   | 'infra-architecture';
 
 interface HeaderProps {
@@ -22,10 +23,7 @@ interface HeaderProps {
   setActiveTab: (tab: TabType) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
-  activeTab,
-  setActiveTab,
-}) => {
+export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const tabs = [
     {
       id: 'models-ranking' as TabType,
@@ -33,8 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
       label: 'AI 모델 데이터 & 성능 비교',
       subtitle: '공식 사양 · 독립 측정 · 공개 평가',
       icon: BarChart3,
-      color: 'text-indigo-400',
-      activeGradient: 'from-indigo-600 to-indigo-700'
+      activeGradient: 'from-indigo-600 to-indigo-700',
     },
     {
       id: 'design-pre-extraction' as TabType,
@@ -42,8 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
       label: '디자인 준비 (DESIGN.md)',
       subtitle: 'Figma · Stitch · 디자인 규격',
       icon: Palette,
-      color: 'text-purple-400',
-      activeGradient: 'from-purple-600 to-purple-700'
+      activeGradient: 'from-purple-600 to-purple-700',
     },
     {
       id: 'system-engineering' as TabType,
@@ -51,8 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
       label: '개발 환경 & 맞춤 ZIP 다운',
       subtitle: '도구별 지침 · 에이전트 · 스킬',
       icon: Terminal,
-      color: 'text-emerald-400',
-      activeGradient: 'from-emerald-600 to-teal-700'
+      activeGradient: 'from-emerald-600 to-teal-700',
     },
     {
       id: 'mcp-hub' as TabType,
@@ -60,8 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
       label: 'MCP 도구 연결 허브',
       subtitle: 'Playwright · 파일 · GitHub',
       icon: Plug,
-      color: 'text-teal-400',
-      activeGradient: 'from-teal-600 to-emerald-700'
+      activeGradient: 'from-teal-600 to-emerald-700',
     },
     {
       id: 'dev-roadmap' as TabType,
@@ -69,8 +63,7 @@ export const Header: React.FC<HeaderProps> = ({
       label: '웹·앱 개발 6단계 로드맵',
       subtitle: '기획부터 배포까지 전 과정',
       icon: Workflow,
-      color: 'text-cyan-400',
-      activeGradient: 'from-cyan-600 to-blue-700'
+      activeGradient: 'from-cyan-600 to-blue-700',
     },
     {
       id: 'infra-architecture' as TabType,
@@ -78,20 +71,18 @@ export const Header: React.FC<HeaderProps> = ({
       label: '인프라 가이드 (보안·DB·서버)',
       subtitle: '기술 스택 결정 & 프롬프트',
       icon: ShieldCheck,
-      color: 'text-rose-400',
-      activeGradient: 'from-rose-600 to-red-700'
-    }
+      activeGradient: 'from-rose-600 to-red-700',
+    },
   ];
 
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-800/80 backdrop-blur-xl bg-slate-950/80">
       <div className="max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8">
-        {/* Brand & Top Status */}
         <div className="flex flex-col md:flex-row md:items-center justify-between py-3.5 gap-3 border-b border-slate-800/60">
           <div className="flex items-center gap-3">
             <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-emerald-500 shadow-lg shadow-indigo-500/20 text-white font-black">
               <Zap className="w-5 h-5 text-white" />
-              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-slate-950 animate-pulse"></div>
+              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-slate-950 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -99,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
                   AI 기반 프로덕트 개발 마스터 가이드
                 </h1>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  v2026.08
+                  {SITE_META.version}
                 </span>
               </div>
               <p className="text-xs text-slate-400">
@@ -108,15 +99,13 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Quick Info Pill */}
           <div className="flex items-center gap-2 text-xs font-mono">
             <span className="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">
-              ⚡ 데이터 검증: <strong className="text-emerald-400">2026.08.20</strong>
+              ⚡ 데이터 검증: <strong className="text-emerald-400">{SITE_META.auditDate}</strong>
             </span>
           </div>
         </div>
 
-        {/* 6 Master Navigation Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2.5 -mx-4 px-4 sm:mx-0 sm:px-0">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -128,7 +117,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-2xl text-left transition-all shrink-0 border ${
                   isActive
                     ? `bg-gradient-to-r ${tab.activeGradient} text-white border-white/20 shadow-lg shadow-indigo-500/10 scale-[1.02]`
-                    : 'bg-slate-900/60 hover:bg-slate-850/80 text-slate-400 hover:text-slate-200 border-slate-850'
+                    : 'bg-slate-900/60 hover:bg-slate-800/80 text-slate-400 hover:text-slate-200 border-slate-800'
                 }`}
               >
                 <div
@@ -143,23 +132,15 @@ export const Header: React.FC<HeaderProps> = ({
                 <div>
                   <div className="flex items-center gap-1.5">
                     <span
-                      className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                        isActive
-                          ? 'bg-black/20 text-white'
-                          : 'bg-slate-800 text-slate-400'
+                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        isActive ? 'bg-black/20 text-white' : 'bg-slate-800 text-slate-400'
                       }`}
                     >
                       {tab.number}
                     </span>
-                    <span className="text-xs font-bold whitespace-nowrap">
-                      {tab.label}
-                    </span>
+                    <span className="text-xs font-bold whitespace-nowrap">{tab.label}</span>
                   </div>
-                  <p
-                    className={`text-[10px] whitespace-nowrap ${
-                      isActive ? 'text-white/80' : 'text-slate-400'
-                    }`}
-                  >
+                  <p className={`text-[10px] whitespace-nowrap ${isActive ? 'text-white/80' : 'text-slate-400'}`}>
                     {tab.subtitle}
                   </p>
                 </div>

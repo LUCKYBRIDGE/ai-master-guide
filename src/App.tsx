@@ -1,18 +1,35 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { Header, TabType } from './components/Header';
 import { ModelRankingComparisonView } from './components/ModelRankingComparisonView';
-import { DesignPreExtractionView } from './components/DesignPreExtractionView';
-import { SystemHarnessEngineeringView } from './components/SystemHarnessEngineeringView';
-import { McpHubGuideView } from './components/McpHubGuideView';
-import { VisualDevRoadmapView } from './components/VisualDevRoadmapView';
-import { InfraArchitectureGuideView } from './components/InfraArchitectureGuideView';
 import { Toast } from './components/Toast';
 import { Footer } from './components/Footer';
 
+const DesignPreExtractionView = lazy(() =>
+  import('./components/DesignPreExtractionView').then((module) => ({ default: module.DesignPreExtractionView })),
+);
+const SystemHarnessEngineeringView = lazy(() =>
+  import('./components/SystemHarnessEngineeringView').then((module) => ({ default: module.SystemHarnessEngineeringView })),
+);
+const McpHubGuideView = lazy(() =>
+  import('./components/McpHubGuideView').then((module) => ({ default: module.McpHubGuideView })),
+);
+const VisualDevRoadmapView = lazy(() =>
+  import('./components/VisualDevRoadmapView').then((module) => ({ default: module.VisualDevRoadmapView })),
+);
+const InfraArchitectureGuideView = lazy(() =>
+  import('./components/InfraArchitectureGuideView').then((module) => ({ default: module.InfraArchitectureGuideView })),
+);
+
+function TabLoadingFallback() {
+  return (
+    <div className="flex min-h-48 items-center justify-center rounded-3xl border border-slate-800 bg-slate-900/50 text-sm text-slate-400">
+      화면을 불러오는 중입니다.
+    </div>
+  );
+}
+
 export function App() {
   const [activeTab, setActiveTab] = useState<TabType>('models-ranking');
-  
-  // Toast state
   const [toastMessage, setToastMessage] = useState<string>('');
   const [isToastVisible, setIsToastVisible] = useState<boolean>(false);
 
@@ -26,7 +43,7 @@ export function App() {
       navigator.clipboard.writeText(text).then(() => {
         showToast(`'${title}' 내용이 클립보드에 복사되었습니다!`);
       }).catch(() => {
-        showToast(`클립보드 복사 완료`);
+        showToast('클립보드 복사 완료');
       });
     } else {
       const textarea = document.createElement('textarea');
@@ -41,53 +58,28 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200">
-      {/* Top Header with 6 Master Tabs */}
-      <Header
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* Main Content View Container */}
       <main className="flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-6">
-        {/* Tab 1: AI 모델 공식 데이터와 출처별 성능 비교 */}
-        {activeTab === 'models-ranking' && (
+        {activeTab === 'models-ranking' ? (
           <ModelRankingComparisonView />
-        )}
-
-        {/* Tab 2: 앱·웹 디자인 사전 추출 (Stitch, Figma, Tokens) */}
-        {activeTab === 'design-pre-extraction' && (
-          <DesignPreExtractionView onCopy={handleCopyText} />
-        )}
-
-        {/* Tab 3: 개발 환경 & ZIP 다운로드 (지침, 스킬, 서브에이전트) */}
-        {activeTab === 'system-engineering' && (
-          <SystemHarnessEngineeringView onCopy={handleCopyText} />
-        )}
-
-        {/* Tab 4: MCP 연결 허브 & 가이드 (Playwright, Filesystem, GitHub 등) */}
-        {activeTab === 'mcp-hub' && (
-          <McpHubGuideView onCopy={handleCopyText} />
-        )}
-
-        {/* Tab 5: 시각적 웹·앱 개발 로드맵 & 계획 수립 */}
-        {activeTab === 'dev-roadmap' && (
-          <VisualDevRoadmapView onCopy={handleCopyText} />
-        )}
-
-        {/* Tab 6: 인프라 의사결정: 보안 · DB · 서버 가이드 */}
-        {activeTab === 'infra-architecture' && (
-          <InfraArchitectureGuideView onCopy={handleCopyText} />
+        ) : (
+          <Suspense fallback={<TabLoadingFallback />}>
+            {activeTab === 'design-pre-extraction' && <DesignPreExtractionView onCopy={handleCopyText} />}
+            {activeTab === 'system-engineering' && <SystemHarnessEngineeringView onCopy={handleCopyText} />}
+            {activeTab === 'mcp-hub' && <McpHubGuideView onCopy={handleCopyText} />}
+            {activeTab === 'dev-roadmap' && <VisualDevRoadmapView onCopy={handleCopyText} />}
+            {activeTab === 'infra-architecture' && <InfraArchitectureGuideView onCopy={handleCopyText} />}
+          </Suspense>
         )}
       </main>
 
-      {/* Toast Notification */}
       <Toast
         message={toastMessage}
         isVisible={isToastVisible}
         onClose={() => setIsToastVisible(false)}
       />
 
-      {/* Footer */}
       <Footer />
     </div>
   );

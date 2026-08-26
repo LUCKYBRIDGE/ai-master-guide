@@ -1,4 +1,5 @@
-# Claude Code Skills (.claude/skills/)
-Claude Code uses this directory for CLI-specific slash command scripts and workflows.
-- Shared procedural skills reside under `.agents/skills/` and are referenced via `CLAUDE.md`.
-- Place Claude CLI-specific slash command scripts in this directory.
+# Claude Code skill mirrors
+
+The six directories in this folder mirror the Harness-managed Core 6 procedures under `.agents/skills/` so Claude Code can use the same project workflow without duplicating project policy.
+
+`.agents/skills/` is the canonical shared procedure set. Keep mirror contents synchronized when a Core skill changes. Claude-specific behavior belongs in `CLAUDE.md` or `.claude/rules/`.

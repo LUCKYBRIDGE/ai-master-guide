@@ -1,7 +1,8 @@
-# Tool Selection & MCP Routing Rules
+# Tool Selection & Capability Rules
 
-## 1. Routing Strategy
-- **File System & Code Inspection**: Use built-in fast file viewing, ripgrep search, and directory listing tools.
-- **Execution & Build**: Run commands in project subdirectories with clean cwd isolation.
-- **Web & Visual Verification**: Utilize Puppeteer MCP or Browser tools when visual layout, DOM inspection, or end-to-end user workflows need validation.
-- **Specialized Tasks**: Delegate deep research or multi-file refactoring to dedicated subagents or procedural skills in `.agents/skills/`.
+- Prefer built-in file, search, execution, browser, Git, and connector capabilities that are actually available in the current client/session.
+- Use a project skill directly when the task clearly matches it. Core workflow transitions do not require a routing skill.
+- Treat MCP recommendation documents and empty config examples as documentation only; they are not availability signals.
+- Do not assume Puppeteer, Playwright, GitHub, filesystem, database, or any other MCP is connected. Verify availability before use.
+- Stay in the current AI client by default. Move work to another client only when the user explicitly requests a handoff.
+- Do not install, authenticate, or widen external permissions without explicit user intent.
