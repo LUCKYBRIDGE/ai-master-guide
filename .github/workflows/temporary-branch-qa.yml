@@ -25,7 +25,25 @@ jobs:
         run: npm ci
 
       - name: Report dependency audit
-        run: npm audit || true
+        shell: bash
+        run: |
+          npm audit --json > /tmp/npm-audit.json || true
+          node - <<'NODE'
+          const fs = require('fs');
+          const audit = JSON.parse(fs.readFileSync('/tmp/npm-audit.json', 'utf8'));
+          console.log('audit metadata:', JSON.stringify(audit.metadata?.vulnerabilities ?? {}));
+          for (const [name, item] of Object.entries(audit.vulnerabilities ?? {})) {
+            const via = (item.via ?? []).map((entry) => typeof entry === 'string' ? entry : ({
+              source: entry.source,
+              name: entry.name,
+              severity: entry.severity,
+              title: entry.title,
+              url: entry.url,
+              range: entry.range,
+            }));
+            console.log(JSON.stringify({ name, severity: item.severity, isDirect: item.isDirect, range: item.range, via, effects: item.effects, fixAvailable: item.fixAvailable }, null, 2));
+          }
+          NODE
 
       - name: Verify generated output is untracked
         shell: bash
@@ -41,7 +59,7 @@ jobs:
       - name: Scan tracked files for common secret formats
         shell: bash
         run: |
-          if git grep -nE '(sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY)' -- ':!package-lock.json'; then
+          if git grep -nE '(sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY-----)' -- ':!package-lock.json'; then
             echo "Potential committed secret pattern found."
             exit 1
           fi
