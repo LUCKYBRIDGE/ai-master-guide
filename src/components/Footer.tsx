@@ -1,11 +1,11 @@
 import React from 'react';
-import { CalendarCheck, ShieldCheck, RefreshCw, ExternalLink, Heart } from 'lucide-react';
+import { CalendarCheck, ShieldCheck, RefreshCw, ExternalLink } from 'lucide-react';
+import { SITE_META } from '../data/siteMeta';
 
 export const Footer: React.FC = () => {
   return (
     <footer className="border-t border-slate-800/80 bg-slate-950/80 mt-16 py-12 text-slate-400 text-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        {/* Update & Maintenance Info Banner */}
         <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-white font-bold text-sm">
@@ -18,50 +18,38 @@ export const Footer: React.FC = () => {
           </div>
           <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium">
             <CalendarCheck className="w-4 h-4" />
-            <span>최신 데이터 기준일: 2026년 8월</span>
+            <span>최신 데이터 기준일: {SITE_META.auditMonthLabel}</span>
           </div>
         </div>
 
-        {/* Links & Attribution */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 pt-4 border-t border-slate-900">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-slate-900">
           <div>
-            <h5 className="font-bold text-white mb-2">OpenAI 생태계</h5>
+            <h5 className="font-bold text-white mb-2">OpenAI 개발</h5>
             <ul className="space-y-1.5">
+              <li><a href="https://developers.openai.com/codex/" target="_blank" rel="noreferrer" className="hover:text-slate-200 flex items-center gap-1">Codex Documentation <ExternalLink className="w-3 h-3" /></a></li>
               <li><a href="https://developers.openai.com/" target="_blank" rel="noreferrer" className="hover:text-slate-200 flex items-center gap-1">OpenAI Developers <ExternalLink className="w-3 h-3" /></a></li>
-              <li><a href="https://openai.com/index/introducing-canvas/" target="_blank" rel="noreferrer" className="hover:text-slate-200 flex items-center gap-1">Canvas Guide <ExternalLink className="w-3 h-3" /></a></li>
             </ul>
           </div>
 
           <div>
-            <h5 className="font-bold text-white mb-2">Google 생태계</h5>
+            <h5 className="font-bold text-white mb-2">Anthropic 개발</h5>
             <ul className="space-y-1.5">
-              <li><a href="https://ai.google.dev/" target="_blank" rel="noreferrer" className="hover:text-slate-200 flex items-center gap-1">Google AI Studio <ExternalLink className="w-3 h-3" /></a></li>
-              <li><a href="https://deepmind.google/" target="_blank" rel="noreferrer" className="hover:text-slate-200 flex items-center gap-1">Google DeepMind <ExternalLink className="w-3 h-3" /></a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h5 className="font-bold text-white mb-2">Anthropic 생태계</h5>
-            <ul className="space-y-1.5">
-              <li><a href="https://docs.anthropic.com/" target="_blank" rel="noreferrer" className="hover:text-slate-200 flex items-center gap-1">Claude Documentation <ExternalLink className="w-3 h-3" /></a></li>
               <li><a href="https://code.claude.com/docs/en/overview" target="_blank" rel="noreferrer" className="hover:text-slate-200 flex items-center gap-1">Claude Code <ExternalLink className="w-3 h-3" /></a></li>
+              <li><a href="https://docs.anthropic.com/" target="_blank" rel="noreferrer" className="hover:text-slate-200 flex items-center gap-1">Anthropic Documentation <ExternalLink className="w-3 h-3" /></a></li>
             </ul>
           </div>
 
           <div>
-            <h5 className="font-bold text-white mb-2">xAI 생태계</h5>
+            <h5 className="font-bold text-white mb-2">Google 개발</h5>
             <ul className="space-y-1.5">
-              <li><a href="https://x.ai/" target="_blank" rel="noreferrer" className="hover:text-slate-200 flex items-center gap-1">xAI Official <ExternalLink className="w-3 h-3" /></a></li>
-              <li><a href="https://docs.x.ai/" target="_blank" rel="noreferrer" className="hover:text-slate-200 flex items-center gap-1">xAI API Docs <ExternalLink className="w-3 h-3" /></a></li>
+              <li><a href="https://antigravity.google/docs/overview" target="_blank" rel="noreferrer" className="hover:text-slate-200 flex items-center gap-1">Antigravity Documentation <ExternalLink className="w-3 h-3" /></a></li>
+              <li><a href="https://ai.google.dev/" target="_blank" rel="noreferrer" className="hover:text-slate-200 flex items-center gap-1">Google AI for Developers <ExternalLink className="w-3 h-3" /></a></li>
             </ul>
           </div>
         </div>
 
-        {/* Copyright */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-900 text-slate-500 text-[11px]">
-          <div>
-            © 2026 AI Master Guide & Knowledge Hub. Built with AI & Data Visualization Best Practices.
-          </div>
+          <div>© 2026 AI Master Guide & Knowledge Hub. Built with AI & Data Visualization Best Practices.</div>
           <div className="flex items-center gap-1.5">
             <span>공식 1차 자료 우선 · 조건 없는 수치와 무결성 보증 금지</span>
             <ShieldCheck className="w-4 h-4 text-blue-400" />
