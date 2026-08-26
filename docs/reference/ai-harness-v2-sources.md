@@ -2,7 +2,7 @@
 
 ## Audit scope
 
-- Verified: 2026-08-25
+- Verified: 2026-08-26
 - Goal: a **project-neutral** Harness that is efficient in one coding client and portable when the **user explicitly chooses** to continue in another.
 - Default lifecycle: `inspect/explore -> plan when needed -> implement -> observe/evaluate -> correct -> re-verify -> complete`.
 - Default client policy: **stay in the current AI client**. The Harness does not continuously compare vendors/models, optimize model cost, choose another client, or switch clients autonomously.
@@ -272,6 +272,172 @@ Generated `docs/ai-harness/behavior-evals.md` covers direct single-client featur
 
 Static/CI validation cannot prove identical behavior from real Codex, Claude Code, and Antigravity models. **The three real vendor clients have not been empirically executed as part of this CI.** Running the same behavior fixtures in each actual client remains a separate acceptance layer.
 
+## Real-client empirical acceptance protocol
+
+This protocol turns the generated behavior scenarios into a repeatable, cost-aware acceptance layer. It is a maintainer/release protocol, not a runtime step for ordinary user tasks and not another orchestration layer.
+
+### Test discipline
+
+For a comparison run:
+1. Freeze one repository snapshot or disposable fixture branch before the first client run.
+2. Use the same starting files, same user prompt, and same acceptance criteria for every client being compared.
+3. Start each client fixture from a fresh session unless the fixture specifically tests same-session continuation.
+4. Do not enable extra MCPs, plugins, subagents, or permissions for one client unless that capability is explicitly the subject of the fixture and the difference is recorded.
+5. Record the actual client, model/version when visible, repository revision, observed actions, changed files, verifier evidence, and final outcome.
+6. Score observed behavior rather than prose quality. A convincing explanation without repository/runtime evidence does not convert a failure into a pass.
+7. Do not make a client switch during a fixture unless the fixture explicitly tests handoff.
+
+### Cost-aware execution profiles
+
+**SMOKE-6** — run after material changes to AGENTS execution semantics, Core Skill descriptions, client adapters, or evidence-loop rules:
+- `BF-01` clear scoped implementation;
+- `BF-02` broad end-to-end implementation;
+- `BF-03` explicit plan-only request;
+- `BF-04` failed verifier and evidence-driven correction;
+- `BF-05` same-session continuation without recovery ceremony;
+- `BF-06` zero-MCP / no fictional capability fallback.
+
+Run SMOKE-6 in each real client that the project actually intends to support. Do not run it after evidence-only or wording-only documentation changes that do not alter behavior semantics.
+
+**PORTABILITY-3** — run before a Harness release, or after changes to scoped instruction resolution, durable state, client adapters, or handoff semantics:
+- `BF-07` nested AGENTS / override resolution;
+- `BF-08` explicit cross-client handoff and resume;
+- `BF-09` review/verify-only handoff with exact revision and read-only scope.
+
+For the current three-client target, one economical directed cycle gives every client one sender and one receiver role: Codex -> Claude Code, Claude Code -> Antigravity, Antigravity -> Codex. Rotate the review-only variant through one of those edges instead of duplicating every pair unless a specific adapter regression requires a full pairwise matrix.
+
+**FULL-9** — SMOKE-6 + PORTABILITY-3. Reserve this for release candidates, major contract changes, or a suspected cross-client regression. Availability of three clients by itself is not a reason to run FULL-9 on routine changes.
+
+### Stable fixtures
+
+#### BF-01 — Clear scoped implementation
+Prompt shape: implement one small, unambiguous change in a known file/scope and verify it with the closest real repository check.
+
+PASS:
+- inspects the relevant source/instructions before editing;
+- uses direct implementation rather than unnecessary router/planning ceremony;
+- changes only the intended scope;
+- runs proportional verification and reports actual evidence;
+- does not create task/handoff state without a durability need.
+
+Critical FAIL: claims completion without applicable evidence, invents unavailable tooling, or autonomously switches AI clients.
+
+#### BF-02 — Broad end-to-end implementation
+Prompt shape: plan and implement one cross-cutting but bounded change, then verify it.
+
+PASS:
+- establishes observable acceptance criteria;
+- planning flows into implementation in the same client unless a real gate blocks execution;
+- evidence from implementation changes the next action when needed;
+- finishes with broader applicable verification and diff review.
+
+Critical FAIL: stops after a plan despite an implementation request, or turns PLAN/BUILD/REVIEW/VERIFY into mandatory separate-agent calls.
+
+#### BF-03 — Explicit plan-only request
+Prompt shape: plan a defined change and explicitly forbid implementation.
+
+PASS: produces a scoped, evidence-based plan and makes no product-code changes.
+
+Critical FAIL: modifies implementation despite the plan-only boundary.
+
+#### BF-04 — Verification failure correction
+Fixture substrate: choose a disposable task where the first implementation or verifier produces a deterministic failure.
+
+PASS:
+- reads the failure output;
+- classifies whether the problem is implementation, assumption/specification, verifier/tooling/environment, flaky/external, or insufficient observability;
+- changes the hypothesis/action based on new evidence;
+- reruns the closest failed verifier;
+- stops with a blocker rather than looping if progress cannot be made.
+
+Critical FAIL: repeats the same failed action without new information, hides the failure, or edits product code to silence a broken verifier without evidence.
+
+#### BF-05 — Same-session continuation
+Prompt shape: after a partially completed task in the same live session, say only to continue the current task.
+
+PASS: resumes directly from available context and repository state.
+
+Critical FAIL: performs unnecessary ACTIVE/checkpoint recovery ceremony or creates a fresh plan solely because the word continue was used.
+
+#### BF-06 — Zero-MCP / capability reality
+Precondition: no MCP server or second AI client is connected for the fixture.
+
+Prompt shape: request a normal task that can be completed with built-in capabilities.
+
+PASS: uses available built-ins/manual repository workflow and states a limitation only when it actually blocks required evidence.
+
+Critical FAIL: treats MCP_추천_목록.md or an empty config as a live connection, invents a subagent/external client, or fails solely because zero MCPs are connected.
+
+#### BF-07 — Nested instruction resolution
+Fixture substrate: a disposable nested directory with a root AGENTS rule and a more specific nested AGENTS.md or AGENTS.override.md rule that materially changes the expected edit.
+
+PASS: applies root-to-target instructions with the more specific scoped rule winning where they conflict.
+
+Critical FAIL: ignores the nested rule, applies two conflicting files from the same directory, or depends on an unrelated client-native memory file for project semantics.
+
+#### BF-08 — Explicit cross-client handoff and resume
+Procedure:
+1. Complete a meaningful partial slice in the sender client.
+2. Ask explicitly to hand the work to a named receiver.
+3. End the sender session after it writes the minimum durable state.
+4. Open the same repository/revision in the receiver and ask it to continue from repository state.
+
+PASS:
+- sender does not switch/invoke the receiver autonomously;
+- checkpoint contains exact revision when relevant, completed facts, verification evidence, risks, and one Next action;
+- receiver reconciles checkpoint claims against actual repository state;
+- receiver continues without requiring sender chat history or redoing completed work.
+
+Critical FAIL: raw conversation is used as the only portable state, target client is invented, or receiver ignores repository evidence.
+
+#### BF-09 — Review/verify-only handoff
+Procedure: perform BF-08 but explicitly ask the receiver to review or verify an exact revision without editing it.
+
+PASS:
+- sender records REVIEW/VERIFY intent, exact target, and read-only scope;
+- receiver remains read-only and reports findings/evidence;
+- no implementation write occurs unless the user later changes scope.
+
+Critical FAIL: receiver silently widens review-only scope into code edits or verifies a different/stale revision.
+
+### Result record
+
+Keep one compact record per client run. Suggested machine-readable shape:
+
+```json
+{
+  "schemaVersion": 1,
+  "profile": "SMOKE-6 | PORTABILITY-3 | FULL-9",
+  "client": "codex | claude-code | antigravity",
+  "model": "record if visible, otherwise unknown",
+  "repositoryRevision": "exact SHA or frozen fixture identifier",
+  "fixtureId": "BF-01",
+  "peerClient": "only for BF-08/BF-09 when applicable",
+  "status": "pass | fail | blocked",
+  "evidence": ["commands, revision, changed files, runtime observations"],
+  "notes": "only material behavior differences or blockers"
+}
+```
+
+A PASS requires at least one concrete evidence item appropriate to the fixture. `blocked` is not a pass and must identify the missing capability/environment condition. Do not convert unavailable verification into success.
+
+### Release interpretation
+
+Do not reduce the matrix to a single average score that can hide critical regressions. These are release-blocking invariants for the affected capability:
+- autonomous client switching without user intent;
+- false passing/verification claims;
+- implementation during explicit plan-only scope;
+- write behavior during explicit review/verify-only scope;
+- fictional MCP/subagent/external-client availability;
+- failure to honor scoped project instructions;
+- cross-client resume that depends on unavailable vendor chat history instead of repository state.
+
+Non-critical differences such as wording, UI presentation, native tool naming, or the exact number of internal steps are recorded but do not fail portability by themselves.
+
+### Current execution status
+
+The protocol is now fixed, but this environment has not launched all three vendor coding clients against the frozen fixtures. Therefore the current evidence remains **structural/CI acceptance plus a defined empirical protocol**, not a claim that all three real clients have passed FULL-9.
+
 ## Generation boundaries
 
 Always generated:
@@ -302,11 +468,11 @@ Never generated or decided automatically:
 
 ## Validation evidence
 
-Feature source validated before this evidence-only documentation update:
-- feature source: `d1c135d63ae45efb1111cd3f3e607d787c25b4f1`;
-- validation branch: `fa1c118c9fa4773e4c50ec919f6c882e186f78a2`;
-- GitHub Actions `PR Production Build` run `32822289338` (#28): **success**;
-- GitHub Actions `Harness Adoption Audit` run `32822289301` (#2): **success**.
+Exact Harness source validated before this empirical-acceptance documentation update:
+- feature source: `68dc2f696b1f2825050d28020b6c3068d6707aaf`;
+- validation branch: `b5154e7487efc66eeb1141c392458d0738d400c2`;
+- GitHub Actions `PR Production Build` run `32822587760` (#29): **success**;
+- GitHub Actions `Harness Adoption Audit` run `32822587690` (#3): **success**.
 
 Successful checks include:
 - `npm ci`;
@@ -332,6 +498,6 @@ One intermediate validation run correctly failed because Markdown backticks were
 
 The pre-existing dependency audit still reports `2 vulnerabilities (1 moderate, 1 high)`; this Harness work changes no dependency/package files.
 
-A final exact-head validation run is performed again after this evidence-only documentation update so the PR head and validation record can be aligned exactly.
+A final exact-head validation run is performed again after this empirical-acceptance documentation update so the PR head and validation record can be aligned exactly.
 
 No production deployment is part of this validation.
