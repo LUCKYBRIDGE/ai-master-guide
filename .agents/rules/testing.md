@@ -1,12 +1,8 @@
-# Testing & Quality Assurance Rules
+# Verification & Quality Rules
 
-## 1. Core Testing Tenets
-- **Smallest Verifiable Unit**: Test isolated functions, pure utilities, and edge cases.
-- **Zero Regressions**: Existing passing tests must remain green. Verify behavior, not just compilation.
-- **Deterministic Tests**: Avoid test flakiness; mock external network calls and time-sensitive APIs.
-- **Build Verification**: Any code change must be validated with the project build command (`npm run build`) resulting in 0 errors.
-
-## 2. Test Execution Workflow
-1. Write/review test cases before or alongside feature changes (TDD mindset).
-2. Run project tests: check test suite before committing.
-3. Validate bundle build: ensure zero TypeScript/linter/bundler errors.
+- Use the closest useful verifier for each changed slice and broaden verification as confidence grows.
+- The repository currently defines no `test` or `lint` script. Do not claim those checks ran and do not invoke nonexistent scripts.
+- `npm run build` is the repository's production TypeScript + Vite build check and must succeed for code changes before completion is claimed.
+- For visible UI changes, verify affected behavior in a real browser at representative desktop and mobile widths when browser tooling is available.
+- A successful build proves only build/type compatibility for that revision; it does not establish runtime, browser, content, or release correctness.
+- If a required verifier cannot run, record the missing evidence instead of treating it as success.
