@@ -1,0 +1,125 @@
+name: Temporary Branch QA
+
+on:
+  pull_request:
+    branches: ['main']
+
+permissions:
+  contents: read
+
+jobs:
+  browser-and-audit:
+    if: github.head_ref == 'chore/repository-deployment-hygiene'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Report dependency audit
+        run: npm audit || true
+
+      - name: Verify generated output is untracked
+        shell: bash
+        run: |
+          tracked_dist="$(git ls-files dist)"
+          if [ -n "$tracked_dist" ]; then
+            echo "Tracked dist files found:"
+            echo "$tracked_dist"
+            exit 1
+          fi
+          echo "No tracked dist files."
+
+      - name: Scan tracked files for common secret formats
+        shell: bash
+        run: |
+          if git grep -nE '(sk-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY)' -- ':!package-lock.json'; then
+            echo "Potential committed secret pattern found."
+            exit 1
+          fi
+          echo "No common committed secret pattern matched."
+
+      - name: Build production app
+        run: npm run build
+
+      - name: Verify relative asset paths
+        shell: bash
+        run: |
+          grep -Eq '(src|href)="\./assets/' dist/index.html
+          echo "Built index uses relative ./assets paths."
+
+      - name: Install Chromium smoke-test tooling
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start production preview
+        shell: bash
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/ai-master-guide-preview.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/ai-master-guide-preview.log
+          exit 1
+
+      - name: Run desktop and mobile Chromium smoke
+        shell: bash
+        run: |
+          cat > smoke.spec.mjs <<'EOF'
+          import { test, expect } from '@playwright/test';
+
+          const tabLabels = [
+            'AI 모델 데이터 & 성능 비교',
+            '디자인 준비 (DESIGN.md)',
+            '개발 환경 & 맞춤 ZIP 다운',
+            'MCP 도구 연결 허브',
+            '웹·앱 개발 6단계 로드맵',
+            '인프라 가이드 (보안·DB·서버)',
+          ];
+
+          for (const profile of [
+            { name: 'desktop', viewport: { width: 1440, height: 900 }, verifyDownload: true },
+            { name: 'mobile-390x844', viewport: { width: 390, height: 844 }, verifyDownload: false },
+          ]) {
+            test(profile.name, async ({ page }) => {
+              const errors = [];
+              page.on('console', (message) => {
+                if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+              });
+              page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
+
+              await page.setViewportSize(profile.viewport);
+              await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+              await expect(page.getByRole('heading', { name: 'AI 기반 프로덕트 개발 마스터 가이드' })).toBeVisible();
+
+              for (const label of tabLabels) {
+                await page.getByRole('button', { name: new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }).click();
+                await expect(page.locator('main')).toBeVisible();
+              }
+
+              if (profile.verifyDownload) {
+                await page.getByRole('button', { name: /개발 환경 & 맞춤 ZIP 다운/ }).click();
+                const downloadPromise = page.waitForEvent('download');
+                await page.getByRole('button', { name: 'Harness v2 ZIP 다운로드' }).click();
+                const download = await downloadPromise;
+                expect(download.suggestedFilename()).toMatch(/^portable-ai-harness-v2-\d+skills\.zip$/);
+              }
+
+              expect(errors, errors.join('\n')).toEqual([]);
+            });
+          }
+          EOF
+          npx playwright test smoke.spec.mjs --reporter=line --workers=1
+          rm smoke.spec.mjs
